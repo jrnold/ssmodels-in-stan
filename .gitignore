@@ -1,0 +1,9 @@
+auto/
+*.log
+*.out
+*.run.xml
+*.bcf
+*.blg
+*.aux
+*.bbl
+/default.bib

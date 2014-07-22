@@ -62,8 +62,9 @@ generated quantities {
   vector[m] log_beta[n];
   vector[m] stateprob[n];
   int states[n];
+  int viterbi[n];
 
-  // forward probailities
+  // forward probabilities
   {
     real u;
     vector[m] phi;
@@ -84,6 +85,7 @@ generated quantities {
     }
   }
   // backward probilities
+  // requires 
   {
     int t;
     real u;
@@ -96,7 +98,7 @@ generated quantities {
     lscale <- log(m);
     for (i in 1:(n - 1)) {
       t <- n - i;
-      v <- Gamma_mat * exp(logp[t + 1] + log(phi)) ;
+      v <- Gamma_mat * exp(logp[t + 1] + log(phi));
       log_beta[t] <- log(v) + lscale;
       u <- sum(v);
       phi <- v / u;
@@ -120,7 +122,50 @@ generated quantities {
     states[t] <- categorical_rng(theta);
   }
   // viterbi
-  // TODO
+  {
+    vector[m] logxi[n];
+    // forwards pass
+    logxi[1] <- log(delta) + logp[1];
+    for (t in 2:n) {
+      for (j in 1:m) {
+	real max_xi_gamma;
+	real tmp;
+	max_xi_gamma <- negative_infinity();
+	for (i in 1:m) {
+	  tmp <- logxi[t - 1, i] + log(Gamma[i, j]);
+	  if (tmp > max_xi_gamma) {
+	    max_xi_gamma <- tmp;
+	  }
+	}
+	logxi[t, j] <- max_xi_gamma + logp[t, j];
+      }
+    }
+    // backwards pass
+    {
+      real tmp;
+      tmp <- negative_infinity();
+      for (i in 1:m) {
+    	if (logxi[n, i] > tmp) {
+	  tmp <- logxi[n, i];
+    	  viterbi[n] <- i;
+    	}
+      }
+      for (s in 1:(n - 1)) {
+    	int t;
+    	real tmp1;
+    	t <- n - s;
+    	tmp1 <- negative_infinity();
+    	for (i in 1:m) {
+    	  real tmp2;	
+    	  tmp2 <- logxi[t, i] + log(Gamma[i, viterbi[t + 1]]);
+    	  if (tmp2 > tmp1) {
+	    tmp1 <- tmp2;
+    	    viterbi[t] <- i;
+    	  }
+    	}
+      }
+    }
+  }
 }
 
 

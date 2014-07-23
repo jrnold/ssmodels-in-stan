@@ -2,15 +2,14 @@ data {
   int n; // time
   int m; // number of states
   int y[n];
-  // vector[m] lambda;
 }
 parameters {
   // transition probabilities
   simplex[m] Gamma[m]; // Gamma[from, to]
   // probability parameters
-  positive_ordered[m] lambda;
-  real<lower = 0.0> lambda_a;
-  real<lower = 0.0> lambda_b;  
+  positive_ordered[m] mu;
+  real<lower = 0.0> mu_a;
+  real<lower = 0.0> mu_b;  
 }
 transformed parameters {
   vector<upper = 0>[m] logp[n];
@@ -26,7 +25,7 @@ transformed parameters {
   
   for (i in 1:n) {
     for (j in 1:m) {
-      logp[i, j] <- poisson_log(y[i], lambda[j]);
+      logp[i, j] <- poisson_log(y[i], mu[j]);
     }
   }
   // calculate the stationary initial distribution
@@ -35,36 +34,50 @@ transformed parameters {
 	    - Gamma_mat + rep_matrix(1.0, m, m))) ';
   
   // HMM Log likelihood
-  // Zucchini and MacDonald, p. 47,
+  // Lystig and Hughes (2002) "Exact Computation ..."
   {
-    vector[m] phi;
-    real u;
-    vector[m] v;
-    llik <- 0;
-    for (i in 1:n) {
-      if (i == 1) {
-      	v <- exp(log(delta) + logp[1]);
-      } else {
-	v <- exp(log(phi ' * Gamma_mat) + logp[i] ') ';
-      }
-      u <- sum(v);
-      phi <- v / u;
-      llik <- llik + log(u);
+    matrix[n, m] log_lambda;
+    vector[n] log_Lambda;
+    for (j in 1:m) {
+      log_lambda[1, j] <- log(delta[j]) + logp[1, j];
     }
+    log_Lambda[1] <- log_sum_exp(log_lambda[1]);
+    for (t in 2:n) {
+      for (j in 1:m) {
+	vector[m] tmp;
+	for (i in 1:m) {
+	  tmp[i] <- (log_lambda[t - 1, i] 
+		     + log(Gamma[i, j]));
+	}
+	log_lambda[t, j] <- (log_sum_exp(tmp) 
+			     + logp[t, j] 
+			     - log_Lambda[t - 1]);
+      }
+      log_Lambda[t] <- log_sum_exp(log_lambda[t]);
+    }
+    llik <- sum(log_Lambda);
   }
 }
 model {
   increment_log_prob(llik);
-  lambda ~ gamma(lambda_a, lambda_b);
+  // regularize the states.
+  mu ~ gamma(mu_a, mu_b);
 }
 generated quantities {
-  vector[m] log_alpha[n];  
+  // log forward probabilities
+  vector[m] log_alpha[n];
+  // log log backward probabilities
   vector[m] log_beta[n];
+  // state probabilities P(C_t = 1 | X^(T) = x^(T)) 
   vector[m] stateprob[n];
-  int states[n];
+  // global decoding, calcualated with Viterbi algorithm
   int viterbi[n];
+  // sample of latent states
+  int states[n];
 
-  // forward probabilities
+  // Forward probabilities
+  // this could be made more efficient by reusing forward probabilities
+  // calculated in the likelihood
   {
     real u;
     vector[m] phi;
@@ -85,7 +98,6 @@ generated quantities {
     }
   }
   // backward probilities
-  // requires 
   {
     int t;
     real u;
@@ -106,10 +118,11 @@ generated quantities {
     }
   }
   // state conditional probabilities
+  // uses forward and backward probabilities
   for (i in 1:n) {
     stateprob[i] <- exp(log_alpha[i] + log_beta[i] - llik);
   }
-  // sampling states
+  // Sample values from the states
   states[n] <- categorical_rng(exp(log_alpha[n]) / sum(exp(log_alpha[n])));
   for (i in 1:(n - 1)) {
     int t;

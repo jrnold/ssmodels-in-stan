@@ -7,14 +7,14 @@ standata <-
     within(list(), {
         y <- earthquakes[["quakes"]]
         n <- length(y)
-        m <- 3
+        m <- 4
     })
 
 Gamma <- matrix(0.01, standata$m, standata$m)
 Gamma <- Gamma + diag(1 - rowSums(Gamma))
 init <-
     list(list(Gamma = Gamma,
-              lambda = quantile(standata$y,
+              mu = quantile(standata$y,
                   prob = seq(0, 1, length = standata$m + 2)[2:(standata$m + 1)])))
 gammamm <- function(x) {
     xmean <- mean(x)
@@ -23,19 +23,20 @@ gammamm <- function(x) {
     alpha <- xmean / beta
     list(alpha = alpha, beta = beta)
 }
-mm <- gammamm(init[[1]][["lambda"]])
-init[[1]][["lambda_a"]] <- mm$alpha
-init[[1]][["lambda_b"]] <- mm$beta
+mm <- gammamm(init[[1]][["mu"]])
+init[[1]][["mu_a"]] <- mm$alpha
+init[[1]][["mu_b"]] <- mm$beta
 
 ret <- optimizing(m, data = standata, init = init[[1]])
-ret$par[grepl("lambda", names(ret$par))]
+
+ret$par[grepl("mu", names(ret$par))]
 ret$par[grepl("delta", names(ret$par))]
 
 ret <- sampling(m, data = standata, chains=1, iter = 5000,
                 init = init)
 
-lambda <- apply(extract(ret, "lambda")[[1]], 2, mean)
-print(lambda)
+mu <- apply(extract(ret, "mu")[[1]], 2, mean)
+print(mu)
 
 apply(extract(ret, "delta")[[1]], 2, median)
 median(extract(ret, "llik")[[1]])

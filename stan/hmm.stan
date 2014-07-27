@@ -1,3 +1,23 @@
+/* 
+   Hidden Markov Model Example
+
+   The following model
+
+   Let $p(\theta_1)$, and for $t = 2, \dots ,T$,
+   $$
+   \begin{aligned}[t]
+   p(\theta_t | \theta_{1:t-1}, \psi) = p(\theta_t | \theta_{t-1}, \psi)  \\
+   p(y_t | y_{1:t-1}, \theta_{1:t}) = p(y_t | \theta_t)
+   \end{aligned}
+   $$
+
+   Stan does not allow sampling discrete parameters. 
+   Thus, the sampling procedes in two steps, 
+
+   1. In the ``model`` block, the observed likelihood is calculated by marginalizing out the discrete latent states. 
+   2. In the ``generated quantities`` block, the discrete states are sampled conditional on the estimated parameters.  Additionally, statistics of the discrete states are calculated: the conditional probabilities of the states decoding $\Pr(\theta_{t} | y, \psi)$, the global decoding (Viterbi algorithm) $\argmax p(\theta_{1:T} | y_{1:T}, \psi)$.
+   
+ */ 
 data {
   int n; // time
   int m; // number of states
@@ -68,7 +88,7 @@ generated quantities {
   vector[m] log_alpha[n];
   // log log backward probabilities
   vector[m] log_beta[n];
-  // state probabilities P(C_t = 1 | X^(T) = x^(T)) 
+  // state probabilities
   vector[m] stateprob[n];
   // global decoding, calcualated with Viterbi algorithm
   int viterbi[n];
@@ -134,23 +154,24 @@ generated quantities {
     theta <- theta / sum(theta);
     states[t] <- categorical_rng(theta);
   }
-  // viterbi
+  // Global Decoding (Viterbi algorithm)
+  // 
   {
-    vector[m] logxi[n];
+    vector[m] log_xi[n];
     // forwards pass
-    logxi[1] <- log(delta) + logp[1];
+    log_xi[1] <- log(delta) + logp[1];
     for (t in 2:n) {
       for (j in 1:m) {
 	real max_xi_gamma;
 	real tmp;
 	max_xi_gamma <- negative_infinity();
 	for (i in 1:m) {
-	  tmp <- logxi[t - 1, i] + log(Gamma[i, j]);
+	  tmp <- log_xi[t - 1, i] + log(Gamma[i, j]);
 	  if (tmp > max_xi_gamma) {
 	    max_xi_gamma <- tmp;
 	  }
 	}
-	logxi[t, j] <- max_xi_gamma + logp[t, j];
+	log_xi[t, j] <- max_xi_gamma + logp[t, j];
       }
     }
     // backwards pass
@@ -158,8 +179,8 @@ generated quantities {
       real tmp;
       tmp <- negative_infinity();
       for (i in 1:m) {
-    	if (logxi[n, i] > tmp) {
-	  tmp <- logxi[n, i];
+    	if (log_xi[n, i] > tmp) {
+	  tmp <- log_xi[n, i];
     	  viterbi[n] <- i;
     	}
       }
@@ -170,7 +191,7 @@ generated quantities {
     	tmp1 <- negative_infinity();
     	for (i in 1:m) {
     	  real tmp2;	
-    	  tmp2 <- logxi[t, i] + log(Gamma[i, viterbi[t + 1]]);
+    	  tmp2 <- log_xi[t, i] + log(Gamma[i, viterbi[t + 1]]);
     	  if (tmp2 > tmp1) {
 	    tmp1 <- tmp2;
     	    viterbi[t] <- i;

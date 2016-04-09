@@ -1,4 +1,6 @@
-Work in progress, nothing to see here, move along.
+Example and code for state-space models in Stan.
+This includes an implementation of Kalman filtering, smoothing, and simulation for
+dynamic linear models (Gaussian linear state-space models).
 
 Licensing
 ================

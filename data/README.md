@@ -15,3 +15,8 @@ The data was originally used in Berndt (1991) and downloaded from http://shazam.
 
 Daily observations of the exchange rates (against the US dollar, USD) of four currencies (AUD, BEF, CHF and DEM) from Jan 1, 1988 to Aug 15, 1997.
 Data from Fernando Tussel (2011), "Kalman Filtering in R", *Journal of Statistical Software*, http://www.jstatsoft.org/v39/i02/, supplemntal file [divisas.rda](http://www.jstatsoft.org/v39/i02/supp/2).
+
+# DK-data
+
+Datasets from Durbin and Koopman (2012).
+These were extracted from [DK-data.zip](http://www.ssfpack.com/files/DK-data.zip) on the [book site](http://www.ssfpack.com/DKbook.html).

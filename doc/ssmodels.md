@@ -80,9 +80,9 @@ $$
 \vec{a}_{t|t} &= \vec{a}_t + \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} v_t , \\
 \mat{P}_{t|t} &= \mat{P}_t - \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t \mat{P}_t , \\
 \vec{a}_{t + 1} &= \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t + \vec{c}_t \\
-&= \mat{T}_{t|t} \vec{a}_{t|t} + \vec{c}_t, \\
+&= \mat{T}_{t} \vec{a}_{t|t} + \vec{c}_t, \\
 \mat{P}_{t + 1} &= \mat{T}_t \mat{P}_t (\mat{T}_t - \mat{K}_t \mat{Z}_t)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T \\
-& = \mat{T} \mat{P}_{t|t} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
+& = \mat{T}_t \mat{P}_{t|t} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
 \end{aligned}
 $$
 The vector $\vec{v}_t$ are the *one-step ahead forecast errors$.
@@ -426,6 +426,100 @@ for $t = 1, \dots, n$.
 The standardized smoothed observation disturbances allows for the detection of *outliers*,
 while the standardized smoothed state disturbances allows for the detection of *structural breaks*.
 Each auxiliary residual is a $t$-test that there was no outlier (or structural break).
+
+
+## Example Models
+
+
+### ARMA and ARIMA
+
+In ARMA modeling, trend and season components are differenced and the resulting differenced series is modeled as a stationary time series.
+Let $\Delta y_t = y_t - y_{t - 1}$, $\Delta^2 = \Delta(\Delta y_t)$, $\Delta_s y_t = y_t - y_{t - s}$,
+$\Delta^2_s y_t = \Delta_s (\Delta_s y_t)$, and so on.
+Difference into trend and season effects have been eliminated, giving the variable, $y^*_t = \Delta^d \Delta_s^D y_t$ for $d, D = 0, 1, \dots$, which is modeled as a an ARMA($p$, $q$) process,
+$$
+\begin{aligned}[t]
+y^*_t &= \phi y^*_{t - 1} + \cdots + \phi_p y^*_{t - p} + \zeta_t + \theta_1 \zeta_{t - 1} + \cdots + \theta_q \zeta_{t - q}, & \zeta_t &\sim N(0, \sigma_{\zeta}^2) \\
+&= \sum_{j = 1}^r \theta y^*_{t - j} + \zeta_t + \sum_{j = 1}^{r - 1} \theta_j \zeta_{t - j}, & t &= 1, \dots, n
+\end{aligned}
+$$
+with non-negative integers $p, q$ and where $\zeta_t$ is a serially independent series of disturbances,
+and $r = \max(p, q + 1)$. In the second equation, some coefficients can be zero.
+
+A state-space form of an ARMA model uses the following latent states,
+$$
+\vec{alpha}_t =
+\begin{pmatrix}
+y_t \\
+\phi_2 y_{t - 1} + \cdots + \phi_r y_{t - r + 1} + \theta_1 \zeta_t + \cdots + \theta_{r - 1} \zeta_{t - r + 1} \\
+\phi_3 y_{t - 1} + \cdots + \phi_r y_{t - r + 2} + \theta_2 \zeta_t + \cdots + \theta_{r - 1} \zeta_{t - r + 3} \\
+\vdots \\
+\phi_r y_{t - 1} + \theta_{r - 1} \zeta_{t} \\
+\end{pmatrix}
+$$
+The system matrices are,
+$$
+\begin{aligned}[t]
+\mat{Z}_t = \mat{Z} = &= \begin{bmatrix} 1 & 0 & 0 & \cdots & 0 \end{bmatrix} \\
+\mat{H}_t &= 0 \\
+\mat{T}_t = \mat{T} = &=
+\begin{bmatrix}
+\phi_1 & 1 &  & 0  \\
+\vdots &   & \ddots &  \\
+\phi_{r - 1} & 0 &  & 1 \\
+\phi_{r} & 0 & \cdots & 0
+\end{bmatrix} \\
+\mat{R}_t = \mat{R} &=
+\begin{matrix}
+1 \\
+\theta_1 \\
+\vdots \\
+\theta_{r - 1}
+\end{bmatrix} \\
+\eta &= \zeta_{t + 1}
+\end{aligned}
+$$
+
+Instead of differencing prior to analysis, the differencing can be done within the state-space model.
+For example, an ARIMA model with $p = 2$, $d = 2$, and $q = 1$ is
+$$
+\begin{aligned}[t]
+y_t &= \begin{bmatrix} 1 & 1 & 1 & 0 \end{bmatrix} \vec{\alpha}_t \\
+\alpha_{t + 1} &=
+\begin{bmatrix}
+1 & 1 & 1 & 0 \\
+0 & 1 & 1 & 0 \\
+0 & 0 & \phi_1 & 1 \\
+0 & 0 & \phi_2 & 0
+\end{bmatrix}
+\vec{\alpha}_t +
+\begin{bmatrix}
+0 \\
+0 \\
+1 \\
+\theta_1
+\end{bmatrix}
+\zeta_{t + 1} ,
+\end{aligned}
+$$
+with
+$$
+\vec{\alpha}_t =
+\begin{bmatrix}
+y_{t - 1} \\
+\Delta y_{t - 1} \\
+y^*_t \\
+\phi_2 y^*_{t - 1} + \theta_1 \zeta_t
+\end{bmatrix}
+$$
+and $y^*_t = \Delta^2 y_t = \Delta (y_t - y_{t - 1})$.
+The unknown non-stationary values of $y_0$ and $\Delta y_0$ in the initial state vector $\vec{\alpha}_1$
+need to be initialized.
+This approach can easily extend to different levels of differencing and seasonal differencing.
+
+The $\max(p, q + 1)$ is not the only state space version of the ARMA model.
+**TODO** other representations.
+
 
 
 ## Software

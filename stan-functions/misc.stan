@@ -1,5 +1,16 @@
 // -*- mode: stan -*-
-int int_number_true(int x) {
+int number_true(int x) {
+  int n;
+  n <- 0;
+  for (i in 1:size(x)) {
+    if (int_step(x[i])) {
+       n <- n + 1;
+    }
+  }
+  return n;
+}
+
+int number_true(vector x) {
   int n;
   n <- 0;
   for (i in 1:size(x)) {
@@ -93,11 +104,4 @@ vector select_vec_mask(vector x, int mask) {
 
 matrix make_symmteric_matrix(matrix X) {
   return 0.5 * (X + X');
-}
-
-// kalman_filter_predict_obs
-// kalman_filter_predict_state
-// kalman_filter_update_state
-// kalman_filter_log
-// kalman_filter_backwards_sample
 }

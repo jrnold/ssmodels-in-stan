@@ -117,7 +117,7 @@ $\vec{a}_{t|t}$       $m \times 1$
 $\mat{F}_t$           $p \times p$
 $\mat{K}_t$           $m \times p$
 $\mat{P}_t$           $m \times m$
-$\mat{P}_{t|T|$       $m \times m$
+$\mat{P}_{t|T}$       $m \times m$
 $\vec{x}_t$           $m \times 1$
 $\mat{L}_t$           $m \times m$
 --------------------- --------------
@@ -418,8 +418,8 @@ These residuals should satisfy independence, homoskedasticity, and normality.
 The *auxiliary residuals* are the standardized smoothed observation and state disturbances,
 $$
 \begin{aligned}[t]
-e^*_t &= \frac{\hat{\varepsilon}_t}{\sqrt{\Var(\hat{varepsilon}_t)}} ,
-r^*_t &= \frac{\hat{\eta}_t}{\sqrt{\Var{\hat{\eta}_t}} ,
+e^*_t &= \frac{\hat{\varepsilon}_t}{\sqrt{\Var(\hat{varepsilon}_t)}} , \\
+r^*_t &= \frac{\hat{\eta}_t}{\sqrt{\Var{\hat{\eta}_t}}} ,
 \end{aligned}
 $$
 for $t = 1, \dots, n$.
@@ -430,8 +430,215 @@ Each auxiliary residual is a $t$-test that there was no outlier (or structural b
 
 ## Example Models
 
+### Polynomial Trend Models
 
-### ARMA and ARIMA
+See [@PetrisPetrone2007, Sec 3.2; @WestHarrison1997, Ch 7]
+
+A polynomial trend model of order $n$ has constant matrices $\mat{T}_t = \mat{T}$, $\mat{Z}_t = \mat{Z}$, and has a forecast function of the form,
+$$
+f_t(k) = \E(y_{t + k} | \vec{Y}_t) = a_{t,0} + a_{t,1} k + \cdots + a_{t, n - 1} k^{n -1}, \quad k \geq 0,
+$$
+
+#### Local Level Model
+
+$$
+\begin{aligned}[t]
+y_t &= \alpha_{t} + \varepsilon_t \\
+\alpha_{t + 1} &= \alpha_{t} + \eta_t
+\end{aligned}
+$$
+This is a SSM with,
+$$
+\mat{T} = \mat{Z} = \mat{R} = \begin{bmatrix} 1 \end{bmatrix} .
+$$
+
+##### Linear Growth Model
+
+The state vector of a linear growth models is $\vec{\alpha}_t = (\mu_t, \beta_t)'$,
+where $\mu_t$ is interpreted as the local level, and $\beta_t$ is interpreted as the local growth rate.
+
+$$
+\begin{aligned}[t]
+y_t &= \mu_t + \varepsilon_t \\
+\mu_{t + 1} &= \mu_{t} + \beta_{t} + \eta_{\mu,t} \\
+\beta_{t + 1} &= + \beta_{t} + \eta_{\beta,t}
+\end{aligned}
+$$
+which can be written as,
+$$
+\begin{aligned}[t]
+y_t &=
+\begin{bmatrix}
+1 & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mu_t \\
+\beta_t
+\end{bmatrix} + \varepsilon_t \\
+\begin{bmatrix}
+\mu_{t + 1} \\
+\beta_{t + 1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+1 & 1 \\
+0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+\mu_t \\
+\beta_t
+\end{bmatrix}
++
+\mat{I}_2
+\begin{bmatrix}
+\eta_{\mu,t} \\
+\eta_{\beta,t}
+\end{bmatrix}
+\end{aligned}
+$$
+This is a SSM with,
+$$
+\begin{aligned}[t]
+\mat{Z} &=
+\begin{bmatrix}
+1 & 0
+\end{bmatrix} \\
+\mat{T} &=
+\begin{bmatrix}
+1 & 1 \\
+0 & 1
+\end{bmatrix} \\
+\mat{R} &= \mat{I}_2
+\end{aligned}
+$$
+
+#### nth-Order Polynomial Models
+
+
+Then,
+$$
+\begin{aligned}[t]
+y_t &= \mu_t + \varepsilon_t \\
+\alpha_{1,t + 1} &= \alpha_{1,t} + \alpha_{2,t} + \cdots + \alpha_{n,t} + \eta_{1,t} \\
+\alpha_{2,t + 1} &= \alpha_{2,t} + \cdots + \alpha_{n,t} + \eta_{2,t} \\
+\vdots &= \vdots \\
+\alpha_{n,t + 1} &= \alpha_{n,t} + \eta_{n,t} \\
+\end{aligned}
+$$
+which can be written as,
+$$
+\begin{aligned}[t]
+y_t &=
+\begin{bmatrix}
+1 & 0 & \cdots & 0
+\end{bmatrix}
+\vec{\alpha}_{t}
++ \varepsilon_t \\
+\vec{\alpha}_{t + 1}
+&=
+\mat{U}_n
+\vec{\alpha}_{t}
++
+\mat{I}_n
+\vec{\eta}_t
+\end{aligned}
+$$
+where $\mat{U}_n$ is an $n \times n$ upper triangular matrix of unit elements,
+$$
+\mat{U}_n =
+\begin{bmatrix}
+1 & 1 & 1 & \cdots & 1 \\
+0 & 0 & 1 & \cdots & 1 \\
+0 & 0 & 1 & \cdots & 1 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & 1 \\
+\end{bmatrix}
+$$
+
+This is a SSM with,
+$$
+\begin{aligned}[t]
+\mat{Z} &=
+\begin{bmatrix}
+1 & 0 & \cdots & 0 \\
+\end{bmatrix} \\
+\mat{T} &= \mat{U}_n \\
+\mat{R} &= \mat{I}_n
+\end{aligned}
+$$
+
+In general, $\mat{Q}$ can be unstructured. Since the scale of the derivatives are likely related,
+it makes little sense to allow $\mat{Q}$ to be diagonal.
+[@WestHarrison1997, Sec 7.1] suggest using the following structured form of $\mat{Q}$ in order to represent the correlations between states,
+$$
+\begin{aligned}[t]
+\mat{R} = \mat{L}_n \\
+\mat{Q} = \diag(h_1, h_2, \dots, h_n)
+\end{aligned}
+$$
+Since $\mat{Q}$ is diagonal, the errors $\eta$ are uncorrelated, but $\mat{R} \mat{Q} \mat{R}\T$ allows for correlations between the states.
+
+
+### Seasonal Factor Models
+
+
+[@PetrisPetrone2007, Sec 3.2.2]
+
+A seasonal factor model with $s$ seasons is,
+$$
+\begin{aligned}[t]
+y_t &= \alpha_{1,t} + \varepsilon_t \\
+\alpha_{1,t + 1} &= -\alpha_{1,t} + -\alpha_{2,t} + \cdots + -\alpha_{s,t} + \eta_{1,t} \\
+\alpha_{2,t + 1} &= \alpha_{1,t} \\
+\alpha_{3,t + 1} &= \alpha_{2,t} \\
+\vdots &= \vdots \\
+\alpha_{s,t + 1} &= \alpha_{s - 1,t}
+\end{aligned}
+$$
+Note that all of the states evolve deterministically except for $\alpha_1$.
+This can be written in SSM form as,
+$$
+\begin{aligned}[t]
+y_t &=
+\begin{bmatrix}
+1 & 0 & \cdots & 0 \\
+\end{bmatrix}
+\vec{alpha}_t
++ \varepsilon_t &
+\varepsilon_t & \sim N(0, H)  \\
+\vec{\alpha}_{t + 1}
+&=
+\begin{bmatrix}
+-1 & -1 & \dots & -1 & -1 \\
+1 & 0 & \cdots & 0 & 0 \\
+0 & 1 & \cdots & 0 & 0 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & 0 & \cdots & 1 & 0
+\end{bmatrix}
+\vec{\alpha}_{t}
++
+\begin{bmatrix}
+1 & 0 & \cdots & 0 \\
+0 & 0 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & 0
+\end{bmatrix}
+\eta_t
+&
+\eta_t &\sim N(0, Q)
+\end{aligned}
+$$
+This is a case of a SSM in which $r = 1 < m = s$.
+Also, note that only the first state has a non-zero system disturbance.
+This could be written with alternative forms of $\mat{R}$ and $\mat{Q}$, e.g.
+$\mat{R} = \mat{I}_m$ and a diagonal $\mat{Q}$, but since none of the other
+states are tied to the observation model, it is equivalent.
+
+### Fourier Form Seasonal Models
+
+
+
+### ARMA and ARIMA Models
 
 In ARMA modeling, trend and season components are differenced and the resulting differenced series is modeled as a stationary time series.
 Let $\Delta y_t = y_t - y_{t - 1}$, $\Delta^2 = \Delta(\Delta y_t)$, $\Delta_s y_t = y_t - y_{t - s}$,
@@ -439,16 +646,16 @@ $\Delta^2_s y_t = \Delta_s (\Delta_s y_t)$, and so on.
 Difference into trend and season effects have been eliminated, giving the variable, $y^*_t = \Delta^d \Delta_s^D y_t$ for $d, D = 0, 1, \dots$, which is modeled as a an ARMA($p$, $q$) process,
 $$
 \begin{aligned}[t]
-y^*_t &= \phi y^*_{t - 1} + \cdots + \phi_p y^*_{t - p} + \zeta_t + \theta_1 \zeta_{t - 1} + \cdots + \theta_q \zeta_{t - q}, & \zeta_t &\sim N(0, \sigma_{\zeta}^2) \\
-&= \sum_{j = 1}^r \theta y^*_{t - j} + \zeta_t + \sum_{j = 1}^{r - 1} \theta_j \zeta_{t - j}, & t &= 1, \dots, n
+y^*_t &= \phi_1 y^*_{t - 1} + \cdots + \phi_p y^*_{t - p} + \zeta_t + \theta_1 \zeta_{t - 1} + \cdots + \theta_q \zeta_{t - q}, & \zeta_t &\sim N(0, \sigma_{\zeta}^2) \\
+&= \sum_{j = 1}^{p} \phi_j y^*_{t - j} + \zeta_t + \sum_{j = 1}^{q} \theta_j \zeta_{t - j} \\
+&= \sum_{j = 1}^{r} \phi_j y^*_{t - j} + \zeta_t + \sum_{j = 1}^{r - 1} \theta_j \zeta_{t - j} .
 \end{aligned}
 $$
-with non-negative integers $p, q$ and where $\zeta_t$ is a serially independent series of disturbances,
-and $r = \max(p, q + 1)$. In the second equation, some coefficients can be zero.
+In the third equation, $r = \max(p, q + 1)$, and $\phi_j = 0$ if $j > p$, and $\theta_j$ equation, some coefficients can be zero.
 
 A state-space form of an ARMA model uses the following latent states,
 $$
-\vec{alpha}_t =
+\vec{\alpha}_t =
 \begin{pmatrix}
 y_t \\
 \phi_2 y_{t - 1} + \cdots + \phi_r y_{t - r + 1} + \theta_1 \zeta_t + \cdots + \theta_{r - 1} \zeta_{t - r + 1} \\
@@ -460,7 +667,8 @@ $$
 The system matrices are,
 $$
 \begin{aligned}[t]
-\mat{Z}_t = \mat{Z} = &= \begin{bmatrix} 1 & 0 & 0 & \cdots & 0 \end{bmatrix} \\
+\mat{Z}_t = \mat{Z} = &=
+\begin{bmatrix} 1 & 0 & 0 & \cdots & 0 \end{bmatrix} \\
 \mat{H}_t &= 0 \\
 \mat{T}_t = \mat{T} = &=
 \begin{bmatrix}
@@ -470,7 +678,7 @@ $$
 \phi_{r} & 0 & \cdots & 0
 \end{bmatrix} \\
 \mat{R}_t = \mat{R} &=
-\begin{matrix}
+\begin{bmatrix}
 1 \\
 \theta_1 \\
 \vdots \\

@@ -1,17 +1,17 @@
-PDF_FILE = ssmodels_in_stan.pdf
-HTML_FILE = ssmodels.html
+PDF_FILES = ssmodels_in_stan.pdf
+HTML_FILES = ssmodels.html ssfunctions.md
 BIB = ../bib/jrnold.bib
 
 build: pdf html
 
 pdf: $(PDF_FILE)
 
-html: $(HTML_FILE)
+html: $(HTML_FILES)
 
-$(PDF_FILE): $(PDF_FILE:%.pdf=%.tex)
+%.pdf: %.tex
 	latexmk -pdf -xelatex $^
 
-$(HTML_FILE): $(HTML_FILE:%.html=%.md)
+%.html: %.md
 	pandoc -s --mathjax -f markdown+pipe_tables -o $@ --include-before-body='before_body.html'  $^
 
 watch:

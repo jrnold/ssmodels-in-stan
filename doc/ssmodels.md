@@ -514,7 +514,6 @@ $$
 
 #### nth-Order Polynomial Models
 
-
 Then,
 $$
 \begin{aligned}[t]
@@ -636,6 +635,8 @@ states are tied to the observation model, it is equivalent.
 
 ### Fourier Form Seasonal Models
 
+[@PetrisPetrone2007, Ch 3.2.3-3.2.4; ]
+
 
 
 ### ARMA and ARIMA Models
@@ -728,6 +729,35 @@ This approach can easily extend to different levels of differencing and seasonal
 The $\max(p, q + 1)$ is not the only state space version of the ARMA model.
 **TODO** other representations.
 
+
+Form in [@WestHarrison1997, p. 297]
+A SSM form of the AR(p) model,
+$$
+y_t = \mu + \sum_{j = 1}^p \phi_j (y_{t - j} - \mu) + \varepsilon_t
+$$
+$$
+\begin{aligned}[t]
+y_t &= \begin{bmatrix} 1 & 0 & \dots & 0 \vec{alpha}_t \\
+\vec{\alpha}_{t + 1} &=
+\begin{bmatrix}
+\phi_1 & \phi_2 & \phi_3 & \cdots & \phi_p \\
+1 & 0 & 0 & \cdots & 0 \\
+0 & 1 & 0 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \vdots & 1 & 0 \\
+\end{bmatrix}
+\vec{\alpha}_t +
+\begin{bmatrix}
+1 & 0 & \dots & 0 \\
+0 & 0 & \dots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & 0
+\end{bmatrix}
+\eta_t &
+\eta_t &\sim N(0, Q)
+\end{aligned}
+$$
+Note that $r = 1$.
 
 
 ## Software

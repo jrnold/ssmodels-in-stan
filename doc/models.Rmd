@@ -3,7 +3,7 @@
 
 ### Polynomial Trend Models
 
-See [@PetrisPetrone2007, Sec 3.2; @WestHarrison1997, Ch 7]
+See [@PetrisPetroneEtAl2009, Sec 3.2; @WestHarrison1997, Ch 7]
 
 A polynomial trend model of order $n$ has constant matrices $\mat{T}_t = \mat{T}$, $\mat{Z}_t = \mat{Z}$, and has a forecast function of the form,
 $$
@@ -14,8 +14,8 @@ $$
 
 $$
 \begin{aligned}[t]
-y_t &= \alpha_{t} + \varepsilon_t \\
-\alpha_{t + 1} &= \alpha_{t} + \eta_t
+y_t &= \alpha_{t} + \varepsilon_t & \varepsilon_t &\sim N(0, H)\\
+\alpha_{t + 1} &= \alpha_{t} + \eta_t & \eta_t &\sim N(0, Q)
 \end{aligned}
 $$
 This is a SSM with,
@@ -30,9 +30,9 @@ where $\mu_t$ is interpreted as the local level, and $\beta_t$ is interpreted as
 
 $$
 \begin{aligned}[t]
-y_t &= \mu_t + \varepsilon_t \\
-\mu_{t + 1} &= \mu_{t} + \beta_{t} + \eta_{\mu,t} \\
-\beta_{t + 1} &= + \beta_{t} + \eta_{\beta,t}
+y_t &= \mu_t + \varepsilon_t & \varepsilon_t &\sim N(0, H) \\
+\mu_{t + 1} &= \mu_{t} + \beta_{t} + \eta_{\mu,t}  \\
+\beta_{t + 1} &= \beta_{t} + \eta_{\beta,t} & \vec{\eta}_t = (\eta_{\mu,t}, \eta_{\beta,t})\T &\sim N(0, \mat{Q})
 \end{aligned}
 $$
 which can be written as,
@@ -42,29 +42,17 @@ y_t &=
 \begin{bmatrix}
 1 & 0
 \end{bmatrix}
-\begin{bmatrix}
-\mu_t \\
-\beta_t
-\end{bmatrix} + \varepsilon_t \\
-\begin{bmatrix}
-\mu_{t + 1} \\
-\beta_{t + 1}
-\end{bmatrix}
+\vec{\alpha}_t
++ \varepsilon_t \\
+\vec{\alpha}_{t + 1}
 &=
 \begin{bmatrix}
 1 & 1 \\
 0 & 1
 \end{bmatrix}
-\begin{bmatrix}
-\mu_t \\
-\beta_t
-\end{bmatrix}
+\vec{\alpha}_t
 +
-\mat{I}_2
-\begin{bmatrix}
-\eta_{\mu,t} \\
-\eta_{\beta,t}
-\end{bmatrix}
+\vec{\eta}_t & \vec{\eta}_t &\sim N(0, \mat{Q})
 \end{aligned}
 $$
 This is a SSM with,
@@ -100,7 +88,7 @@ $$
 \begin{aligned}[t]
 y_t &=
 \begin{bmatrix}
-1 & 0 & \cdots & 0
+1 & 0 & 0 & \cdots & 0
 \end{bmatrix}
 \vec{\alpha}_{t}
 + \varepsilon_t \\
@@ -130,7 +118,7 @@ $$
 \begin{aligned}[t]
 \mat{Z} &=
 \begin{bmatrix}
-1 & 0 & \cdots & 0 \\
+1 & 0 & 0 & \cdots & 0 \\
 \end{bmatrix} \\
 \mat{T} &= \mat{U}_n \\
 \mat{R} &= \mat{I}_n
@@ -142,8 +130,8 @@ it makes little sense to allow $\mat{Q}$ to be diagonal.
 [@WestHarrison1997, Sec 7.1] suggest using the following structured form of $\mat{Q}$ in order to represent the correlations between states,
 $$
 \begin{aligned}[t]
-\mat{R} = \mat{L}_n \\
-\mat{Q} = \diag(h_1, h_2, \dots, h_n)
+\mat{R} &= \mat{U}_n \\
+\mat{Q} &= \diag(q_1, q_2, \dots, q_n)
 \end{aligned}
 $$
 Since $\mat{Q}$ is diagonal, the errors $\eta$ are uncorrelated, but $\mat{R} \mat{Q} \mat{R}\T$ allows for correlations between the states.
@@ -152,13 +140,13 @@ Since $\mat{Q}$ is diagonal, the errors $\eta$ are uncorrelated, but $\mat{R} \m
 ### Seasonal Factor Models
 
 
-[@PetrisPetrone2007, Sec 3.2.2]
+[@PetrisPetroneEtAl2009, Sec 3.2.2]
 
 A seasonal factor model with $s$ seasons is,
 $$
 \begin{aligned}[t]
 y_t &= \alpha_{1,t} + \varepsilon_t \\
-\alpha_{1,t + 1} &= -\alpha_{1,t} + -\alpha_{2,t} + \cdots + -\alpha_{s,t} + \eta_{1,t} \\
+\alpha_{1,t + 1} &= -\alpha_{1,t} -\alpha_{2,t} - \cdots -\alpha_{s,t} + \eta_{1,t} \\
 \alpha_{2,t + 1} &= \alpha_{1,t} \\
 \alpha_{3,t + 1} &= \alpha_{2,t} \\
 \vdots &= \vdots \\
@@ -171,9 +159,9 @@ $$
 \begin{aligned}[t]
 y_t &=
 \begin{bmatrix}
-1 & 0 & \cdots & 0 \\
+1 & 0 & 0 & \cdots & 0 \\
 \end{bmatrix}
-\vec{alpha}_t
+\vec{\alpha}_t
 + \varepsilon_t &
 \varepsilon_t & \sim N(0, H)  \\
 \vec{\alpha}_{t + 1}
@@ -188,10 +176,11 @@ y_t &=
 \vec{\alpha}_{t}
 +
 \begin{bmatrix}
-1 & 0 & \cdots & 0 \\
-0 & 0 & \cdots & 0 \\
-\vdots & \vdots & \ddots & \vdots \\
-0 & 0 & \cdots & 0
+1 \\
+0 \\
+0 \\
+\vdots \\
+0
 \end{bmatrix}
 \eta_t
 &
@@ -206,7 +195,7 @@ states are tied to the observation model, it is equivalent.
 
 ### Fourier Form Seasonal Models
 
-[@PetrisPetrone2007, Ch 3.2.3-3.2.4; ]
+[@PetrisPetroneEtAl2009, Ch 3.2.3-3.2.4; ]
 
 
 
@@ -241,7 +230,7 @@ $$
 \begin{aligned}[t]
 \mat{Z}_t = \mat{Z} = &=
 \begin{bmatrix} 1 & 0 & 0 & \cdots & 0 \end{bmatrix} \\
-\mat{H}_t &= 0 \\
+\mat{H}_t = \mat{H} = &= 0 \\
 \mat{T}_t = \mat{T} = &=
 \begin{bmatrix}
 \phi_1 & 1 &  & 0  \\
@@ -306,23 +295,30 @@ A SSM form of the AR(p) model,
 $$
 y_t = \mu + \sum_{j = 1}^p \phi_j (y_{t - j} - \mu) + \varepsilon_t
 $$
+where
 $$
 \begin{aligned}[t]
-y_t &= \begin{bmatrix} 1 & 0 & \dots & 0 \vec{alpha}_t \\
+y_t &=
+\begin{bmatrix}
+1 & 0 & 0 & 0 & \dots & 0 & 0
+\end{bmatrix}
+\vec{\alpha}_t \\
 \vec{\alpha}_{t + 1} &=
 \begin{bmatrix}
 \phi_1 & \phi_2 & \phi_3 & \cdots & \phi_p \\
 1 & 0 & 0 & \cdots & 0 \\
 0 & 1 & 0 & \cdots & 0 \\
-\vdots & \vdots & \vdots & \ddots & \vdots \\
-0 & 0 & \vdots & 1 & 0 \\
+\vdots & \vdots &  & \ddots & \vdots \\
+0 & 0 & \cdots & 1 & 0
 \end{bmatrix}
-\vec{\alpha}_t +
+\vec{\alpha}_t
++
 \begin{bmatrix}
-1 & 0 & \dots & 0 \\
-0 & 0 & \dots & 0 \\
-\vdots & \vdots & \ddots & \vdots \\
-0 & 0 & \cdots & 0
+1  \\
+0  \\
+0  \\
+\vdots  \\
+0
 \end{bmatrix}
 \eta_t &
 \eta_t &\sim N(0, Q)

@@ -25,7 +25,7 @@
 
 <meta name="author" content="Jeffrey B. Arnold">
 
-<meta name="date" content="2016-06-17">
+<meta name="date" content="2016-06-18">
 
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,7 +34,7 @@
   
   
 <link rel="prev" href="example-models.html">
-<link rel="next" href="placeholder.html">
+<link rel="next" href="stan-functions.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -98,8 +98,13 @@ $$
 <li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
 <li class="chapter" data-level="3" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>3</b> Parameter Estimation</a></li>
 <li class="chapter" data-level="4" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>4</b> Example Models</a></li>
-<li class="chapter" data-level="5" data-path="examples.html"><a href="examples.html"><i class="fa fa-check"></i><b>5</b> Examples</a></li>
-<li class="chapter" data-level="6" data-path="placeholder.html"><a href="placeholder.html"><i class="fa fa-check"></i><b>6</b> Placeholder</a></li>
+<li class="chapter" data-level="5" data-path="example-models-1.html"><a href="example-models-1.html"><i class="fa fa-check"></i><b>5</b> Example Models</a><ul>
+<li class="chapter" data-level="5.1" data-path="example-models-1.html"><a href="example-models-1.html#nile"><i class="fa fa-check"></i><b>5.1</b> Nile</a><ul>
+<li class="chapter" data-level="5.1.1" data-path="example-models-1.html"><a href="example-models-1.html#local-level"><i class="fa fa-check"></i><b>5.1.1</b> Local Level</a></li>
+<li class="chapter" data-level="5.1.2" data-path="example-models-1.html"><a href="example-models-1.html#intervention"><i class="fa fa-check"></i><b>5.1.2</b> Intervention</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>6</b> Stan Functions</a></li>
 <li class="chapter" data-level="7" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>7</b> Other Software</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -121,23 +126,54 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="examples" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Examples</h1>
+<div id="example-models-1" class="section level1">
+<h1><span class="header-section-number">Chapter 5</span> Example Models</h1>
+<div id="nile" class="section level2">
+<h2><span class="header-section-number">5.1</span> Nile</h2>
+<div id="local-level" class="section level3">
+<h3><span class="header-section-number">5.1.1</span> Local Level</h3>
+<p>The Nile</p>
+</div>
+<div id="intervention" class="section level3">
+<h3><span class="header-section-number">5.1.2</span> Intervention</h3>
 <ul>
-<li><span class="citation">(<span class="citeproc-not-found" data-reference-id="PetrisPetrone2010"><strong>???</strong></span>)</span></li>
+<li><span class="citation">Petris and Petrone (<a href="#ref-PetrisPetrone2011a">2011</a>)</span></li>
 <li>Nile: local level</li>
 <li>UKGas: Structural: local trend + seasonal factor</li>
 <li><p>Industrial Production of consumer goods: local trend, outliers and structural breaks.</p></li>
-<li><p><span class="citation">(<span class="citeproc-not-found" data-reference-id="PetrisPetrone2010"><strong>???</strong></span>)</span></p></li>
+<li><p><span class="citation">Petris (<a href="#ref-Petris2010a">2010</a>)</span></p></li>
 <li>Temperuratures: dlm dynamic factor</li>
 <li><p>Nile: local level</p></li>
-<li><span class="citation">(<span class="citeproc-not-found" data-reference-id="Tusell2011"><strong>???</strong></span>)</span></li>
-<li><span class="citation">(<span class="citeproc-not-found" data-reference-id="CommandeurKoopman2007"><strong>???</strong></span>)</span></li>
-<li><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>)</span></li>
+<li><span class="citation">Tusell (<a href="#ref-Tusell2011">2011</a>)</span></li>
+<li><span class="citation">Commandeur and Koopman (<a href="#ref-CommandeurKoopman2007">2007</a>)</span></li>
+<li><span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span></li>
 <li>KFAS</li>
-<li><p><span class="citation">(<span class="citeproc-not-found" data-reference-id="ShumwayStoffer2010"><strong>???</strong></span>)</span></p></li>
+<li><p><span class="citation">Shumway and Stoffer (<a href="#ref-ShumwayStoffer2010">2010</a>)</span></p></li>
 </ul>
 
+</div>
+</div>
+</div>
+<h3> Other Software</h3>
+<div id="refs" class="references">
+<div id="ref-PetrisPetrone2011a">
+<p>Petris, Giovanni, and Sonia Petrone. 2011. “State Space Models in R.” <em>Journal of Statistical Software</em> 41 (4): 1–25. <a href="http://www.jstatsoft.org/v41/i04" class="uri">http://www.jstatsoft.org/v41/i04</a>.</p>
+</div>
+<div id="ref-Petris2010a">
+<p>Petris, Giovanni. 2010. “An R Package for Dynamic Linear Models.” <em>Journal of Statistical Software</em> 36 (12): 1–16. <a href="http://www.jstatsoft.org/v36/i12/" class="uri">http://www.jstatsoft.org/v36/i12/</a>.</p>
+</div>
+<div id="ref-Tusell2011">
+<p>Tusell, Fernando. 2011. “Kalman Filtering in R.” <em>Journal of Statistical Software</em> 39 (2): 1–27. <a href="http://www.jstatsoft.org/v39/i02" class="uri">http://www.jstatsoft.org/v39/i02</a>.</p>
+</div>
+<div id="ref-CommandeurKoopman2007">
+<p>Commandeur, Jacques J.F., and Siem Jan Koopman. 2007. <em>An Introduction to State Space Time Series Analysis</em>. Practical Econometrics Series. OUP Oxford. <a href="http://books.google.com/books?id=OCmljPYfgkUC" class="uri">http://books.google.com/books?id=OCmljPYfgkUC</a>.</p>
+</div>
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+<div id="ref-ShumwayStoffer2010">
+<p>Shumway, R.H., and D.S. Stoffer. 2010. <em>Time Series Analysis and Its Applications</em>. Springer Texts in Statistics. Springer. <a href="http://books.google.com/books?id=NIhXa6UeF2cC" class="uri">http://books.google.com/books?id=NIhXa6UeF2cC</a>.</p>
+</div>
 </div>
             </section>
 
@@ -145,7 +181,7 @@ $$
         </div>
       </div>
 <a href="example-models.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="placeholder.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="stan-functions.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

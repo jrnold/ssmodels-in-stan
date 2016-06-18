@@ -1,17 +1,26 @@
-# Examples
+# Example Models
 
-- @PetrisPetrone2010
+
+## Nile
+
+### Local Level
+
+The Nile
+
+### Intervention
+
+- @PetrisPetrone2011a
   - Nile: local level
   - UKGas: Structural: local trend + seasonal factor
   - Industrial Production of consumer goods: local trend, outliers and structural breaks.
 
-- @PetrisPetrone2010
+- @Petris2010a
 
   - Temperuratures: dlm dynamic factor
   - Nile: local level
 
-- @Tussell2011
-- @CommandeurKopmans
-- @DurbinKoopmans
+- @Tusell2011
+- @CommandeurKoopman2007
+- @DurbinKoopman2012
 - KFAS
-- @ShumwayStoffer2006
+- @ShumwayStoffer2010

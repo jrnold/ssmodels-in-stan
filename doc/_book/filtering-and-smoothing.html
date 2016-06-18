@@ -25,7 +25,7 @@
 
 <meta name="author" content="Jeffrey B. Arnold">
 
-<meta name="date" content="2016-06-17">
+<meta name="date" content="2016-06-18">
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
@@ -128,10 +128,24 @@ $$
 <li class="chapter" data-level="5.0.2" data-path="example-models.html"><a href="example-models.html#seasonal-factor-models"><i class="fa fa-check"></i><b>5.0.2</b> Seasonal Factor Models</a></li>
 <li class="chapter" data-level="5.0.3" data-path="example-models.html"><a href="example-models.html#fourier-form-seasonal-models"><i class="fa fa-check"></i><b>5.0.3</b> Fourier Form Seasonal Models</a></li>
 <li class="chapter" data-level="5.0.4" data-path="example-models.html"><a href="example-models.html#arma-and-arima-models"><i class="fa fa-check"></i><b>5.0.4</b> ARMA and ARIMA Models</a></li>
-<li class="chapter" data-level="5.1" data-path="example-models.html"><a href="example-models.html#examples"><i class="fa fa-check"></i><b>5.1</b> Examples</a></li>
 </ul></li>
-<li class="chapter" data-level="6" data-path="placeholder.html"><a href="placeholder.html"><i class="fa fa-check"></i><b>6</b> Placeholder</a></li>
-<li class="chapter" data-level="7" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>7</b> Other Software</a></li>
+<li class="chapter" data-level="6" data-path="example-models-1.html"><a href="example-models-1.html"><i class="fa fa-check"></i><b>6</b> Example Models</a><ul>
+<li class="chapter" data-level="6.1" data-path="example-models-1.html"><a href="example-models-1.html#nile"><i class="fa fa-check"></i><b>6.1</b> Nile</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="example-models-1.html"><a href="example-models-1.html#local-level"><i class="fa fa-check"></i><b>6.1.1</b> Local Level</a></li>
+<li class="chapter" data-level="6.1.2" data-path="example-models-1.html"><a href="example-models-1.html#intervention"><i class="fa fa-check"></i><b>6.1.2</b> Intervention</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>7</b> Stan Functions</a><ul>
+<li class="chapter" data-level="7.1" data-path="stan-functions.html"><a href="stan-functions.html#misc"><i class="fa fa-check"></i><b>7.1</b> Misc</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="stan-functions.html"><a href="stan-functions.html#make_symmetric_matrix"><i class="fa fa-check"></i><b>7.1.1</b> make_symmetric_matrix</a></li>
+<li class="chapter" data-level="7.1.2" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_colwise"><i class="fa fa-check"></i><b>7.1.2</b> to_matrix_colwise</a></li>
+<li class="chapter" data-level="7.1.3" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>7.1.3</b> to_matrix_rowwise</a></li>
+<li class="chapter" data-level="7.1.4" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_colwise"><i class="fa fa-check"></i><b>7.1.4</b> to_vector_colwise</a></li>
+<li class="chapter" data-level="7.1.5" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_rowwise"><i class="fa fa-check"></i><b>7.1.5</b> to_vector_rowwise</a></li>
+</ul></li>
+<li class="chapter" data-level="7.2" data-path="stan-functions.html"><a href="stan-functions.html#filtering-1"><i class="fa fa-check"></i><b>7.2</b> Filtering</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>8</b> Other Software</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -156,7 +170,7 @@ $$
 <h1><span class="header-section-number">Chapter 3</span> Filtering and Smoothing</h1>
 <div id="filtering" class="section level2">
 <h2><span class="header-section-number">3.1</span> Filtering</h2>
-<p>From <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.3)</span></p>
+<p>From <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3)</span></p>
 <p><span class="math display">\[
 \begin{aligned}[t]
 \vec{v}_t &amp;= \vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t, \\
@@ -231,10 +245,10 @@ $$
 </tr>
 </tbody>
 </table>
-<p>See <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.3.4)</span>: For a time-invariant state space model, the Kalman recursion for <span class="math inline">\(\mat{P}_{t + 1}\)</span> converges to a constant matrix <span class="math inline">\(\bar{\mat{P}}\)</span>, <span class="math display">\[
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3.4)</span>: For a time-invariant state space model, the Kalman recursion for <span class="math inline">\(\mat{P}_{t + 1}\)</span> converges to a constant matrix <span class="math inline">\(\bar{\mat{P}}\)</span>, <span class="math display">\[
 \bar{\mat{P}} = \mat{T} \bar{\mat{P}} \mat{T}\T - \mat{T} \bar{\mat{P}} \mat{Z}\T \bar{\mat{F}}^{-1} \mat{Z} \bar{\mat{P}} \mat{T}\T + \mat{R} \mat{Q} \mat{R}\T ,
 \]</span> where <span class="math inline">\(\bar{\mat{F}} = \mat{Z} \bar{\mat{P}} \mat{Z}\T + \mat{H}\)</span>.</p>
-<p>See <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.3.5)</span>: The <em>state estimation error</em> is, <span class="math display">\[
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3.5)</span>: The <em>state estimation error</em> is, <span class="math display">\[
 \vec{x}_t = \vec{\alpha}_t - \vec{a}_t,
 \]</span> where <span class="math inline">\(\Var(\vec{x}_t) = \mat{P}_t\)</span>. The <span class="math inline">\(v_t\)</span> are sometimes called <em>innovations</em>, since they are the part of <span class="math inline">\(\vec{y}_t\)</span> not predicted from the past. The innovation analog of the state space model is <span class="math display">\[
 \begin{aligned}[t]
@@ -299,7 +313,7 @@ $$
 </table>
 <div id="state-smoothing" class="section level3">
 <h3><span class="header-section-number">3.2.1</span> State Smoothing</h3>
-<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.4.2)</span></p>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.4.2)</span></p>
 <p>Smoothing calculates the estimate of the state using all observations, <span class="math inline">\(\hat{\vec{\alpha}} = \E(\vec{\alpha}_t | \mat{Y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha} | \mat{Y}_n)\)</span>.</p>
 <p>Smoother in Eq 4.44. Let <span class="math inline">\(\hat{\vec{a}} = \E(\alpha_t | \vec{y}_1, \dots \vec{y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_1, \dots \vec{y}_n)\)</span>, then <span class="math display">\[
 \begin{aligned}[t]
@@ -313,7 +327,7 @@ $$
 </div>
 <div id="updating-smoothed-states" class="section level3">
 <h3><span class="header-section-number">3.2.2</span> Updating Smoothed States</h3>
-<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.4.5)</span></p>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.4.5)</span></p>
 <p>If a new observation arises, existing smoothed estimates of the states can be updated without having to run the full state smoother again.</p>
 <p>Suppose a new obervation, <span class="math inline">\(\vec{y}_{n + 1}\)</span>, is available. We want to calculate <span class="math inline">\(\hat{\vec{\alpha}}_{t|n + 1} = \E(\vec{\alpha} | \mat{Y}_{n + 1})\)</span> and <span class="math inline">\(\mat{V}_{t|n + 1} = \Var(\vec{\alpha}) | \mat{Y}_{n + 1}\)</span>, when we already have <span class="math inline">\(\hat{\vec{\alpha}}_{t|n} = \E(\vec{\alpha} | \mat{Y}_{n})\)</span> and <span class="math inline">\(\mat{V}_{t|n} = \Var(\vec{\alpha} | \mat{Y}_{n})\)</span> from running smoother when <span class="math inline">\(\mat{Y}_n\)</span> was available.</p>
 <p>Let <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T \cdots \mat{L}_n\T\)</span> with <span class="math inline">\(\vec{b}_{t|n + 1} = \mat{I}_m\)</span>. Then <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T b_{t+1|n+1}\)</span> for <span class="math inline">\(t = n, \dots, 1\)</span>. Then the states can be updated as, <span class="math display">\[
@@ -330,7 +344,7 @@ $$
 </div>
 <div id="disturbance-smoothing" class="section level3">
 <h3><span class="header-section-number">3.2.3</span> Disturbance smoothing</h3>
-<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.5)</span></p>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.5)</span></p>
 <p>Disturbance smoothing calculates the smoothed estimates, <span class="math inline">\(\hat{\vec{\varepsilon}}_t = \E(\vec{\varepsilon} | \mat{Y}_n)\)</span> and <span class="math inline">\(\hat{\vec{\eta}} = \E(\vec{\eta}_t | \mat{Y}_n)\)</span>.</p>
 <p><span class="math display">\[
 \begin{aligned}[t]
@@ -359,7 +373,7 @@ $$
 </div>
 <div id="fast-state-smoothing" class="section level3">
 <h3><span class="header-section-number">3.2.4</span> Fast state smoothing</h3>
-<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.6.2)</span></p>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.6.2)</span></p>
 <p>If the variances of the states do not need to be calculated, then a faster smoothing algorithm can be used (Koopman 1993). The fast state smoother is defiend as, <span class="math display">\[
 \hat{\vec{\alpha}}_t = \mat{T}_t \hat{\vec{\alpha}}_t + \mat{R}_t \mat{Q}_t \mat{R}_t\T \vec{r}_t ,
 \]</span> for <span class="math inline">\(t = 1, \dots, n\)</span>. This is initialized via, <span class="math display">\[
@@ -368,7 +382,7 @@ $$
 </div>
 <div id="classical-state-smoothing" class="section level3">
 <h3><span class="header-section-number">3.2.5</span> Classical state smoothing</h3>
-<p>See <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.6.1)</span></p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.6.1)</span></p>
 <p>The original state smoothing algorithm from Anderson and Moore (1979) is <span class="math display">\[
 \begin{aligned}[t]
 \hat{\vec{\alpha}}_t &amp;= \vec{a}_{t|t} + \mat{P}_{t|t} \mat{T}_t\T \mat{P}_{t + 1}^{-1}(\hat{\vec{\alpha}}_{t + 1} - \vec{a}_{t + 1}) .
@@ -382,7 +396,7 @@ $$
 <h2><span class="header-section-number">3.3</span> Simulation smoothers</h2>
 <div id="mean-corrections" class="section level3">
 <h3><span class="header-section-number">3.3.1</span> Mean corrections</h3>
-<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.9)</span></p>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span></p>
 <p>Simulation smoother by mean corrections. Ch. 4.9.</p>
 <p><strong>TODO</strong></p>
 </div>
@@ -398,7 +412,7 @@ $$
 </div>
 <div id="missing-observations" class="section level2">
 <h2><span class="header-section-number">3.4</span> Missing observations</h2>
-<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.10)</span></p>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.10)</span></p>
 <p>When all observations at time <span class="math inline">\(t\)</span> are missing, the filtering recursions become, <span class="math display">\[
 \begin{aligned}[t]
 \vec{a}_{t|t} &amp;= \vec{a}_t , \\
@@ -427,7 +441,7 @@ $$
 </div>
 <div id="forecasting-matrices" class="section level2">
 <h2><span class="header-section-number">3.5</span> Forecasting matrices</h2>
-<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.11)</span></p>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.11)</span></p>
 <p>Forecasting future observations are the same as treating the future observations as missing, <span class="math display">\[
 \begin{aligned}[t]
 \bar{\vec{y}}_{n + j} &amp;= \mat{Z}_{n + j} \bar{\vec{a}}_{n + j} \\
@@ -435,6 +449,12 @@ $$
 \end{aligned}
 \]</span></p>
 
+</div>
+</div>
+<h3> Other Software</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
 </div>
 </div>
             </section>

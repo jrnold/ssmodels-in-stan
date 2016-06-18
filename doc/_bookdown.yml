@@ -3,6 +3,7 @@ chapter_name: "Chapter "
 rmd_files:
   - "index.Rmd"
   - "ssmodels.Rmd"
+  - "filtering.Rmd"
   - "estimation.Rmd"
   - "models.Rmd"
   - "examples.Rmd"

@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [packages.bib]
+bibliography: ["ssmodels-in-stan.bib", packages.bib]
 biblio-style: apalike
 link-citations: yes
 github-repo: rstudio/bookdown-demo
@@ -19,6 +19,6 @@ This contains documentation for "State Space Models in Stan"
 ```{r include=FALSE}
 # automatically create a bib database for R packages
 knitr::write_bib(c(
-  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+  .packages(), 'bookdown', 'knitr', 'rmarkdown', "rstan", "KFAS", "dlm"
 ), 'packages.bib')
 ```

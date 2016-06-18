@@ -11,3 +11,4 @@ auto/
 /doc/*.html
 /doc/*.pdf
 /default.bib
+*.bak

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-06-17">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="filtering-and-smoothing.html">
+<link rel="next" href="example-models.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#filtering"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#smoothing"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#updating-smoothed-states"><i class="fa fa-check"></i><b>3.2.2</b> Updating Smoothed States</a></li>
+<li class="chapter" data-level="3.2.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.4</b> Fast state smoothing</a></li>
+<li class="chapter" data-level="3.2.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#classical-state-smoothing"><i class="fa fa-check"></i><b>3.2.5</b> Classical state smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#simulation-smoothers"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#mean-corrections"><i class="fa fa-check"></i><b>3.3.1</b> Mean corrections</a></li>
+<li class="chapter" data-level="3.3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forward-filter-backwards-smoother"><i class="fa fa-check"></i><b>3.3.3</b> Forward-Filter Backwards smoother</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#missing-observations"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forecasting-matrices"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>4</b> Parameter Estimation</a><ul>
+<li class="chapter" data-level="4.1" data-path="parameter-estimation.html"><a href="parameter-estimation.html#log-log-likelihood"><i class="fa fa-check"></i><b>4.1</b> Log log-likelihood</a></li>
+<li class="chapter" data-level="4.2" data-path="parameter-estimation.html"><a href="parameter-estimation.html#integrated-sampler"><i class="fa fa-check"></i><b>4.2</b> Integrated Sampler</a></li>
+<li class="chapter" data-level="4.3" data-path="parameter-estimation.html"><a href="parameter-estimation.html#diagnostic-checking"><i class="fa fa-check"></i><b>4.3</b> Diagnostic Checking</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a><ul>
+<li class="chapter" data-level="5.0.1" data-path="example-models.html"><a href="example-models.html#polynomial-trend-models"><i class="fa fa-check"></i><b>5.0.1</b> Polynomial Trend Models</a></li>
+<li class="chapter" data-level="5.0.2" data-path="example-models.html"><a href="example-models.html#seasonal-factor-models"><i class="fa fa-check"></i><b>5.0.2</b> Seasonal Factor Models</a></li>
+<li class="chapter" data-level="5.0.3" data-path="example-models.html"><a href="example-models.html#fourier-form-seasonal-models"><i class="fa fa-check"></i><b>5.0.3</b> Fourier Form Seasonal Models</a></li>
+<li class="chapter" data-level="5.0.4" data-path="example-models.html"><a href="example-models.html#arma-and-arima-models"><i class="fa fa-check"></i><b>5.0.4</b> ARMA and ARIMA Models</a></li>
+<li class="chapter" data-level="5.1" data-path="example-models.html"><a href="example-models.html#examples"><i class="fa fa-check"></i><b>5.1</b> Examples</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="placeholder.html"><a href="placeholder.html"><i class="fa fa-check"></i><b>6</b> Placeholder</a></li>
+<li class="chapter" data-level="7" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>7</b> Other Software</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="parameter-estimation" class="section level1">
+<h1><span class="header-section-number">Chapter 4</span> Parameter Estimation</h1>
+<div id="log-log-likelihood" class="section level2">
+<h2><span class="header-section-number">4.1</span> Log log-likelihood</h2>
+<p>When initial conditions are known, the log likelihood is <span class="math display">\[
+\begin{aligned}[t]
+\log L(\mat{Y}_n) &amp;= \log p(\vec{y}_1, \dots, \vec{y}_n) = \sum_{t = 1}^n \log p(\vec{y}_t | \mat{Y}_{t - 1}) \\
+&amp;= - \frac{np}{2} \log 2 \pi - \frac{1}{2} \sum_{t = 1}^n \left( \log \left| \mat{F}_t \right| + \vec{v}\T \mat{F}_t^{-1} \vec{v}_t \right)
+\end{aligned} .
+\]</span></p>
+<p>See <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec. 7.2.1)</span></p>
+</div>
+<div id="integrated-sampler" class="section level2">
+<h2><span class="header-section-number">4.2</span> Integrated Sampler</h2>
+<p><span class="math display">\[
+p(\vec{y} | \mat{H}, \mat{\Psi}) = \int p(\vec{y} | \vec{\alpha}, \mat{H}) p(\vec{\alpha} | \mat{\Psi})\,d\vec{\alpha},
+\]</span></p>
+<p>The log-likelihood of a state-space function can be calculated analytically and expressed up to an integrating constant marginally of the state vector <span class="math inline">\(\vec{\alpha}\)</span>, <span class="math display">\[
+\log p(\vec{y} | \mat{H}, \mat{\Psi}) = \text{const} - 0.5 \left( \sum_{t = 1}^n \sum_{i = 1}^p \log f_{t, i} - v_t^2 f^{-1}_{t,i} \right) .
+\]</span> Thus, parameters of the state space model can be sampled as, <span class="math display">\[
+p(\mat{H}, \mat{\Psi} | \vec{y}) \propto p(\vec{y} | \mat{H}, \mat{\Psi}) p(\mat{H}) p(\mat{\Psi}) .
+\]</span></p>
+</div>
+<div id="diagnostic-checking" class="section level2">
+<h2><span class="header-section-number">4.3</span> Diagnostic Checking</h2>
+<p>The <em>standardized prediction errors</em> are, <span class="math display">\[
+\vec{v}^*_t = \mat{G}_t \vec{v}_t ,
+\]</span> where <span class="math inline">\(\mat{G}_t \mat{G}_t\T = \mat{F}_t^{-1}\)</span>. See Koopmans JSS Sec 3.3. These residuals should satisfy independence, homoskedasticity, and normality.</p>
+<ul>
+<li>independence: Box-Ljung test statistic</li>
+<li>normality: Bowman and Shenton test statistic</li>
+<li>homoskedasticity: compare variance of standardized prediction errors of the 1st third to that of the last third. See Harvey (1989), Durbin and Koopman (2012), and Commandeur and Koopman (2007).</li>
+</ul>
+<p>The <em>auxiliary residuals</em> are the standardized smoothed observation and state disturbances, <span class="math display">\[
+\begin{aligned}[t]
+e^*_t &amp;= \frac{\hat{\varepsilon}_t}{\sqrt{\Var(\hat{varepsilon}_t)}} , \\
+r^*_t &amp;= \frac{\hat{\eta}_t}{\sqrt{\Var{\hat{\eta}_t}}} ,
+\end{aligned}
+\]</span> for <span class="math inline">\(t = 1, \dots, n\)</span>. The standardized smoothed observation disturbances allows for the detection of <em>outliers</em>, while the standardized smoothed state disturbances allows for the detection of <em>structural breaks</em>. Each auxiliary residual is a <span class="math inline">\(t\)</span>-test that there was no outlier (or structural break).</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="filtering-and-smoothing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="example-models.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

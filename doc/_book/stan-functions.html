@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-06-17">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="examples.html">
+<link rel="next" href="other-software.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>3</b> Parameter Estimation</a></li>
+<li class="chapter" data-level="4" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>4</b> Example Models</a></li>
+<li class="chapter" data-level="5" data-path="examples.html"><a href="examples.html"><i class="fa fa-check"></i><b>5</b> Examples</a></li>
+<li class="chapter" data-level="6" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>6</b> Stan Functions</a><ul>
+<li class="chapter" data-level="6.1" data-path="stan-functions.html"><a href="stan-functions.html#misc"><i class="fa fa-check"></i><b>6.1</b> Misc</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="stan-functions.html"><a href="stan-functions.html#make_symmetric_matrix"><i class="fa fa-check"></i><b>6.1.1</b> make_symmetric_matrix</a></li>
+<li class="chapter" data-level="6.1.2" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_colwise"><i class="fa fa-check"></i><b>6.1.2</b> to_matrix_colwise</a></li>
+<li class="chapter" data-level="6.1.3" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>6.1.3</b> to_matrix_rowwise</a></li>
+<li class="chapter" data-level="6.1.4" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_colwise"><i class="fa fa-check"></i><b>6.1.4</b> to_vector_colwise</a></li>
+<li class="chapter" data-level="6.1.5" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_rowwise"><i class="fa fa-check"></i><b>6.1.5</b> to_vector_rowwise</a></li>
+</ul></li>
+<li class="chapter" data-level="6.2" data-path="stan-functions.html"><a href="stan-functions.html#filtering"><i class="fa fa-check"></i><b>6.2</b> Filtering</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>7</b> Other Software</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="stan-functions" class="section level1">
+<h1><span class="header-section-number">Chapter 6</span> Stan Functions</h1>
+<div id="misc" class="section level2">
+<h2><span class="header-section-number">6.1</span> Misc</h2>
+<div id="make_symmetric_matrix" class="section level3">
+<h3><span class="header-section-number">6.1.1</span> make_symmetric_matrix</h3>
+<pre><code>int make_symmetric_matrix(matrix x)</code></pre>
+<p>Ensure a matrix is symmetric. This returns <span class="math inline">\(0.5 * (x + x&#39;)\)</span>.</p>
+</div>
+<div id="to_matrix_colwise" class="section level3">
+<h3><span class="header-section-number">6.1.2</span> to_matrix_colwise</h3>
+<pre><code>matrix to_matrix_colwise(vector v, int r, int c)</code></pre>
+<p>Return a <span class="math inline">\(r \times c\)</span> matrix from a vector <span class="math inline">\(v\)</span> with <span class="math inline">\(r \times c\)</span>. This function assumes that elements in the vector are column-major.</p>
+</div>
+<div id="to_matrix_rowwise" class="section level3">
+<h3><span class="header-section-number">6.1.3</span> to_matrix_rowwise</h3>
+<pre><code>matrix to_matrix_rowwise(vector v, int r, int c)</code></pre>
+<p>Return a <span class="math inline">\(r \times c\)</span> matrix from a length <span class="math inline">\(r c\)</span> vector <span class="math inline">\(v\)</span>. This function assumes that elements in the vector are row-major.</p>
+</div>
+<div id="to_vector_colwise" class="section level3">
+<h3><span class="header-section-number">6.1.4</span> to_vector_colwise</h3>
+<pre><code>vector to_vector_colwise(matrix x)</code></pre>
+<p>Return a lengths <span class="math inline">\(r c\)</span> vector from a length <span class="math inline">\(r \times c\)</span> matrix <span class="math inline">\(x\)</span>. This function fills in elements column-major.</p>
+</div>
+<div id="to_vector_rowwise" class="section level3">
+<h3><span class="header-section-number">6.1.5</span> to_vector_rowwise</h3>
+<pre><code>vector to_vector_rowwise(matrix x)</code></pre>
+<p>Return a length <span class="math inline">\(r c\)</span> vector from a <span class="math inline">\(r \times c\)</span> matrix <span class="math inline">\(x\)</span>. This function fills in elements row-major.</p>
+</div>
+</div>
+<div id="filtering" class="section level2">
+<h2><span class="header-section-number">6.2</span> Filtering</h2>
+<pre><code>matrix ssm_filter_predict_obs(vector y, matrix Z, matrix H, vector a, matrix P)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_t = \E(\alpha_t | Y_{t - 1})\)</span> and <span class="math inline">\(\mat{P}_t = \Var(\alpha_t | Y_{t - 1})\)</span>, calculate the one-step ahead forecast error <span class="math inline">\(v_t = y_t - \E(y_t | Y_{t - 1})\)</span> and the precision of the forecast, <span class="math inline">\(F^{-1}_t = \Var(y_t | Y_{t - 1})^{-1}\)</span>.</p>
+<p>This returns a <span class="math inline">\(p \times (p + 1)\)</span> matrix containing both <span class="math inline">\(v_t\)</span> and <span class="math inline">\(F^{-1}\)</span>, <span class="math display">\[
+\begin{bmatrix}
+v_t &amp; F^{-1}_t
+\end{bmatrix} =
+\begin{bmatrix}
+v_{t,1} &amp; F^{-1}_{t, 1, 1} &amp;  F^{-1}_{t, 1, 2} &amp; \cdots &amp; F^{-1}_{t, 1, p} \\
+v_{t,2} &amp; F^{-1}_{t, 2, 1} &amp;  F^{-1}_{t, 2, 2} &amp; \cdots &amp; F^{-1}_{t, 2, p} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+v_{t,p} &amp; F^{-1}_{t, p, 1} &amp;  F^{-1}_{t, p, 2} &amp; \cdots &amp; F^{-1}_{t, p, p}
+\end{bmatrix} .
+\]</span></p>
+<pre><code>matrix ssm_filter_update(...)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_t = \E(\alpha_t | Y_{t - 1})\)</span> and <span class="math inline">\(\mat{P}_t = \Var(\alpha_t | Y_{t - 1})\)</span>, the one-step ahead forecast error <span class="math inline">\(v_t = y_t - \E(y_t | Y_{t - 1})\)</span>, and the precision of the forecast, <span class="math inline">\(F^{-1}_t = \Var(y_t | Y_{t - 1})^{-1}\)</span>, calculate the filtered state <span class="math inline">\(a_{t| t} = \E(\alpha_t | Y_t)\)</span> and <span class="math inline">\(P_{t | t} = \Var(\alpha_t | Y_t)\)</span>.</p>
+<p>Returns a <span class="math inline">\(m \times (1 + m)\)</span> matrix with <span class="math inline">\(a_{t|t}\)</span> and <span class="math inline">\(P_{t|t}\)</span>, <span class="math display">\[
+\begin{bmatrix}
+a_{t|t} &amp; P_{t|t}
+\end{bmatrix} =
+\begin{bmatrix}
+a_{t|t,1} &amp; P_{t|t, 1, 1} &amp;  P_{t|t, 1, 2} &amp; \cdots &amp; P_{t|t, 1, m} \\
+a_{t|t,2} &amp; P_{t|t, 2, 1} &amp;  P_{t|t, 2, 2} &amp; \cdots &amp; P_{t|t, 2, m} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+a_{t|t,m} &amp; P_{t|t, m, 1} &amp;  P_{t|t, m, 2} &amp; \cdots &amp; P_{t|t, m, m}
+\end{bmatrix} .
+\]</span></p>
+<pre><code>matrix ssm_filter_predict_state(...)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_t = \E(\alpha_t | Y_{t - 1})\)</span> and <span class="math inline">\(\mat{P}_t = \Var(\alpha_t | Y_{t - 1})\)</span>, the one-step ahead forecast error <span class="math inline">\(v_t = y_t - \E(y_t | Y_{t - 1})\)</span>, and the precision of the forecast, <span class="math inline">\(F^{-1}_t = \Var(y_t | Y_{t - 1})^{-1}\)</span>, predict the state in the next period, <span class="math inline">\(a_{t+ t} = \E(\alpha_{t + 1}| Y_t)\)</span> and <span class="math inline">\(P_{t + t1} = \Var(\alpha_{t + 1} | Y_t)\)</span>.</p>
+<p>Returns a <span class="math inline">\(p \times (1 + p)\)</span> matrix with <span class="math inline">\(a_{t + 1}\)</span> and <span class="math inline">\(P_{t + 1}\)</span>, <span class="math display">\[
+\begin{bmatrix}
+a_{t + 1} &amp; P_{t + 1}
+\end{bmatrix} =
+\begin{bmatrix}
+a_{t + 1,1} &amp; P_{t + 1, 1, 1} &amp;  P_{t + 1, 1, 2} &amp; \cdots &amp; P_{t + 1, 1, m} \\
+a_{t + 1,2} &amp; P_{t + 1, 2, 1} &amp;  P_{t + 1, 2, 2} &amp; \cdots &amp; P_{t + 1, 2, m} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+a_{t + 1,m} &amp; P_{t + 1, m, 1} &amp;  P_{t + 1, m, 2} &amp; \cdots &amp; P_{t + 1, m, m}
+\end{bmatrix} .
+\]</span></p>
+<pre><code>matrix ssm_filter_predict_state_2(...)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_{t|t} = \E(\alpha_t | Y_{t})\)</span> and <span class="math inline">\(\mat{P}_{t|t} = \Var(\alpha_t | Y_{t |t})\)</span>, predict the state in the next period, <span class="math inline">\(a_{t+ t} = \E(\alpha_{t + 1}| Y_t)\)</span> and <span class="math inline">\(P_{t + t1} = \Var(\alpha_{t + 1} | Y_t)\)</span>.</p>
+<p>Returns a <span class="math inline">\(p \times (1 + p)\)</span> matrix with <span class="math inline">\(a_{t|t}\)</span> and <span class="math inline">\(P_{t|t}\)</span>, in the same format as <code>ssm_filter_predict_state_2</code>.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="examples.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="other-software.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssfunctions.Rmd",
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

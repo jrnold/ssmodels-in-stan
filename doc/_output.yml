@@ -1,0 +1,22 @@
+bookdown::gitbook:
+  css: style.css
+  includes:
+    in_header: in_header.html
+    before_body: before_body.html
+    after_body: after_body.html
+  config:
+    toc:
+      before: |
+        <li><a href="./">State Space Models in Stan</a></li>
+      after: |
+        <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+    edit:
+      link: https://github.com/jrnold/ssmodels-in-stan/edit/master/%s
+bookdown::pdf_book:
+  includes:
+    in_header: in_header.tex
+    before_body: before_body.tex
+    after_body:  after_body.tex
+  latex_engine: xelatex
+  citation_package: natbib
+bookdown::epub_book: default

@@ -1,3 +1,5 @@
+# Stan Functions
+
 ## Misc
 
 ### make_symmetric_matrix

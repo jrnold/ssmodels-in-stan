@@ -1,0 +1,10 @@
+book_filename: "ssmodels-in-stan"
+chapter_name: "Chapter "
+rmd_files:
+  - "index.Rmd"
+  - "ssmodels.Rmd"
+  - "estimation.Rmd"
+  - "models.Rmd"
+  - "examples.Rmd"
+  - "ssfunctions.Rmd"
+  - "software.Rmd"

@@ -1,0 +1,17 @@
+# Examples
+
+- @PetrisPetrone2010
+  - Nile: local level
+  - UKGas: Structural: local trend + seasonal factor
+  - Industrial Production of consumer goods: local trend, outliers and structural breaks.
+
+- @PetrisPetrone2010
+
+  - Temperuratures: dlm dynamic factor
+  - Nile: local level
+
+- @Tussell2011
+- @CommandeurKopmans
+- @DurbinKoopmans
+- KFAS
+- @ShumwayStoffer2006

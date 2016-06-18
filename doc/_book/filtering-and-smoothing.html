@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-06-17">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="the-linear-state-space-model.html">
+<link rel="next" href="parameter-estimation.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#filtering"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#smoothing"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#updating-smoothed-states"><i class="fa fa-check"></i><b>3.2.2</b> Updating Smoothed States</a></li>
+<li class="chapter" data-level="3.2.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.4</b> Fast state smoothing</a></li>
+<li class="chapter" data-level="3.2.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#classical-state-smoothing"><i class="fa fa-check"></i><b>3.2.5</b> Classical state smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#simulation-smoothers"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#mean-corrections"><i class="fa fa-check"></i><b>3.3.1</b> Mean corrections</a></li>
+<li class="chapter" data-level="3.3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forward-filter-backwards-smoother"><i class="fa fa-check"></i><b>3.3.3</b> Forward-Filter Backwards smoother</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#missing-observations"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forecasting-matrices"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>4</b> Parameter Estimation</a><ul>
+<li class="chapter" data-level="4.1" data-path="parameter-estimation.html"><a href="parameter-estimation.html#log-log-likelihood"><i class="fa fa-check"></i><b>4.1</b> Log log-likelihood</a></li>
+<li class="chapter" data-level="4.2" data-path="parameter-estimation.html"><a href="parameter-estimation.html#integrated-sampler"><i class="fa fa-check"></i><b>4.2</b> Integrated Sampler</a></li>
+<li class="chapter" data-level="4.3" data-path="parameter-estimation.html"><a href="parameter-estimation.html#diagnostic-checking"><i class="fa fa-check"></i><b>4.3</b> Diagnostic Checking</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a><ul>
+<li class="chapter" data-level="5.0.1" data-path="example-models.html"><a href="example-models.html#polynomial-trend-models"><i class="fa fa-check"></i><b>5.0.1</b> Polynomial Trend Models</a></li>
+<li class="chapter" data-level="5.0.2" data-path="example-models.html"><a href="example-models.html#seasonal-factor-models"><i class="fa fa-check"></i><b>5.0.2</b> Seasonal Factor Models</a></li>
+<li class="chapter" data-level="5.0.3" data-path="example-models.html"><a href="example-models.html#fourier-form-seasonal-models"><i class="fa fa-check"></i><b>5.0.3</b> Fourier Form Seasonal Models</a></li>
+<li class="chapter" data-level="5.0.4" data-path="example-models.html"><a href="example-models.html#arma-and-arima-models"><i class="fa fa-check"></i><b>5.0.4</b> ARMA and ARIMA Models</a></li>
+<li class="chapter" data-level="5.1" data-path="example-models.html"><a href="example-models.html#examples"><i class="fa fa-check"></i><b>5.1</b> Examples</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="placeholder.html"><a href="placeholder.html"><i class="fa fa-check"></i><b>6</b> Placeholder</a></li>
+<li class="chapter" data-level="7" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>7</b> Other Software</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="filtering-and-smoothing" class="section level1">
+<h1><span class="header-section-number">Chapter 3</span> Filtering and Smoothing</h1>
+<div id="filtering" class="section level2">
+<h2><span class="header-section-number">3.1</span> Filtering</h2>
+<p>From <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.3)</span></p>
+<p><span class="math display">\[
+\begin{aligned}[t]
+\vec{v}_t &amp;= \vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t, \\
+\mat{F}_t &amp;= \mat{Z}_t \mat{P}_t \mat{Z}_t\T + \mat{H}_t, \\
+\vec{a}_{t|t} &amp;= \vec{a}_t + \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} v_t , \\
+\mat{P}_{t|t} &amp;= \mat{P}_t - \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t \mat{P}_t , \\
+\vec{a}_{t + 1} &amp;= \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t + \vec{c}_t \\
+&amp;= \mat{T}_{t} \vec{a}_{t|t} + \vec{c}_t, \\
+\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t (\mat{T}_t - \mat{K}_t \mat{Z}_t)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T \\
+&amp; = \mat{T}_t \mat{P}_{t|t} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
+\end{aligned}
+\]</span> The vector <span class="math inline">\(\vec{v}_t\)</span> are the *one-step ahead forecast errors$.</p>
+<p>The matrix <span class="math inline">\(\mat{K}_t\)</span> is called the <em>Kalman gain</em>, <span class="math display">\[
+\mat{K}_t = \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} .
+\]</span> This gives, <span class="math display">\[
+\begin{aligned}[t]
+\vec{a}_{t + 1} &amp;= \mat{T} \vec{a}_{t|t}  = \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t , \\
+\vec{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \left( \mat{T}_t - \mat{K}_t \mat{Z}_t \right)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T .
+\end{aligned}
+\]</span> These two equations are called the <em>prediction step</em>. The steps for <span class="math inline">\(\vec{a}_{t|t}\)</span> and <span class="math inline">\(\mat{P}_{t|t}\)</span> are called the <em>updating step</em>. <span class="math display">\[
+\begin{aligned}[t]
+\vec{a}_t &amp;= \E(\vec{\alpha}_t | y_{1, \dots, t - 1}), &amp;
+\vec{P}_t &amp;= \Var(\vec{\alpha}_t | y_{1, \dots, t - 1}), \\
+\vec{a}_{t|t} &amp;= \E(\vec{\alpha}_t | y_{1, \dots, t}), &amp;
+\vec{P}_{t|t} &amp;= \Var(\vec{\alpha}_t | y_{1, \dots, t}) .
+\end{aligned}
+\]</span></p>
+<table>
+<caption>Dimensions of matrices and vectors in the SSM</caption>
+<thead>
+<tr class="header">
+<th align="left">matrix/vector</th>
+<th align="left">dimension</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{v}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\vec{a}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{a}_{t|t}\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{F}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times p\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{K}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times p\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{P}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{P}_{t|T}\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\vec{x}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{L}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>See <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.3.4)</span>: For a time-invariant state space model, the Kalman recursion for <span class="math inline">\(\mat{P}_{t + 1}\)</span> converges to a constant matrix <span class="math inline">\(\bar{\mat{P}}\)</span>, <span class="math display">\[
+\bar{\mat{P}} = \mat{T} \bar{\mat{P}} \mat{T}\T - \mat{T} \bar{\mat{P}} \mat{Z}\T \bar{\mat{F}}^{-1} \mat{Z} \bar{\mat{P}} \mat{T}\T + \mat{R} \mat{Q} \mat{R}\T ,
+\]</span> where <span class="math inline">\(\bar{\mat{F}} = \mat{Z} \bar{\mat{P}} \mat{Z}\T + \mat{H}\)</span>.</p>
+<p>See <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.3.5)</span>: The <em>state estimation error</em> is, <span class="math display">\[
+\vec{x}_t = \vec{\alpha}_t - \vec{a}_t,
+\]</span> where <span class="math inline">\(\Var(\vec{x}_t) = \mat{P}_t\)</span>. The <span class="math inline">\(v_t\)</span> are sometimes called <em>innovations</em>, since they are the part of <span class="math inline">\(\vec{y}_t\)</span> not predicted from the past. The innovation analog of the state space model is <span class="math display">\[
+\begin{aligned}[t]
+\vec{v}_t &amp;= \mat{Z}_t \vec{x}_t + \vec{\varepsilon}_t ,  \\
+\vec{x}_{t + 1} &amp;= \mat{L} \vec{x}_{t} + \mat{R}_t \vec{\eta}_t - \mat{K}_t \vec{\varepsilon}_t , \\
+\mat{K}_t &amp;= \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} , \\
+\mat{L}_t &amp;= \mat{T}_t - \mat{K}_t \mat{Z}_t ,
+\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \mat{L}_t\T +  \mat{R}_t \mat{Q}_t \mat{R}_T\T  .
+\end{aligned}
+\]</span> These recursions allow for a simpler derivation of <span class="math inline">\(\mat{P}_{t + 1}\)</span>, and are useful for the smoothing recursions. Moreover, the one-step ahead forecast errors are indendendent, which allows for a simple derivation of the log-likelihood.</p>
+<p>Alternative methods <strong>TODO</strong></p>
+<ul>
+<li>square-root filtering</li>
+<li>precision filters</li>
+<li>sequential filtering</li>
+</ul>
+</div>
+<div id="smoothing" class="section level2">
+<h2><span class="header-section-number">3.2</span> Smoothing</h2>
+<table>
+<caption>Dimensions of vectors and matrices used in smoothing recursions</caption>
+<thead>
+<tr class="header">
+<th align="left">Vector/Matrix</th>
+<th align="left">Dimension</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{r}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\vec{\vec{\alpha}}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{u}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\hat{\vec{\varepsilon}}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\hat{\vec{\eta}}_t\)</span></td>
+<td align="left"><span class="math inline">\(r \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{N}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{V}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{D}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times p\)</span></td>
+</tr>
+</tbody>
+</table>
+<div id="state-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> State Smoothing</h3>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.4.2)</span></p>
+<p>Smoothing calculates the estimate of the state using all observations, <span class="math inline">\(\hat{\vec{\alpha}} = \E(\vec{\alpha}_t | \mat{Y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha} | \mat{Y}_n)\)</span>.</p>
+<p>Smoother in Eq 4.44. Let <span class="math inline">\(\hat{\vec{a}} = \E(\alpha_t | \vec{y}_1, \dots \vec{y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_1, \dots \vec{y}_n)\)</span>, then <span class="math display">\[
+\begin{aligned}[t]
+\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , \\
+\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t, \\
+\hat{\vec{\alpha}}_t &amp;= \vec{a}_t + \mat{P}_t \vec{r}_{t - 1} , \\
+\mat{V}_t &amp;= \mat{P}_t - \mat{P}_t \mat{N}_{t - 1} \mat{P}_t ,
+\end{aligned}
+\]</span> for <span class="math inline">\(t = n, \dots, 1\)</span>, with <span class="math inline">\(\vec{r}_n = \vec{0}\)</span>, and <span class="math inline">\(\mat{N}_t = \mat{0}\)</span>.</p>
+<p>During the filtering pass <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span>, and <span class="math inline">\(\mat{P}_t\)</span> for <span class="math inline">\(t = 1, \dots, n\)</span> need to be stored. Alternatively, <span class="math inline">\(\vec{a}_t\)</span> and <span class="math inline">\(\mat{P}_t\)</span> only can be stored, and <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span> recalculated on the fly. However, since the dimensions of <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span> are usually small relative to <span class="math inline">\(\vec{a}_t\)</span> and <span class="math inline">\(\mat{P}_t\)</span> is is usually worth storing them.</p>
+</div>
+<div id="updating-smoothed-states" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> Updating Smoothed States</h3>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.4.5)</span></p>
+<p>If a new observation arises, existing smoothed estimates of the states can be updated without having to run the full state smoother again.</p>
+<p>Suppose a new obervation, <span class="math inline">\(\vec{y}_{n + 1}\)</span>, is available. We want to calculate <span class="math inline">\(\hat{\vec{\alpha}}_{t|n + 1} = \E(\vec{\alpha} | \mat{Y}_{n + 1})\)</span> and <span class="math inline">\(\mat{V}_{t|n + 1} = \Var(\vec{\alpha}) | \mat{Y}_{n + 1}\)</span>, when we already have <span class="math inline">\(\hat{\vec{\alpha}}_{t|n} = \E(\vec{\alpha} | \mat{Y}_{n})\)</span> and <span class="math inline">\(\mat{V}_{t|n} = \Var(\vec{\alpha} | \mat{Y}_{n})\)</span> from running smoother when <span class="math inline">\(\mat{Y}_n\)</span> was available.</p>
+<p>Let <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T \cdots \mat{L}_n\T\)</span> with <span class="math inline">\(\vec{b}_{t|n + 1} = \mat{I}_m\)</span>. Then <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T b_{t+1|n+1}\)</span> for <span class="math inline">\(t = n, \dots, 1\)</span>. Then the states can be updated as, <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\alpha}}_{t|n + 1} &amp;= \hat{\vec{a}}_{t|n} + \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \vec{v}_{n + 1} , \\
+\mat{V}_{t|n + 1} &amp;= \mat{V}_{t|n} - \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \mat{Z}_{n + 1} \vec{b}_{t|n + 1}\T \mat{P}_t ,
+\end{aligned}
+\]</span> for <span class="math inline">\(n = t, t + 1, \dots\)</span>, with <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\alpha}}_{n|n} &amp;= \vec{a}_n + \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \vec{v}_n, \\
+\mat{V}_{n|n} &amp;= \mat{P}_n - \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \mat{Z}_n \mat{P}_n ,
+\end{aligned}
+\]</span> The values of <span class="math inline">\(\mat{P}_t\)</span>, <span class="math inline">\(\mat{L}_t\)</span>, <span class="math inline">\(\mat{F}_{n + 1}\)</span>, and <span class="math inline">\(\vec{v}_{n + 1}\)</span> are available from the Kalman filter.</p>
+</div>
+<div id="disturbance-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Disturbance smoothing</h3>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.5)</span></p>
+<p>Disturbance smoothing calculates the smoothed estimates, <span class="math inline">\(\hat{\vec{\varepsilon}}_t = \E(\vec{\varepsilon} | \mat{Y}_n)\)</span> and <span class="math inline">\(\hat{\vec{\eta}} = \E(\vec{\eta}_t | \mat{Y}_n)\)</span>.</p>
+<p><span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\varepsilon}}_t &amp;= \mat{H}_t (\mat{F}^{-1} \vec{v}_t - \mat{K}_t\T \vec{r}_t) , &amp;
+\Var(\vec{\varepsilon}_t | \mat{Y}_n) &amp;= \mat{H}_t - \mat{H}_t (\mat{F}_t^{-1} + \mat{K}_t\T \mat{N}_t \mat{K}_t) \mat{H}_t , \\
+\hat{\vec{\eta}}_t &amp;= \mat{Q}_t \mat{R}_t\T \vec{r}_t , &amp;
+\Var(\vec{\eta}_t | \mat{Y}_n) &amp;= \mat{Q}_t - \mat{Q}_t \mat{R}_t\T \mat{N}_t \mat{R}_t \mat{Q}_t , \\
+\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , &amp;
+\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t
+\end{aligned}
+\]</span></p>
+<p>Alternatively, these equations can be rewritten as, <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\varepsilon}}_t &amp;= \mat{H}_t \vec{u}_t , &amp;
+\Var(\vec{\varepsilon}_t | \mat{Y}_n) &amp;= \mat{H}_t - \mat{H}_t \mat{D}_t \mat{H}_t , \\
+\hat{\vec{\eta}}_t &amp;= \mat{Q}_t \mat{R}_t\T \vec{r}_t , &amp;
+\Var(\vec{\eta}_t | \mat{Y}_n) &amp;= \mat{Q}_t - \mat{Q}_t \mat{R}_t\T \mat{N}_t \mat{R}_t \mat{Q}_t , \\
+\vec{u}_t &amp;= \mat{F}^{-1} \vec{v}_t - \mat{K}_t\T \vec{r}_t , &amp;
+\mat{D}_t &amp;= \mat{F}_t^{-1} + \mat{K}_t\T \mat{N}_t \mat{K}_t , \\
+\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \vec{u}_t + \mat{T}_t\T \vec{r}_t , &amp;
+\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{D}_t \mat{Z}_t + \mat{T}_t\T \mat{N}_t \mat{T}_t - \mat{Z}_t\T \mat{K}_t\T \mat{N}_t \mat{T}_t - \mat{T}_t\T \mat{N}_t \mat{K}_t \mat{Z}_t .
+\end{aligned}
+\]</span> This reformulation can be computationally useful since it relies on the system matrices <span class="math inline">\(\mat{Z}_t\)</span> and <span class="math inline">\(\mat{T}_t\)</span> which are often sparse.</p>
+<p>The smoothing error <span class="math inline">\(\vec{u}_t\)</span> and <span class="math inline">\(\vec{r}_t\)</span> are important in their own right. The vector <span class="math inline">\(\vec{r}_t\)</span> is the scaled smoothed estimator of <span class="math inline">\(\vec{\eta}_t\)</span>.</p>
+<p>The disturbance smoothing recursions require only <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{f}_t\)</span>, and <span class="math inline">\(\mat{K}_t\)</span> from the Kalman filter. Unlike the state smoother, they do not require the vector <span class="math inline">\(\vec{a}_t\)</span> or matrix <span class="math inline">\(\mat{P}_t\)</span>.</p>
+</div>
+<div id="fast-state-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.4</span> Fast state smoothing</h3>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.6.2)</span></p>
+<p>If the variances of the states do not need to be calculated, then a faster smoothing algorithm can be used (Koopman 1993). The fast state smoother is defiend as, <span class="math display">\[
+\hat{\vec{\alpha}}_t = \mat{T}_t \hat{\vec{\alpha}}_t + \mat{R}_t \mat{Q}_t \mat{R}_t\T \vec{r}_t ,
+\]</span> for <span class="math inline">\(t = 1, \dots, n\)</span>. This is initialized via, <span class="math display">\[
+\hat{\vec{\alpha}}_1 = \vec{a}_1 + \mat{P}_1 \vec{r}_0 .
+\]</span> Thus the smoother is run, but only calculating <span class="math inline">\(\vec{r}_n, \dots, \vec{r}_0\)</span>. Then, <span class="math inline">\(\hat{\vec{\alpha}}_1, \dots \hat{\vec{\alpha}}_t\)</span> are calculated using the above equation.</p>
+</div>
+<div id="classical-state-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.5</span> Classical state smoothing</h3>
+<p>See <span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.6.1)</span></p>
+<p>The original state smoothing algorithm from Anderson and Moore (1979) is <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\alpha}}_t &amp;= \vec{a}_{t|t} + \mat{P}_{t|t} \mat{T}_t\T \mat{P}_{t + 1}^{-1}(\hat{\vec{\alpha}}_{t + 1} - \vec{a}_{t + 1}) .
+\end{aligned}
+\]</span> Note that <span class="math inline">\(\mat{T} \mat{P}_{t|t} = \mat{L}_t \mat{P}_t\)</span>. Relative to the other state smoothing algorithm the classical smoother is more computationally burdensome because it requires inverting <span class="math inline">\(\mat{P}_{t + 1}\)</span>. The other state smoother only requires inverting <span class="math inline">\(\mat{F}_t\)</span>, but that has already been inverted in the filtering pass.</p>
+<p>&lt;– ## Jacknife and Deleted observations</p>
+<p>Results in West and Harrison (1997), p. 104 and such. –&gt;</p>
+</div>
+</div>
+<div id="simulation-smoothers" class="section level2">
+<h2><span class="header-section-number">3.3</span> Simulation smoothers</h2>
+<div id="mean-corrections" class="section level3">
+<h3><span class="header-section-number">3.3.1</span> Mean corrections</h3>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.9)</span></p>
+<p>Simulation smoother by mean corrections. Ch. 4.9.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div id="de-jong-shephard-method" class="section level3">
+<h3><span class="header-section-number">3.3.2</span> de Jong-Shephard method</h3>
+<p>While the mean-corrections method usually works, it may fail in some cases due to imposed ill-defined variance matrices (see Jungbacker and Koopman 2007, sec 1). These recursions were developed in de Jong and Shephard (1995),</p>
+<p><strong>TODO</strong></p>
+</div>
+<div id="forward-filter-backwards-smoother" class="section level3">
+<h3><span class="header-section-number">3.3.3</span> Forward-Filter Backwards smoother</h3>
+<p><strong>TODO</strong></p>
+</div>
+</div>
+<div id="missing-observations" class="section level2">
+<h2><span class="header-section-number">3.4</span> Missing observations</h2>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.10)</span></p>
+<p>When all observations at time <span class="math inline">\(t\)</span> are missing, the filtering recursions become, <span class="math display">\[
+\begin{aligned}[t]
+\vec{a}_{t|t} &amp;= \vec{a}_t , \\
+\mat{P}_{t|t} &amp;= \mat{P}_t , \\
+\vec{a}_{t + 1} &amp;= \mat{T}_t \vec{a}_t + \vec{c}_t \\
+\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
+\end{aligned}
+\]</span> This is equivalent to setting <span class="math inline">\(\mat{Z}_t = \mat{0}\)</span> (implying also that <span class="math inline">\(\mat{K}_t = \mat{0}\)</span>) in the filtering equations. For smoothing, also replace <span class="math inline">\(\mat{Z}_t = \mat{0}\)</span>, <span class="math display">\[
+\begin{aligned}[t]
+\vec{r}_{t - 1} &amp;= \mat{T}_t\T \vec{r}_t , \\
+\mat{N}_{t - 1} &amp;= \mat{T}_t\T \mat{N}_t \mat{T}_t,
+\end{aligned}
+\]</span></p>
+<p>When some, but not all observations are missing, then replace the observation equation by, <span class="math display">\[
+\begin{aligned}[t]
+\vec{y}^*_t &amp;= \mat{Z}^*_t \vec{\alpha}_t + \vec{\varepsilon}_t^*, &amp; \vec{\varepsilon}_t^* &amp;\sim N(\vec{0}, \mat{H}_t^*),
+\end{aligned}
+\]</span> where, <span class="math display">\[
+\begin{aligned}[t]
+\vec{y}^*_t &amp;= \mat{W}_t \vec{y}_t, \\
+\mat{Z}^* &amp;= \mat{W}_t \mat{Z}_t , \\
+\vec{\varepsilon}_t &amp;= \mat{W}_t \vec{\varepsilon}_t , \\
+\mat{H}^*_t &amp;= \mat{W}_t \mat{H}_t \mat{W}_t\T ,
+\end{aligned}
+\]</span> and <span class="math inline">\(\mat{W}_t\)</span> is a selection matrix to select non-missing values. In smoothing the missing elements are estimated by the appropriate elements of <span class="math inline">\(\mat{Z}_t \hat{\vec{alpha}}_t\)</span>, where <span class="math inline">\(\hat{\vec{\alpha}}_t\)</span> is the smoothed state.</p>
+</div>
+<div id="forecasting-matrices" class="section level2">
+<h2><span class="header-section-number">3.5</span> Forecasting matrices</h2>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="DurbinKoopman2012"><strong>???</strong></span>, Sec 4.11)</span></p>
+<p>Forecasting future observations are the same as treating the future observations as missing, <span class="math display">\[
+\begin{aligned}[t]
+\bar{\vec{y}}_{n + j} &amp;= \mat{Z}_{n + j} \bar{\vec{a}}_{n + j} \\
+\bar{\mat{F}}_{n + j} &amp;= \mat{Z}_{n + j} \bar{\mat{P}}_{n + j} \mat{Z}_{n + j}\T + \mat{H}_{n + j} .
+\end{aligned}
+\]</span></p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="the-linear-state-space-model.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="parameter-estimation.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssmodels.Rmd",
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

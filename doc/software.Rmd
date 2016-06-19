@@ -7,6 +7,9 @@
 - dlm
 - KFAS
 - The function `StructTS` is included in the recommended **stats** package.
+- dlmodeler - provides a unified interface to multiple packages
+- rucm: structural time series
+- MARSS - maximum likelihood estimation of a large glass of Guassian state space models with an EM-algorithm
 
 
 

@@ -12,3 +12,4 @@ auto/
 /doc/*.pdf
 /default.bib
 *.bak
+.Rproj.user

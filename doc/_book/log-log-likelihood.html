@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="parameter-estimation.html">
+<link rel="next" href="integrated-sampler.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,29 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="log-log-likelihood" class="section level2">
+<h2><span class="header-section-number">5.1</span> Log log-likelihood</h2>
+<p>If the the system matrices and initial conditions are known, the log likelihood is <span class="math display">\[
+\begin{aligned}[t]
+\log L(\mat{Y}_n) &amp;= \log p(\vec{y}_1, \dots, \vec{y}_n) = \sum_{t = 1}^n \log p(\vec{y}_t | \mat{Y}_{t - 1}) \\
+&amp;= - \frac{np}{2} \log 2 \pi - \frac{1}{2} \sum_{t = 1}^n \left( \log \left| \mat{F}_t \right| + \vec{v}\T \mat{F}_t^{-1} \vec{v}_t \right)
+\end{aligned} .
+\]</span> The log-likelihood only requires running the filter to calculate <span class="math inline">\(\mat{F}_t\)</span> and <span class="math inline">\(\mat{V}_t\)</span>.</p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec. 7.2.1)</span></p>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="parameter-estimation.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="integrated-sampler.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

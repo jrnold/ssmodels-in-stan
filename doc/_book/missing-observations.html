@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="simulation-smoothers.html">
+<link rel="next" href="forecasting-matrices.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,48 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="missing-observations" class="section level2">
+<h2><span class="header-section-number">3.4</span> Missing observations</h2>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.10)</span></p>
+<p>When all observations at time <span class="math inline">\(t\)</span> are missing, the filtering recursions become, <span class="math display">\[
+\begin{aligned}[t]
+\vec{a}_{t|t} &amp;= \vec{a}_t , \\
+\mat{P}_{t|t} &amp;= \mat{P}_t , \\
+\vec{a}_{t + 1} &amp;= \mat{T}_t \vec{a}_t + \vec{c}_t \\
+\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
+\end{aligned}
+\]</span> This is equivalent to setting <span class="math inline">\(\mat{Z}_t = \mat{0}\)</span> (implying also that <span class="math inline">\(\mat{K}_t = \mat{0}\)</span>) in the filtering equations. For smoothing, also replace <span class="math inline">\(\mat{Z}_t = \mat{0}\)</span>, <span class="math display">\[
+\begin{aligned}[t]
+\vec{r}_{t - 1} &amp;= \mat{T}_t\T \vec{r}_t , \\
+\mat{N}_{t - 1} &amp;= \mat{T}_t\T \mat{N}_t \mat{T}_t,
+\end{aligned}
+\]</span></p>
+<p>When some, but not all observations are missing, then replace the observation equation by, <span class="math display">\[
+\begin{aligned}[t]
+\vec{y}^*_t &amp;= \mat{Z}^*_t \vec{\alpha}_t + \vec{\varepsilon}_t^*, &amp; \vec{\varepsilon}_t^* &amp;\sim N(\vec{0}, \mat{H}_t^*),
+\end{aligned}
+\]</span> where, <span class="math display">\[
+\begin{aligned}[t]
+\vec{y}^*_t &amp;= \mat{W}_t \vec{y}_t, \\
+\mat{Z}^* &amp;= \mat{W}_t \mat{Z}_t , \\
+\vec{\varepsilon}_t &amp;= \mat{W}_t \vec{\varepsilon}_t , \\
+\mat{H}^*_t &amp;= \mat{W}_t \mat{H}_t \mat{W}_t\T ,
+\end{aligned}
+\]</span> and <span class="math inline">\(\mat{W}_t\)</span> is a selection matrix to select non-missing values. In smoothing the missing elements are estimated by the appropriate elements of <span class="math inline">\(\mat{Z}_t \hat{\vec{alpha}}_t\)</span>, where <span class="math inline">\(\hat{\vec{\alpha}}_t\)</span> is the smoothed state.</p>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="simulation-smoothers.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="forecasting-matrices.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +297,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssmodels.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="stan-functions.html">
+<link rel="next" href="filtering-2.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,41 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="misc" class="section level2">
+<h2><span class="header-section-number">8.1</span> Misc</h2>
+<div id="make_symmetric_matrix" class="section level3">
+<h3><span class="header-section-number">8.1.1</span> make_symmetric_matrix</h3>
+<pre><code>int make_symmetric_matrix(matrix x)</code></pre>
+<p>Ensure a matrix is symmetric. This returns <span class="math inline">\(0.5 * (x + x&#39;)\)</span>.</p>
+</div>
+<div id="to_matrix_colwise" class="section level3">
+<h3><span class="header-section-number">8.1.2</span> to_matrix_colwise</h3>
+<pre><code>matrix to_matrix_colwise(vector v, int r, int c)</code></pre>
+<p>Return a <span class="math inline">\(r \times c\)</span> matrix from a vector <span class="math inline">\(v\)</span> with <span class="math inline">\(r \times c\)</span>. This function assumes that elements in the vector are column-major.</p>
+</div>
+<div id="to_matrix_rowwise" class="section level3">
+<h3><span class="header-section-number">8.1.3</span> to_matrix_rowwise</h3>
+<pre><code>matrix to_matrix_rowwise(vector v, int r, int c)</code></pre>
+<p>Return a <span class="math inline">\(r \times c\)</span> matrix from a length <span class="math inline">\(r c\)</span> vector <span class="math inline">\(v\)</span>. This function assumes that elements in the vector are row-major.</p>
+</div>
+<div id="to_vector_colwise" class="section level3">
+<h3><span class="header-section-number">8.1.4</span> to_vector_colwise</h3>
+<pre><code>vector to_vector_colwise(matrix x)</code></pre>
+<p>Return a lengths <span class="math inline">\(r c\)</span> vector from a length <span class="math inline">\(r \times c\)</span> matrix <span class="math inline">\(x\)</span>. This function fills in elements column-major.</p>
+</div>
+<div id="to_vector_rowwise" class="section level3">
+<h3><span class="header-section-number">8.1.5</span> to_vector_rowwise</h3>
+<pre><code>vector to_vector_rowwise(matrix x)</code></pre>
+<p>Return a length <span class="math inline">\(r c\)</span> vector from a <span class="math inline">\(r \times c\)</span> matrix <span class="math inline">\(x\)</span>. This function fills in elements row-major.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="stan-functions.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="filtering-2.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +290,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssfunctions.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

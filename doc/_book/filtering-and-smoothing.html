@@ -39,7 +39,7 @@ MathJax.Hub.Config({
   
   
 <link rel="prev" href="the-linear-state-space-model.html">
-<link rel="next" href="parameter-estimation.html">
+<link rel="next" href="filtering.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -57,6 +57,43 @@ MathJax.Hub.Config({
 
 
 
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
@@ -76,6 +113,7 @@ $$
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\diag}{diag}
 
 \newcommand{\mat}[1]{\boldsymbol{#1}}
 \newcommand{\vec}[1]{\boldsymbol{#1}}
@@ -102,50 +140,75 @@ $$
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
 <li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
 <li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
-<li class="chapter" data-level="3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#filtering"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
-<li class="chapter" data-level="3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#smoothing"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
-<li class="chapter" data-level="3.2.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
-<li class="chapter" data-level="3.2.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#updating-smoothed-states"><i class="fa fa-check"></i><b>3.2.2</b> Updating Smoothed States</a></li>
-<li class="chapter" data-level="3.2.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Disturbance smoothing</a></li>
-<li class="chapter" data-level="3.2.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.4</b> Fast state smoothing</a></li>
-<li class="chapter" data-level="3.2.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#classical-state-smoothing"><i class="fa fa-check"></i><b>3.2.5</b> Classical state smoothing</a></li>
+<li class="chapter" data-level="3.1" data-path="filtering.html"><a href="filtering.html"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="smoothing.html"><a href="smoothing.html"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="smoothing.html"><a href="smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="smoothing.html"><a href="smoothing.html#updating-smoothed-states"><i class="fa fa-check"></i><b>3.2.2</b> Updating Smoothed States</a></li>
+<li class="chapter" data-level="3.2.3" data-path="smoothing.html"><a href="smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.4" data-path="smoothing.html"><a href="smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.4</b> Fast state smoothing</a></li>
+<li class="chapter" data-level="3.2.5" data-path="smoothing.html"><a href="smoothing.html#classical-state-smoothing"><i class="fa fa-check"></i><b>3.2.5</b> Classical state smoothing</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#simulation-smoothers"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
-<li class="chapter" data-level="3.3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#mean-corrections"><i class="fa fa-check"></i><b>3.3.1</b> Mean corrections</a></li>
-<li class="chapter" data-level="3.3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
-<li class="chapter" data-level="3.3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forward-filter-backwards-smoother"><i class="fa fa-check"></i><b>3.3.3</b> Forward-Filter Backwards smoother</a></li>
+<li class="chapter" data-level="3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#mean-corrections"><i class="fa fa-check"></i><b>3.3.1</b> Mean corrections</a></li>
+<li class="chapter" data-level="3.3.2" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#forward-filter-backwards-smoother"><i class="fa fa-check"></i><b>3.3.3</b> Forward-Filter Backwards smoother</a></li>
 </ul></li>
-<li class="chapter" data-level="3.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#missing-observations"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
-<li class="chapter" data-level="3.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forecasting-matrices"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+<li class="chapter" data-level="3.4" data-path="missing-observations.html"><a href="missing-observations.html"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="forecasting-matrices.html"><a href="forecasting-matrices.html"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>4</b> Parameter Estimation</a><ul>
-<li class="chapter" data-level="4.1" data-path="parameter-estimation.html"><a href="parameter-estimation.html#log-log-likelihood"><i class="fa fa-check"></i><b>4.1</b> Log log-likelihood</a></li>
-<li class="chapter" data-level="4.2" data-path="parameter-estimation.html"><a href="parameter-estimation.html#integrated-sampler"><i class="fa fa-check"></i><b>4.2</b> Integrated Sampler</a></li>
-<li class="chapter" data-level="4.3" data-path="parameter-estimation.html"><a href="parameter-estimation.html#diagnostic-checking"><i class="fa fa-check"></i><b>4.3</b> Diagnostic Checking</a></li>
+<li class="chapter" data-level="4" data-path="filtering-and-smoothing-1.html"><a href="filtering-and-smoothing-1.html"><i class="fa fa-check"></i><b>4</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="4.1" data-path="filtering-1.html"><a href="filtering-1.html"><i class="fa fa-check"></i><b>4.1</b> Filtering</a></li>
+<li class="chapter" data-level="4.2" data-path="smoothing-1.html"><a href="smoothing-1.html"><i class="fa fa-check"></i><b>4.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="smoothing-1.html"><a href="smoothing-1.html#state-smoothing-1"><i class="fa fa-check"></i><b>4.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="4.2.2" data-path="smoothing-1.html"><a href="smoothing-1.html#updating-smoothed-states-1"><i class="fa fa-check"></i><b>4.2.2</b> Updating Smoothed States</a></li>
+<li class="chapter" data-level="4.2.3" data-path="smoothing-1.html"><a href="smoothing-1.html#disturbance-smoothing-1"><i class="fa fa-check"></i><b>4.2.3</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="4.2.4" data-path="smoothing-1.html"><a href="smoothing-1.html#fast-state-smoothing-1"><i class="fa fa-check"></i><b>4.2.4</b> Fast state smoothing</a></li>
+<li class="chapter" data-level="4.2.5" data-path="smoothing-1.html"><a href="smoothing-1.html#classical-state-smoothing-1"><i class="fa fa-check"></i><b>4.2.5</b> Classical state smoothing</a></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a><ul>
-<li class="chapter" data-level="5.0.1" data-path="example-models.html"><a href="example-models.html#polynomial-trend-models"><i class="fa fa-check"></i><b>5.0.1</b> Polynomial Trend Models</a></li>
-<li class="chapter" data-level="5.0.2" data-path="example-models.html"><a href="example-models.html#seasonal-factor-models"><i class="fa fa-check"></i><b>5.0.2</b> Seasonal Factor Models</a></li>
-<li class="chapter" data-level="5.0.3" data-path="example-models.html"><a href="example-models.html#fourier-form-seasonal-models"><i class="fa fa-check"></i><b>5.0.3</b> Fourier Form Seasonal Models</a></li>
-<li class="chapter" data-level="5.0.4" data-path="example-models.html"><a href="example-models.html#arma-and-arima-models"><i class="fa fa-check"></i><b>5.0.4</b> ARMA and ARIMA Models</a></li>
+<li class="chapter" data-level="4.3" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html"><i class="fa fa-check"></i><b>4.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#mean-corrections-1"><i class="fa fa-check"></i><b>4.3.1</b> Mean corrections</a></li>
+<li class="chapter" data-level="4.3.2" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#de-jong-shephard-method-1"><i class="fa fa-check"></i><b>4.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="4.3.3" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#forward-filter-backwards-smoother-1"><i class="fa fa-check"></i><b>4.3.3</b> Forward-Filter Backwards smoother</a></li>
 </ul></li>
-<li class="chapter" data-level="6" data-path="example-models-1.html"><a href="example-models-1.html"><i class="fa fa-check"></i><b>6</b> Example Models</a><ul>
-<li class="chapter" data-level="6.1" data-path="example-models-1.html"><a href="example-models-1.html#nile"><i class="fa fa-check"></i><b>6.1</b> Nile</a><ul>
-<li class="chapter" data-level="6.1.1" data-path="example-models-1.html"><a href="example-models-1.html#local-level"><i class="fa fa-check"></i><b>6.1.1</b> Local Level</a></li>
-<li class="chapter" data-level="6.1.2" data-path="example-models-1.html"><a href="example-models-1.html#intervention"><i class="fa fa-check"></i><b>6.1.2</b> Intervention</a></li>
+<li class="chapter" data-level="4.4" data-path="missing-observations-1.html"><a href="missing-observations-1.html"><i class="fa fa-check"></i><b>4.4</b> Missing observations</a></li>
+<li class="chapter" data-level="4.5" data-path="forecasting-matrices-1.html"><a href="forecasting-matrices-1.html"><i class="fa fa-check"></i><b>4.5</b> Forecasting matrices</a></li>
 </ul></li>
+<li class="chapter" data-level="5" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>5</b> Parameter Estimation</a><ul>
+<li class="chapter" data-level="5.1" data-path="log-log-likelihood.html"><a href="log-log-likelihood.html"><i class="fa fa-check"></i><b>5.1</b> Log log-likelihood</a></li>
+<li class="chapter" data-level="5.2" data-path="integrated-sampler.html"><a href="integrated-sampler.html"><i class="fa fa-check"></i><b>5.2</b> Integrated Sampler</a></li>
+<li class="chapter" data-level="5.3" data-path="diagnostic-checking.html"><a href="diagnostic-checking.html"><i class="fa fa-check"></i><b>5.3</b> Diagnostic Checking</a></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>7</b> Stan Functions</a><ul>
-<li class="chapter" data-level="7.1" data-path="stan-functions.html"><a href="stan-functions.html#misc"><i class="fa fa-check"></i><b>7.1</b> Misc</a><ul>
-<li class="chapter" data-level="7.1.1" data-path="stan-functions.html"><a href="stan-functions.html#make_symmetric_matrix"><i class="fa fa-check"></i><b>7.1.1</b> make_symmetric_matrix</a></li>
-<li class="chapter" data-level="7.1.2" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_colwise"><i class="fa fa-check"></i><b>7.1.2</b> to_matrix_colwise</a></li>
-<li class="chapter" data-level="7.1.3" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>7.1.3</b> to_matrix_rowwise</a></li>
-<li class="chapter" data-level="7.1.4" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_colwise"><i class="fa fa-check"></i><b>7.1.4</b> to_vector_colwise</a></li>
-<li class="chapter" data-level="7.1.5" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_rowwise"><i class="fa fa-check"></i><b>7.1.5</b> to_vector_rowwise</a></li>
+<li class="chapter" data-level="6" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>6</b> Example Models</a><ul>
+<li class="chapter" data-level="6.0.1" data-path="example-models.html"><a href="example-models.html#polynomial-trend-models"><i class="fa fa-check"></i><b>6.0.1</b> Polynomial Trend Models</a></li>
+<li class="chapter" data-level="6.0.2" data-path="example-models.html"><a href="example-models.html#seasonal-factor-models"><i class="fa fa-check"></i><b>6.0.2</b> Seasonal Factor Models</a></li>
+<li class="chapter" data-level="6.0.3" data-path="example-models.html"><a href="example-models.html#fourier-form-seasonal-models"><i class="fa fa-check"></i><b>6.0.3</b> Fourier Form Seasonal Models</a></li>
+<li class="chapter" data-level="6.0.4" data-path="example-models.html"><a href="example-models.html#arma-and-arima-models"><i class="fa fa-check"></i><b>6.0.4</b> ARMA and ARIMA Models</a></li>
+<li class="chapter" data-level="6.0.5" data-path="example-models.html"><a href="example-models.html#ar2"><i class="fa fa-check"></i><b>6.0.5</b> AR(2)</a></li>
+<li class="chapter" data-level="6.0.6" data-path="example-models.html"><a href="example-models.html#arp"><i class="fa fa-check"></i><b>6.0.6</b> AR(p)</a></li>
 </ul></li>
-<li class="chapter" data-level="7.2" data-path="stan-functions.html"><a href="stan-functions.html#filtering-1"><i class="fa fa-check"></i><b>7.2</b> Filtering</a></li>
+<li class="chapter" data-level="7" data-path="example-models-1.html"><a href="example-models-1.html"><i class="fa fa-check"></i><b>7</b> Example Models</a><ul>
+<li class="chapter" data-level="7.1" data-path="nile.html"><a href="nile.html"><i class="fa fa-check"></i><b>7.1</b> Nile</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="nile.html"><a href="nile.html#local-level-model-1"><i class="fa fa-check"></i><b>7.1.1</b> Local Level Model</a></li>
 </ul></li>
-<li class="chapter" data-level="8" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>8</b> Other Software</a></li>
+<li class="chapter" data-level="7.2" data-path="airline-passenger-miles.html"><a href="airline-passenger-miles.html"><i class="fa fa-check"></i><b>7.2</b> Airline Passenger Miles</a></li>
+<li class="chapter" data-level="7.3" data-path="road-casualties-in-great-britain.html"><a href="road-casualties-in-great-britain.html"><i class="fa fa-check"></i><b>7.3</b> Road Casualties in Great Britain</a></li>
+<li class="chapter" data-level="7.4" data-path="uk-quarterly-gas-consumption.html"><a href="uk-quarterly-gas-consumption.html"><i class="fa fa-check"></i><b>7.4</b> UK Quarterly Gas Consumption</a></li>
+<li class="chapter" data-level="7.5" data-path="other-sources.html"><a href="other-sources.html"><i class="fa fa-check"></i><b>7.5</b> Other Sources</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>8</b> Stan Functions</a><ul>
+<li class="chapter" data-level="8.1" data-path="misc.html"><a href="misc.html"><i class="fa fa-check"></i><b>8.1</b> Misc</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="misc.html"><a href="misc.html#make_symmetric_matrix"><i class="fa fa-check"></i><b>8.1.1</b> make_symmetric_matrix</a></li>
+<li class="chapter" data-level="8.1.2" data-path="misc.html"><a href="misc.html#to_matrix_colwise"><i class="fa fa-check"></i><b>8.1.2</b> to_matrix_colwise</a></li>
+<li class="chapter" data-level="8.1.3" data-path="misc.html"><a href="misc.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>8.1.3</b> to_matrix_rowwise</a></li>
+<li class="chapter" data-level="8.1.4" data-path="misc.html"><a href="misc.html#to_vector_colwise"><i class="fa fa-check"></i><b>8.1.4</b> to_vector_colwise</a></li>
+<li class="chapter" data-level="8.1.5" data-path="misc.html"><a href="misc.html#to_vector_rowwise"><i class="fa fa-check"></i><b>8.1.5</b> to_vector_rowwise</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="filtering-2.html"><a href="filtering-2.html"><i class="fa fa-check"></i><b>8.2</b> Filtering</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>9</b> Software</a><ul>
+<li class="chapter" data-level="9.1" data-path="r-packages.html"><a href="r-packages.html"><i class="fa fa-check"></i><b>9.1</b> R packages</a></li>
+<li class="chapter" data-level="9.2" data-path="other.html"><a href="other.html"><i class="fa fa-check"></i><b>9.2</b> Other</a></li>
+</ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -167,295 +230,7 @@ $$
 
             <section class="normal" id="section-">
 <div id="filtering-and-smoothing" class="section level1">
-<h1><span class="header-section-number">Chapter 3</span> Filtering and Smoothing</h1>
-<div id="filtering" class="section level2">
-<h2><span class="header-section-number">3.1</span> Filtering</h2>
-<p>From <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3)</span></p>
-<p><span class="math display">\[
-\begin{aligned}[t]
-\vec{v}_t &amp;= \vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t, \\
-\mat{F}_t &amp;= \mat{Z}_t \mat{P}_t \mat{Z}_t\T + \mat{H}_t, \\
-\vec{a}_{t|t} &amp;= \vec{a}_t + \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} v_t , \\
-\mat{P}_{t|t} &amp;= \mat{P}_t - \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t \mat{P}_t , \\
-\vec{a}_{t + 1} &amp;= \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t + \vec{c}_t \\
-&amp;= \mat{T}_{t} \vec{a}_{t|t} + \vec{c}_t, \\
-\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t (\mat{T}_t - \mat{K}_t \mat{Z}_t)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T \\
-&amp; = \mat{T}_t \mat{P}_{t|t} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
-\end{aligned}
-\]</span> The vector <span class="math inline">\(\vec{v}_t\)</span> are the *one-step ahead forecast errors$.</p>
-<p>The matrix <span class="math inline">\(\mat{K}_t\)</span> is called the <em>Kalman gain</em>, <span class="math display">\[
-\mat{K}_t = \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} .
-\]</span> This gives, <span class="math display">\[
-\begin{aligned}[t]
-\vec{a}_{t + 1} &amp;= \mat{T} \vec{a}_{t|t}  = \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t , \\
-\vec{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \left( \mat{T}_t - \mat{K}_t \mat{Z}_t \right)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T .
-\end{aligned}
-\]</span> These two equations are called the <em>prediction step</em>. The steps for <span class="math inline">\(\vec{a}_{t|t}\)</span> and <span class="math inline">\(\mat{P}_{t|t}\)</span> are called the <em>updating step</em>. <span class="math display">\[
-\begin{aligned}[t]
-\vec{a}_t &amp;= \E(\vec{\alpha}_t | y_{1, \dots, t - 1}), &amp;
-\vec{P}_t &amp;= \Var(\vec{\alpha}_t | y_{1, \dots, t - 1}), \\
-\vec{a}_{t|t} &amp;= \E(\vec{\alpha}_t | y_{1, \dots, t}), &amp;
-\vec{P}_{t|t} &amp;= \Var(\vec{\alpha}_t | y_{1, \dots, t}) .
-\end{aligned}
-\]</span></p>
-<table>
-<caption>Dimensions of matrices and vectors in the SSM</caption>
-<thead>
-<tr class="header">
-<th align="left">matrix/vector</th>
-<th align="left">dimension</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{v}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times 1\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\vec{a}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{a}_{t|t}\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\mat{F}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times p\)</span></td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\mat{K}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times p\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\mat{P}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times m\)</span></td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\mat{P}_{t|T}\)</span></td>
-<td align="left"><span class="math inline">\(m \times m\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\vec{x}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\mat{L}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times m\)</span></td>
-</tr>
-</tbody>
-</table>
-<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3.4)</span>: For a time-invariant state space model, the Kalman recursion for <span class="math inline">\(\mat{P}_{t + 1}\)</span> converges to a constant matrix <span class="math inline">\(\bar{\mat{P}}\)</span>, <span class="math display">\[
-\bar{\mat{P}} = \mat{T} \bar{\mat{P}} \mat{T}\T - \mat{T} \bar{\mat{P}} \mat{Z}\T \bar{\mat{F}}^{-1} \mat{Z} \bar{\mat{P}} \mat{T}\T + \mat{R} \mat{Q} \mat{R}\T ,
-\]</span> where <span class="math inline">\(\bar{\mat{F}} = \mat{Z} \bar{\mat{P}} \mat{Z}\T + \mat{H}\)</span>.</p>
-<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3.5)</span>: The <em>state estimation error</em> is, <span class="math display">\[
-\vec{x}_t = \vec{\alpha}_t - \vec{a}_t,
-\]</span> where <span class="math inline">\(\Var(\vec{x}_t) = \mat{P}_t\)</span>. The <span class="math inline">\(v_t\)</span> are sometimes called <em>innovations</em>, since they are the part of <span class="math inline">\(\vec{y}_t\)</span> not predicted from the past. The innovation analog of the state space model is <span class="math display">\[
-\begin{aligned}[t]
-\vec{v}_t &amp;= \mat{Z}_t \vec{x}_t + \vec{\varepsilon}_t ,  \\
-\vec{x}_{t + 1} &amp;= \mat{L} \vec{x}_{t} + \mat{R}_t \vec{\eta}_t - \mat{K}_t \vec{\varepsilon}_t , \\
-\mat{K}_t &amp;= \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} , \\
-\mat{L}_t &amp;= \mat{T}_t - \mat{K}_t \mat{Z}_t ,
-\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \mat{L}_t\T +  \mat{R}_t \mat{Q}_t \mat{R}_T\T  .
-\end{aligned}
-\]</span> These recursions allow for a simpler derivation of <span class="math inline">\(\mat{P}_{t + 1}\)</span>, and are useful for the smoothing recursions. Moreover, the one-step ahead forecast errors are indendendent, which allows for a simple derivation of the log-likelihood.</p>
-<p>Alternative methods <strong>TODO</strong></p>
-<ul>
-<li>square-root filtering</li>
-<li>precision filters</li>
-<li>sequential filtering</li>
-</ul>
-</div>
-<div id="smoothing" class="section level2">
-<h2><span class="header-section-number">3.2</span> Smoothing</h2>
-<table>
-<caption>Dimensions of vectors and matrices used in smoothing recursions</caption>
-<thead>
-<tr class="header">
-<th align="left">Vector/Matrix</th>
-<th align="left">Dimension</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{r}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\vec{\vec{\alpha}}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{u}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times 1\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\hat{\vec{\varepsilon}}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times 1\)</span></td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\hat{\vec{\eta}}_t\)</span></td>
-<td align="left"><span class="math inline">\(r \times 1\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\mat{N}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times m\)</span></td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\mat{V}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times m\)</span></td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\mat{D}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times p\)</span></td>
-</tr>
-</tbody>
-</table>
-<div id="state-smoothing" class="section level3">
-<h3><span class="header-section-number">3.2.1</span> State Smoothing</h3>
-<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.4.2)</span></p>
-<p>Smoothing calculates the estimate of the state using all observations, <span class="math inline">\(\hat{\vec{\alpha}} = \E(\vec{\alpha}_t | \mat{Y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha} | \mat{Y}_n)\)</span>.</p>
-<p>Smoother in Eq 4.44. Let <span class="math inline">\(\hat{\vec{a}} = \E(\alpha_t | \vec{y}_1, \dots \vec{y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_1, \dots \vec{y}_n)\)</span>, then <span class="math display">\[
-\begin{aligned}[t]
-\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , \\
-\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t, \\
-\hat{\vec{\alpha}}_t &amp;= \vec{a}_t + \mat{P}_t \vec{r}_{t - 1} , \\
-\mat{V}_t &amp;= \mat{P}_t - \mat{P}_t \mat{N}_{t - 1} \mat{P}_t ,
-\end{aligned}
-\]</span> for <span class="math inline">\(t = n, \dots, 1\)</span>, with <span class="math inline">\(\vec{r}_n = \vec{0}\)</span>, and <span class="math inline">\(\mat{N}_t = \mat{0}\)</span>.</p>
-<p>During the filtering pass <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span>, and <span class="math inline">\(\mat{P}_t\)</span> for <span class="math inline">\(t = 1, \dots, n\)</span> need to be stored. Alternatively, <span class="math inline">\(\vec{a}_t\)</span> and <span class="math inline">\(\mat{P}_t\)</span> only can be stored, and <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span> recalculated on the fly. However, since the dimensions of <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span> are usually small relative to <span class="math inline">\(\vec{a}_t\)</span> and <span class="math inline">\(\mat{P}_t\)</span> is is usually worth storing them.</p>
-</div>
-<div id="updating-smoothed-states" class="section level3">
-<h3><span class="header-section-number">3.2.2</span> Updating Smoothed States</h3>
-<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.4.5)</span></p>
-<p>If a new observation arises, existing smoothed estimates of the states can be updated without having to run the full state smoother again.</p>
-<p>Suppose a new obervation, <span class="math inline">\(\vec{y}_{n + 1}\)</span>, is available. We want to calculate <span class="math inline">\(\hat{\vec{\alpha}}_{t|n + 1} = \E(\vec{\alpha} | \mat{Y}_{n + 1})\)</span> and <span class="math inline">\(\mat{V}_{t|n + 1} = \Var(\vec{\alpha}) | \mat{Y}_{n + 1}\)</span>, when we already have <span class="math inline">\(\hat{\vec{\alpha}}_{t|n} = \E(\vec{\alpha} | \mat{Y}_{n})\)</span> and <span class="math inline">\(\mat{V}_{t|n} = \Var(\vec{\alpha} | \mat{Y}_{n})\)</span> from running smoother when <span class="math inline">\(\mat{Y}_n\)</span> was available.</p>
-<p>Let <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T \cdots \mat{L}_n\T\)</span> with <span class="math inline">\(\vec{b}_{t|n + 1} = \mat{I}_m\)</span>. Then <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T b_{t+1|n+1}\)</span> for <span class="math inline">\(t = n, \dots, 1\)</span>. Then the states can be updated as, <span class="math display">\[
-\begin{aligned}[t]
-\hat{\vec{\alpha}}_{t|n + 1} &amp;= \hat{\vec{a}}_{t|n} + \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \vec{v}_{n + 1} , \\
-\mat{V}_{t|n + 1} &amp;= \mat{V}_{t|n} - \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \mat{Z}_{n + 1} \vec{b}_{t|n + 1}\T \mat{P}_t ,
-\end{aligned}
-\]</span> for <span class="math inline">\(n = t, t + 1, \dots\)</span>, with <span class="math display">\[
-\begin{aligned}[t]
-\hat{\vec{\alpha}}_{n|n} &amp;= \vec{a}_n + \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \vec{v}_n, \\
-\mat{V}_{n|n} &amp;= \mat{P}_n - \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \mat{Z}_n \mat{P}_n ,
-\end{aligned}
-\]</span> The values of <span class="math inline">\(\mat{P}_t\)</span>, <span class="math inline">\(\mat{L}_t\)</span>, <span class="math inline">\(\mat{F}_{n + 1}\)</span>, and <span class="math inline">\(\vec{v}_{n + 1}\)</span> are available from the Kalman filter.</p>
-</div>
-<div id="disturbance-smoothing" class="section level3">
-<h3><span class="header-section-number">3.2.3</span> Disturbance smoothing</h3>
-<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.5)</span></p>
-<p>Disturbance smoothing calculates the smoothed estimates, <span class="math inline">\(\hat{\vec{\varepsilon}}_t = \E(\vec{\varepsilon} | \mat{Y}_n)\)</span> and <span class="math inline">\(\hat{\vec{\eta}} = \E(\vec{\eta}_t | \mat{Y}_n)\)</span>.</p>
-<p><span class="math display">\[
-\begin{aligned}[t]
-\hat{\vec{\varepsilon}}_t &amp;= \mat{H}_t (\mat{F}^{-1} \vec{v}_t - \mat{K}_t\T \vec{r}_t) , &amp;
-\Var(\vec{\varepsilon}_t | \mat{Y}_n) &amp;= \mat{H}_t - \mat{H}_t (\mat{F}_t^{-1} + \mat{K}_t\T \mat{N}_t \mat{K}_t) \mat{H}_t , \\
-\hat{\vec{\eta}}_t &amp;= \mat{Q}_t \mat{R}_t\T \vec{r}_t , &amp;
-\Var(\vec{\eta}_t | \mat{Y}_n) &amp;= \mat{Q}_t - \mat{Q}_t \mat{R}_t\T \mat{N}_t \mat{R}_t \mat{Q}_t , \\
-\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , &amp;
-\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t
-\end{aligned}
-\]</span></p>
-<p>Alternatively, these equations can be rewritten as, <span class="math display">\[
-\begin{aligned}[t]
-\hat{\vec{\varepsilon}}_t &amp;= \mat{H}_t \vec{u}_t , &amp;
-\Var(\vec{\varepsilon}_t | \mat{Y}_n) &amp;= \mat{H}_t - \mat{H}_t \mat{D}_t \mat{H}_t , \\
-\hat{\vec{\eta}}_t &amp;= \mat{Q}_t \mat{R}_t\T \vec{r}_t , &amp;
-\Var(\vec{\eta}_t | \mat{Y}_n) &amp;= \mat{Q}_t - \mat{Q}_t \mat{R}_t\T \mat{N}_t \mat{R}_t \mat{Q}_t , \\
-\vec{u}_t &amp;= \mat{F}^{-1} \vec{v}_t - \mat{K}_t\T \vec{r}_t , &amp;
-\mat{D}_t &amp;= \mat{F}_t^{-1} + \mat{K}_t\T \mat{N}_t \mat{K}_t , \\
-\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \vec{u}_t + \mat{T}_t\T \vec{r}_t , &amp;
-\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{D}_t \mat{Z}_t + \mat{T}_t\T \mat{N}_t \mat{T}_t - \mat{Z}_t\T \mat{K}_t\T \mat{N}_t \mat{T}_t - \mat{T}_t\T \mat{N}_t \mat{K}_t \mat{Z}_t .
-\end{aligned}
-\]</span> This reformulation can be computationally useful since it relies on the system matrices <span class="math inline">\(\mat{Z}_t\)</span> and <span class="math inline">\(\mat{T}_t\)</span> which are often sparse.</p>
-<p>The smoothing error <span class="math inline">\(\vec{u}_t\)</span> and <span class="math inline">\(\vec{r}_t\)</span> are important in their own right. The vector <span class="math inline">\(\vec{r}_t\)</span> is the scaled smoothed estimator of <span class="math inline">\(\vec{\eta}_t\)</span>.</p>
-<p>The disturbance smoothing recursions require only <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{f}_t\)</span>, and <span class="math inline">\(\mat{K}_t\)</span> from the Kalman filter. Unlike the state smoother, they do not require the vector <span class="math inline">\(\vec{a}_t\)</span> or matrix <span class="math inline">\(\mat{P}_t\)</span>.</p>
-</div>
-<div id="fast-state-smoothing" class="section level3">
-<h3><span class="header-section-number">3.2.4</span> Fast state smoothing</h3>
-<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.6.2)</span></p>
-<p>If the variances of the states do not need to be calculated, then a faster smoothing algorithm can be used (Koopman 1993). The fast state smoother is defiend as, <span class="math display">\[
-\hat{\vec{\alpha}}_t = \mat{T}_t \hat{\vec{\alpha}}_t + \mat{R}_t \mat{Q}_t \mat{R}_t\T \vec{r}_t ,
-\]</span> for <span class="math inline">\(t = 1, \dots, n\)</span>. This is initialized via, <span class="math display">\[
-\hat{\vec{\alpha}}_1 = \vec{a}_1 + \mat{P}_1 \vec{r}_0 .
-\]</span> Thus the smoother is run, but only calculating <span class="math inline">\(\vec{r}_n, \dots, \vec{r}_0\)</span>. Then, <span class="math inline">\(\hat{\vec{\alpha}}_1, \dots \hat{\vec{\alpha}}_t\)</span> are calculated using the above equation.</p>
-</div>
-<div id="classical-state-smoothing" class="section level3">
-<h3><span class="header-section-number">3.2.5</span> Classical state smoothing</h3>
-<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.6.1)</span></p>
-<p>The original state smoothing algorithm from Anderson and Moore (1979) is <span class="math display">\[
-\begin{aligned}[t]
-\hat{\vec{\alpha}}_t &amp;= \vec{a}_{t|t} + \mat{P}_{t|t} \mat{T}_t\T \mat{P}_{t + 1}^{-1}(\hat{\vec{\alpha}}_{t + 1} - \vec{a}_{t + 1}) .
-\end{aligned}
-\]</span> Note that <span class="math inline">\(\mat{T} \mat{P}_{t|t} = \mat{L}_t \mat{P}_t\)</span>. Relative to the other state smoothing algorithm the classical smoother is more computationally burdensome because it requires inverting <span class="math inline">\(\mat{P}_{t + 1}\)</span>. The other state smoother only requires inverting <span class="math inline">\(\mat{F}_t\)</span>, but that has already been inverted in the filtering pass.</p>
-<p>&lt;– ## Jacknife and Deleted observations</p>
-<p>Results in West and Harrison (1997), p. 104 and such. –&gt;</p>
-</div>
-</div>
-<div id="simulation-smoothers" class="section level2">
-<h2><span class="header-section-number">3.3</span> Simulation smoothers</h2>
-<div id="mean-corrections" class="section level3">
-<h3><span class="header-section-number">3.3.1</span> Mean corrections</h3>
-<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span></p>
-<p>Simulation smoother by mean corrections. Ch. 4.9.</p>
-<p><strong>TODO</strong></p>
-</div>
-<div id="de-jong-shephard-method" class="section level3">
-<h3><span class="header-section-number">3.3.2</span> de Jong-Shephard method</h3>
-<p>While the mean-corrections method usually works, it may fail in some cases due to imposed ill-defined variance matrices (see Jungbacker and Koopman 2007, sec 1). These recursions were developed in de Jong and Shephard (1995),</p>
-<p><strong>TODO</strong></p>
-</div>
-<div id="forward-filter-backwards-smoother" class="section level3">
-<h3><span class="header-section-number">3.3.3</span> Forward-Filter Backwards smoother</h3>
-<p><strong>TODO</strong></p>
-</div>
-</div>
-<div id="missing-observations" class="section level2">
-<h2><span class="header-section-number">3.4</span> Missing observations</h2>
-<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.10)</span></p>
-<p>When all observations at time <span class="math inline">\(t\)</span> are missing, the filtering recursions become, <span class="math display">\[
-\begin{aligned}[t]
-\vec{a}_{t|t} &amp;= \vec{a}_t , \\
-\mat{P}_{t|t} &amp;= \mat{P}_t , \\
-\vec{a}_{t + 1} &amp;= \mat{T}_t \vec{a}_t + \vec{c}_t \\
-\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
-\end{aligned}
-\]</span> This is equivalent to setting <span class="math inline">\(\mat{Z}_t = \mat{0}\)</span> (implying also that <span class="math inline">\(\mat{K}_t = \mat{0}\)</span>) in the filtering equations. For smoothing, also replace <span class="math inline">\(\mat{Z}_t = \mat{0}\)</span>, <span class="math display">\[
-\begin{aligned}[t]
-\vec{r}_{t - 1} &amp;= \mat{T}_t\T \vec{r}_t , \\
-\mat{N}_{t - 1} &amp;= \mat{T}_t\T \mat{N}_t \mat{T}_t,
-\end{aligned}
-\]</span></p>
-<p>When some, but not all observations are missing, then replace the observation equation by, <span class="math display">\[
-\begin{aligned}[t]
-\vec{y}^*_t &amp;= \mat{Z}^*_t \vec{\alpha}_t + \vec{\varepsilon}_t^*, &amp; \vec{\varepsilon}_t^* &amp;\sim N(\vec{0}, \mat{H}_t^*),
-\end{aligned}
-\]</span> where, <span class="math display">\[
-\begin{aligned}[t]
-\vec{y}^*_t &amp;= \mat{W}_t \vec{y}_t, \\
-\mat{Z}^* &amp;= \mat{W}_t \mat{Z}_t , \\
-\vec{\varepsilon}_t &amp;= \mat{W}_t \vec{\varepsilon}_t , \\
-\mat{H}^*_t &amp;= \mat{W}_t \mat{H}_t \mat{W}_t\T ,
-\end{aligned}
-\]</span> and <span class="math inline">\(\mat{W}_t\)</span> is a selection matrix to select non-missing values. In smoothing the missing elements are estimated by the appropriate elements of <span class="math inline">\(\mat{Z}_t \hat{\vec{alpha}}_t\)</span>, where <span class="math inline">\(\hat{\vec{\alpha}}_t\)</span> is the smoothed state.</p>
-</div>
-<div id="forecasting-matrices" class="section level2">
-<h2><span class="header-section-number">3.5</span> Forecasting matrices</h2>
-<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.11)</span></p>
-<p>Forecasting future observations are the same as treating the future observations as missing, <span class="math display">\[
-\begin{aligned}[t]
-\bar{\vec{y}}_{n + j} &amp;= \mat{Z}_{n + j} \bar{\vec{a}}_{n + j} \\
-\bar{\mat{F}}_{n + j} &amp;= \mat{Z}_{n + j} \bar{\mat{P}}_{n + j} \mat{Z}_{n + j}\T + \mat{H}_{n + j} .
-\end{aligned}
-\]</span></p>
-
-</div>
-</div>
-<h3> Other Software</h3>
-<div id="refs" class="references">
-<div id="ref-DurbinKoopman2012">
-<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
-</div>
+<h1><span class="header-section-number">Chapter 3</span> Filtering and Smoothing</h1> 
 </div>
             </section>
 
@@ -463,7 +238,7 @@ $$
         </div>
       </div>
 <a href="the-linear-state-space-model.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="parameter-estimation.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="filtering.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -491,9 +266,9 @@ gitbook.start({
 },
 "edit": {
 "link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssmodels.Rmd",
-"text": null
+"text": "Edit"
 },
-"download": null,
+"download": ["ssmodels-in-stan.pdf"],
 "toc": {
 "collapse": "subsection"
 }

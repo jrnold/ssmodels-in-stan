@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="road-casualties-in-great-britain.html">
+<link rel="next" href="other-sources.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,32 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="uk-quarterly-gas-consumption" class="section level2">
+<h2><span class="header-section-number">7.4</span> UK Quarterly Gas Consumption</h2>
+<p>Quarterly UK gas consumption from 1960 to 1986 in millions of therms. These data are used as an example in <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span>, and included in R as a dataset <code>UKgas</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UKgas_ &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">date =</span> <span class="kw">ts_to_date</span>(<span class="kw">time</span>(UKgas)),
+                     <span class="dt">therms =</span> <span class="kw">as.numeric</span>(UKgas))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(UKgas_, <span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> therms)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">scale_y_log10</span>(<span class="st">&quot;log10(therms)&quot;</span>) +
+<span class="st">  </span><span class="kw">scale_x_date</span>(<span class="dt">date_breaks =</span> <span class="st">&quot;5 years&quot;</span>, <span class="dt">date_labels =</span> <span class="st">&quot;%Y&quot;</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;&quot;</span>)</code></pre></div>
+<p><img src="ssmodels-in-stan_files/figure-html/UKgas-plot-1.png" width="672" /></p>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="road-casualties-in-great-britain.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="other-sources.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +281,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/examples.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

@@ -2,13 +2,14 @@
 
 ## Log log-likelihood
 
-When initial conditions are known, the log likelihood is
+If the the system matrices and initial conditions are known, the log likelihood is
 $$
 \begin{aligned}[t]
 \log L(\mat{Y}_n) &= \log p(\vec{y}_1, \dots, \vec{y}_n) = \sum_{t = 1}^n \log p(\vec{y}_t | \mat{Y}_{t - 1}) \\
 &= - \frac{np}{2} \log 2 \pi - \frac{1}{2} \sum_{t = 1}^n \left( \log \left| \mat{F}_t \right| + \vec{v}\T \mat{F}_t^{-1} \vec{v}_t \right)
 \end{aligned} .
 $$
+The log-likelihood only requires running the filter to calculate $\mat{F}_t$ and $\mat{V}_t$.
 
 See [@DurbinKoopman2012, Sec. 7.2.1]
 

@@ -3,24 +3,161 @@
 
 ## Nile
 
-### Local Level
+This is a short ($n = 100$) univariate time series of the annual flow volumes of
+the Nile River at Aswan between 1871 and 1970. This series is described in
+@DurbinKoopman2012 and had been analyzed by @Cobb1978 and @Balke1993. It is
+included with R as the dataset `Nile`.
 
-The Nile
+```{r Nile} 
+data("Nile", package = "datasets") 
+Nile_ <- data_frame(year = year(ts_to_date(time(Nile))),
+                    flow = as.numeric(Nile))
+```
 
-### Intervention
+```{r Nile_plot} 
+ggplot(Nile_, aes(x = year, y = flow)) + 
+  geom_point() + 
+  geom_line() + 
+  ylab("Annual Flow") + xlab("")
+```
 
-- @PetrisPetrone2011a
-  - Nile: local level
-  - UKGas: Structural: local trend + seasonal factor
-  - Industrial Production of consumer goods: local trend, outliers and structural breaks.
+### Local Level Model
+
+The Nile data can be modeled as a local level model,
+$$
+\begin{aligned}[t] 
+y_t &= \mu_t + \varepsilon_t & \varepsilon_t & \sim N(0, \sigma_{\varepsilon}^2) \\ 
+\mu_{t + 1} &= \mu_t + \eta_t & 
+\eta_t & \sim N(0, \sigma^2_{\eta}) 
+\end{aligned} 
+$$ 
+This is a time-invariant SSM with $m = 1$ states, $p = 1$
+observations at each time period, and $r = 1$ system disturbances, 
+$$ 
+\begin{aligned}[t] 
+\mat{T} = \mat{Z} = \mat{R} &= \begin{bmatrix} 1 \end{bmatrix} \\ 
+\mat{c} = \mat{Q} &= \begin{bmatrix} 0 \end{bmatrix} \\ 
+\mat{H} &= \begin{bmatrix} \sigma_{\varepsilon}^2 \end{bmatrix} \\
+\mat{Q} &= \begin{bmatrix} \sigma_{\eta}^2 \end{bmatrix}
+\end{aligned}
+$$
+
+```{r Nile-StructTS}
+StructTS(Nile, type = "level")
+```
+
+
+## Airline Passenger Miles
+
+Monthly totals of international airline passengers, 1949 to 1960, used in the
+Box-Jenkins textbook [@BoxJenkinsReinsel1994]. This data is included with R as
+the dataset `AirPassengers`.
+
+```{r AirPassengers} 
+data("AirPassengers", package = "datasets") 
+AirPassengers_ <- tbl_df(as.data.frame(AirPassengers)) %>%
+  mutate(date = ts_to_date(time(AirPassengers))) %>%
+  select(date, everything()) %>% 
+  mutate(x = as.numeric(x)) %>%
+  rename(passengers = x) %>%
+  mutate(log_passengers = log10(passengers))
+```
+
+```{r AirPassengers_plot} 
+ggplot(AirPassengers_, aes(x = date, y = passengers)) + 
+  geom_point() + 
+  geom_line() + 
+  scale_y_continuous("Number") + xlab("")
+```
+
+See help for `AirPassengers` in R for example models. SARIMA (0, 1, 1) (0, 1, 1)
+as in Box-Jenkins 
+```{r AirPassengers-arima} 
+arima(log10(AirPassengers), c(0, 1, 1), 
+      seasonal = list(order = c(0, 1, 1), period = 12)) 
+```
+
+Structural Time Series model 
+```{r AirPassengers-StructTS} 
+StructTS(log10(AirPassengers), type = "BSM")
+```
+
+
+## Road Casualties in Great Britain
+
+Monthly totals of car drivers in Great Britain killed or seriously injured
+January 1969 to December 1984. The compulsory wearing of seat belts was
+introducted on January 31, 1983. These data were analyzed in @HarveyDurbin1986,
+and used as an example in @DurbinKoopman2012, @Harvey1993a, and
+@CommandeurKoopman2007.
+
+This data is included in R with the dataset `Seatbelts`.
+
+```{r Seatbelts} 
+data("Seatbelts", package = "datasets")
+Seatbelts_ <- tbl_df(as.data.frame(Seatbelts)) %>% 
+  mutate(date = ts_to_date(time(Seatbelts))) %>%
+  select(date, everything())
+```
+
+```{r Seatbelts-plot} 
+ggplot(Seatbelts_, aes(x = date, y = DriversKilled)) + 
+  geom_point() +
+  geom_line() +
+  ylab("Number") +
+  xlab("")
+```
+
+StructTS Models of Seatbelts 
+```{r Seatbelts-StructTS} 
+StructTS(Seatbelts[ , "DriversKilled"], type = "level")
+StructTS(Seatbelts[ , "DriversKilled"], type = "trend") 
+StructTS(Seatbelts[ , "DriversKilled"], type = "BSM")
+```
+
+SARIMA (1, 0, 0) (1, 0, 0) \
+```{r Seatbelts-arima}
+arima(Seatbelts[ , "DriversKilled"], c(1, 0, 0), seasonal = list(order = c(1, 0, 0))) 
+```
+
+SARIMA with covariates 
+```{r Seatbelts-arimax} 
+X <- Seatbelts[, c("kms", "PetrolPrice", "law")] 
+X[, 1] <- log10(X[, 1]) - 4 
+arima(log10(Seatbelts[, "drivers"]), c(1, 0, 0),
+      seasonal = list(order = c(1, 0, 0)), xreg = X) 
+```
+
+## UK Quarterly Gas Consumption
+
+Quarterly UK gas consumption from 1960 to 1986 in millions of therms. 
+These data are used as an example in @DurbinKoopman2012,
+and included in R as a dataset `UKgas`.
+
+```{r UKgas}
+UKgas_ <- data_frame(date = ts_to_date(time(UKgas)),
+                     therms = as.numeric(UKgas))
+```
+
+```{r UKgas-plot}
+ggplot(UKgas_, aes(x = date, y = therms)) +
+  geom_point() +
+  geom_line() +
+  scale_y_log10("log10(therms)") +
+  scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
+  xlab("")
+```
+
+
+## Other Sources
+
+- @PetrisPetrone2011a - Nile: local level - UKGas: Structural: local trend +
+seasonal factor - Industrial Production of consumer goods: local trend, outliers
+and structural breaks.
 
 - @Petris2010a
 
-  - Temperuratures: dlm dynamic factor
-  - Nile: local level
+- Temperuratures: dlm dynamic factor - Nile: local level
 
-- @Tusell2011
-- @CommandeurKoopman2007
-- @DurbinKoopman2012
-- KFAS
-- @ShumwayStoffer2010
+- @Tusell2011 - @CommandeurKoopman2007 - @DurbinKoopman2012 - KFAS -
+@ShumwayStoffer2010

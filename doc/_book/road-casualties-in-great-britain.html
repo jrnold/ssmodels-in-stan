@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="airline-passenger-miles.html">
+<link rel="next" href="uk-quarterly-gas-consumption.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,98 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="road-casualties-in-great-britain" class="section level2">
+<h2><span class="header-section-number">7.3</span> Road Casualties in Great Britain</h2>
+<p>Monthly totals of car drivers in Great Britain killed or seriously injured January 1969 to December 1984. The compulsory wearing of seat belts was introducted on January 31, 1983. These data were analyzed in <span class="citation">A. C. Harvey and Durbin (<a href="#ref-HarveyDurbin1986">1986</a>)</span>, and used as an example in <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span>, <span class="citation">Andrew C. Harvey (<a href="#ref-Harvey1993a">1993</a>)</span>, and <span class="citation">Commandeur and Koopman (<a href="#ref-CommandeurKoopman2007">2007</a>)</span>.</p>
+<p>This data is included in R with the dataset <code>Seatbelts</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;Seatbelts&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;datasets&quot;</span>)
+Seatbelts_ &lt;-<span class="st"> </span><span class="kw">tbl_df</span>(<span class="kw">as.data.frame</span>(Seatbelts)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">date =</span> <span class="kw">ts_to_date</span>(<span class="kw">time</span>(Seatbelts))) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(date, <span class="kw">everything</span>())</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(Seatbelts_, <span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> DriversKilled)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Number&quot;</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;&quot;</span>)</code></pre></div>
+<p><img src="ssmodels-in-stan_files/figure-html/Seatbelts-plot-1.png" width="672" /></p>
+<p>StructTS Models of Seatbelts</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">StructTS</span>(Seatbelts[ , <span class="st">&quot;DriversKilled&quot;</span>], <span class="dt">type =</span> <span class="st">&quot;level&quot;</span>)</code></pre></div>
+<pre><code>## 
+## Call:
+## StructTS(x = Seatbelts[, &quot;DriversKilled&quot;], type = &quot;level&quot;)
+## 
+## Variances:
+##   level  epsilon  
+##  342.42    68.78</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">StructTS</span>(Seatbelts[ , <span class="st">&quot;DriversKilled&quot;</span>], <span class="dt">type =</span> <span class="st">&quot;trend&quot;</span>) </code></pre></div>
+<pre><code>## 
+## Call:
+## StructTS(x = Seatbelts[, &quot;DriversKilled&quot;], type = &quot;trend&quot;)
+## 
+## Variances:
+##   level    slope  epsilon  
+##  346.58     0.00    66.32</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">StructTS</span>(Seatbelts[ , <span class="st">&quot;DriversKilled&quot;</span>], <span class="dt">type =</span> <span class="st">&quot;BSM&quot;</span>)</code></pre></div>
+<pre><code>## 
+## Call:
+## StructTS(x = Seatbelts[, &quot;DriversKilled&quot;], type = &quot;BSM&quot;)
+## 
+## Variances:
+##   level    slope     seas  epsilon  
+##   43.83     0.00    39.85   124.33</code></pre>
+<p>SARIMA (1, 0, 0) (1, 0, 0)<br />
+</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">arima</span>(Seatbelts[ , <span class="st">&quot;DriversKilled&quot;</span>], <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="dt">seasonal =</span> <span class="kw">list</span>(<span class="dt">order =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>))) </code></pre></div>
+<pre><code>## 
+## Call:
+## arima(x = Seatbelts[, &quot;DriversKilled&quot;], order = c(1, 0, 0), seasonal = list(order = c(1, 
+##     0, 0)))
+## 
+## Coefficients:
+##          ar1    sar1  intercept
+##       0.4919  0.4788   121.5958
+## s.e.  0.0686  0.0699     4.5267
+## 
+## sigma^2 estimated as 308.7:  log likelihood = -824.44,  aic = 1656.89</code></pre>
+<p>SARIMA with covariates</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X &lt;-<span class="st"> </span>Seatbelts[, <span class="kw">c</span>(<span class="st">&quot;kms&quot;</span>, <span class="st">&quot;PetrolPrice&quot;</span>, <span class="st">&quot;law&quot;</span>)] 
+X[, <span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">log10</span>(X[, <span class="dv">1</span>]) -<span class="st"> </span><span class="dv">4</span> 
+<span class="kw">arima</span>(<span class="kw">log10</span>(Seatbelts[, <span class="st">&quot;drivers&quot;</span>]), <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>),
+      <span class="dt">seasonal =</span> <span class="kw">list</span>(<span class="dt">order =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)), <span class="dt">xreg =</span> X) </code></pre></div>
+<pre><code>## 
+## Call:
+## arima(x = log10(Seatbelts[, &quot;drivers&quot;]), order = c(1, 0, 0), seasonal = list(order = c(1, 
+##     0, 0)), xreg = X)
+## 
+## Coefficients:
+##          ar1    sar1  intercept     kms  PetrolPrice      law
+##       0.3348  0.6672     3.3539  0.0082      -1.2224  -0.0963
+## s.e.  0.0775  0.0612     0.0441  0.0902       0.3839   0.0166
+## 
+## sigma^2 estimated as 0.001476:  log likelihood = 349.73,  aic = -685.46</code></pre>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-HarveyDurbin1986">
+<p>Harvey, A. C., and J. Durbin. 1986. “The Effects of Seat Belt Legislation on British Road Casualties: A Case Study in Structural Time Series Modelling.” <em>Journal of the Royal Statistical Society. Series A (General)</em> 149 (3). Wiley for the Royal Statistical Society: 187–227. <a href="http://www.jstor.org/stable/2981553" class="uri">http://www.jstor.org/stable/2981553</a>.</p>
+</div>
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+<div id="ref-Harvey1993a">
+<p>Harvey, Andrew C. 1993. <em>Time Series Models</em>. 2nd ed. MIT Press.</p>
+</div>
+<div id="ref-CommandeurKoopman2007">
+<p>Commandeur, Jacques J.F., and Siem Jan Koopman. 2007. <em>An Introduction to State Space Time Series Analysis</em>. Practical Econometrics Series. OUP Oxford. <a href="http://books.google.com/books?id=OCmljPYfgkUC" class="uri">http://books.google.com/books?id=OCmljPYfgkUC</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="airline-passenger-miles.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="uk-quarterly-gas-consumption.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +347,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/examples.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

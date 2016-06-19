@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="nile.html">
+<link rel="next" href="road-casualties-in-great-britain.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,58 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="airline-passenger-miles" class="section level2">
+<h2><span class="header-section-number">7.2</span> Airline Passenger Miles</h2>
+<p>Monthly totals of international airline passengers, 1949 to 1960, used in the Box-Jenkins textbook <span class="citation">(Box, Jenkins, and Reinsel <a href="#ref-BoxJenkinsReinsel1994">1994</a>)</span>. This data is included with R as the dataset <code>AirPassengers</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;AirPassengers&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;datasets&quot;</span>) 
+AirPassengers_ &lt;-<span class="st"> </span><span class="kw">tbl_df</span>(<span class="kw">as.data.frame</span>(AirPassengers)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">date =</span> <span class="kw">ts_to_date</span>(<span class="kw">time</span>(AirPassengers))) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(date, <span class="kw">everything</span>()) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">x =</span> <span class="kw">as.numeric</span>(x)) %&gt;%
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">passengers =</span> x) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log_passengers =</span> <span class="kw">log10</span>(passengers))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(AirPassengers_, <span class="kw">aes</span>(<span class="dt">x =</span> date, <span class="dt">y =</span> passengers)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="st">&quot;Number&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;&quot;</span>)</code></pre></div>
+<p><img src="ssmodels-in-stan_files/figure-html/AirPassengers_plot-1.png" width="672" /></p>
+<p>See help for <code>AirPassengers</code> in R for example models. SARIMA (0, 1, 1) (0, 1, 1) as in Box-Jenkins</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">arima</span>(<span class="kw">log10</span>(AirPassengers), <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>), 
+      <span class="dt">seasonal =</span> <span class="kw">list</span>(<span class="dt">order =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">period =</span> <span class="dv">12</span>)) </code></pre></div>
+<pre><code>## 
+## Call:
+## arima(x = log10(AirPassengers), order = c(0, 1, 1), seasonal = list(order = c(0, 
+##     1, 1), period = 12))
+## 
+## Coefficients:
+##           ma1     sma1
+##       -0.4018  -0.5569
+## s.e.   0.0896   0.0731
+## 
+## sigma^2 estimated as 0.0002543:  log likelihood = 353.96,  aic = -701.92</code></pre>
+<p>Structural Time Series model</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">StructTS</span>(<span class="kw">log10</span>(AirPassengers), <span class="dt">type =</span> <span class="st">&quot;BSM&quot;</span>)</code></pre></div>
+<pre><code>## 
+## Call:
+## StructTS(x = log10(AirPassengers), type = &quot;BSM&quot;)
+## 
+## Variances:
+##     level      slope       seas    epsilon  
+## 0.0001456  0.0000000  0.0002635  0.0000000</code></pre>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-BoxJenkinsReinsel1994">
+<p>Box, G.E.P., G.M. Jenkins, and G.C. Reinsel. 1994. <em>Time Series Analysis: Forecasting and Control</em>. Forecasting and Control Series. Prentice Hall. <a href="http://books.google.com/books?id=sRzvAAAAMAAJ" class="uri">http://books.google.com/books?id=sRzvAAAAMAAJ</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="nile.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="road-casualties-in-great-britain.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +307,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/examples.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

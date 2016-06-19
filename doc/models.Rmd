@@ -12,16 +12,28 @@ $$
 
 #### Local Level Model
 
+A special case of polynomial trend models is the *local level model* or *random walk plus noise*.
+It is defined as,
 $$
 \begin{aligned}[t]
-y_t &= \alpha_{t} + \varepsilon_t & \varepsilon_t &\sim N(0, H)\\
-\alpha_{t + 1} &= \alpha_{t} + \eta_t & \eta_t &\sim N(0, Q)
+y_t &= \alpha_{t} + \varepsilon_t & \varepsilon_t &\sim N(0, \sigma^{\varepsilon}^2)\\
+\alpha_{t + 1} &= \alpha_{t} + \eta_t & \eta_t &\sim N(0,
+\sigma_{\eta}^2)
 \end{aligned}
 $$
 This is a SSM with,
 $$
-\mat{T} = \mat{Z} = \mat{R} = \begin{bmatrix} 1 \end{bmatrix} .
+\mat{T} = \mat{Z} = \mat{R} = \begin{bmatrix} 1 \end{bmatrix} ,
 $$
+and $Q = \sigma_{\eta}^2$ and $H = \sigma_{\varepsilon}^2$.
+
+This model is equivalent to the intercept of a classical linear regression model,
+$$
+y_t = \mu + \varepsilon_t ,
+$$
+but in which the the intercept $\mu$ is allowed to vary with time.
+
+See [@CommandeurKoopman2007, Ch 2; @WestHarrison1997] for more details.
 
 ##### Linear Growth Model
 
@@ -289,6 +301,123 @@ This approach can easily extend to different levels of differencing and seasonal
 The $\max(p, q + 1)$ is not the only state space version of the ARMA model.
 **TODO** other representations.
 
+For examples of models see [Eric Zivot's notes](http://faculty.washington.edu/ezivot/econ584/notes/statespacemodels.pdf)
+
+### AR(2)
+
+The AR(2) model is,
+$$
+\begin{aligned}[t]
+y_t &= \mu + \phi_1 y_{t - 1} + \phi_2 y_{t - 2} + \eta_t & \eta_t \sim N(0, \sigma^2) .
+\end{aligned}
+$$
+
+One way to represent it is to define the states as 
+$$
+\vec{\alpha}_t = (y_t, y_{t - 1})',
+$$
+so that the state space form is,
+$$
+y_t = 
+\begin{bmatrix} 1 & 0 \end{bmatrix} 
+\begin{bmatrix} 
+y_t \\
+y_{t - 1} \\
+\end{bmatrix} 
++ \eta_t \\
+\begin{bmatrix}
+y_t \\
+y_{t - 1}
+\end{bmatrix}
+&= 
+\begin{bmatrix}
+\mu \\
+0
+\end{bmatrix}
+\begin{bmatrix}
+\phi_1 & \phi_2 \\
+1 & 0
+\end{bmatrix}
+\begin{bmatrix}
+y_t \\
+y_{t - 2}
+\end{bmatrix}
++ 
+\begin{bmatrix}
+1 \\
+0
+\end{bmatrix}
+\eta_t .
+$$
+
+An alternate state space representation of AR(2) models is
+$$
+\begin{aligned}
+y_t &= \mu + \gamma_t \\
+\gamma_t &= \phi_1 \gamma_{t - 1} + \phi_2 \gamma_{t - 2} + \eta_t
+\end{aligned}
+$$
+The state vector is $\vec{\alpha}_t = (\gamma_t, \gamma_{t- 1})'$, and the observation and state quations are,
+$$
+\begin{aligned}[t]
+y_t &= 
+\mu +
+\begin{bmatrix}
+1 & 0
+\end{bmatrix}
+\begin{bmatrix}
+\gamma_t  \\
+\gamma_{t - 1}
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\gamma_t  \\
+\gamma_{t - 1}
+\end{bmatrix}
+&= 
+\begin{bmatrix}
+\phi_1 & \phi_2 \\
+1 & 0
+\end{bmatrix}
+\begin{bmatrix}
+\gamma_t  \\
+\gamma_{t - 1}
+\end{bmatrix}
++
+\begin{bmatrix}
+1 \\
+0
+\end{bmatrix}
+\eta_t
+\end{aligned}
+$$
+
+Another representation is,
+The state vector is $\vec{\alpha}_t = (y_t, \phi_2 y_{t- 1})'$, and the observation and state quations are,
+$$
+\begin{aligned}[t]
+y_t &= \begin{bmatrix} 1 & 0 \end{bmatrix} \vec{\alpha}_t \\
+\vec{\alpha}_t &= 
+\begin{bmatrix}
+\phi_1 & 1 \\
+\phi_2 & 0
+\end{bmatrix}
+\vec{\alpha}_t
++
+\begin{bmatrix}
+\mu \\
+0
+\end{bmatrix}
++
+\begin{bmatrix}
+1 \\
+0 
+\end{bmatrix}
+\eta_t
+\end{aligned}
+$$
+
+### AR(p)
 
 Form in [@WestHarrison1997, p. 297]
 A SSM form of the AR(p) model,

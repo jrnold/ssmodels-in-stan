@@ -1,7 +1,13 @@
-`r if (knitr:::is_html_output()) '# References {-}'`
+# Software
 
-```{r include=FALSE}
-knitr::write_bib(c(
-  .packages(), 'bookdown'
-), 'packages.bib')
-```
+## R packages
+
+- dse
+- sspir
+- dlm
+- KFAS
+- The function `StructTS` is included in the recommended **stats** package.
+
+
+
+## Other

@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="filtering.html">
+<link rel="next" href="simulation-smoothers.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,145 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="smoothing" class="section level2">
+<h2><span class="header-section-number">3.2</span> Smoothing</h2>
+<table>
+<caption>Dimensions of vectors and matrices used in smoothing recursions</caption>
+<thead>
+<tr class="header">
+<th align="left">Vector/Matrix</th>
+<th align="left">Dimension</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{r}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\vec{\vec{\alpha}}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{u}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\hat{\vec{\varepsilon}}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\hat{\vec{\eta}}_t\)</span></td>
+<td align="left"><span class="math inline">\(r \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{N}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{V}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{D}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times p\)</span></td>
+</tr>
+</tbody>
+</table>
+<div id="state-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> State Smoothing</h3>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.4.2)</span></p>
+<p>Smoothing calculates the estimate of the state using all observations, <span class="math inline">\(\hat{\vec{\alpha}} = \E(\vec{\alpha}_t | \mat{Y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha} | \mat{Y}_n)\)</span>.</p>
+<p>Smoother in Eq 4.44. Let <span class="math inline">\(\hat{\vec{a}} = \E(\alpha_t | \vec{y}_1, \dots \vec{y}_n)\)</span> and <span class="math inline">\(\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_1, \dots \vec{y}_n)\)</span>, then <span class="math display">\[
+\begin{aligned}[t]
+\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , \\
+\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t, \\
+\hat{\vec{\alpha}}_t &amp;= \vec{a}_t + \mat{P}_t \vec{r}_{t - 1} , \\
+\mat{V}_t &amp;= \mat{P}_t - \mat{P}_t \mat{N}_{t - 1} \mat{P}_t ,
+\end{aligned}
+\]</span> for <span class="math inline">\(t = n, \dots, 1\)</span>, with <span class="math inline">\(\vec{r}_n = \vec{0}\)</span>, and <span class="math inline">\(\mat{N}_t = \mat{0}\)</span>.</p>
+<p>During the filtering pass <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span>, and <span class="math inline">\(\mat{P}_t\)</span> for <span class="math inline">\(t = 1, \dots, n\)</span> need to be stored. Alternatively, <span class="math inline">\(\vec{a}_t\)</span> and <span class="math inline">\(\mat{P}_t\)</span> only can be stored, and <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span> recalculated on the fly. However, since the dimensions of <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{F}_t\)</span>, <span class="math inline">\(\mat{K}_t\)</span> are usually small relative to <span class="math inline">\(\vec{a}_t\)</span> and <span class="math inline">\(\mat{P}_t\)</span> is is usually worth storing them.</p>
+</div>
+<div id="updating-smoothed-states" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> Updating Smoothed States</h3>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.4.5)</span></p>
+<p>If a new observation arises, existing smoothed estimates of the states can be updated without having to run the full state smoother again.</p>
+<p>Suppose a new obervation, <span class="math inline">\(\vec{y}_{n + 1}\)</span>, is available. We want to calculate <span class="math inline">\(\hat{\vec{\alpha}}_{t|n + 1} = \E(\vec{\alpha} | \mat{Y}_{n + 1})\)</span> and <span class="math inline">\(\mat{V}_{t|n + 1} = \Var(\vec{\alpha}) | \mat{Y}_{n + 1}\)</span>, when we already have <span class="math inline">\(\hat{\vec{\alpha}}_{t|n} = \E(\vec{\alpha} | \mat{Y}_{n})\)</span> and <span class="math inline">\(\mat{V}_{t|n} = \Var(\vec{\alpha} | \mat{Y}_{n})\)</span> from running smoother when <span class="math inline">\(\mat{Y}_n\)</span> was available.</p>
+<p>Let <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T \cdots \mat{L}_n\T\)</span> with <span class="math inline">\(\vec{b}_{t|n + 1} = \mat{I}_m\)</span>. Then <span class="math inline">\(b_{t|n + 1} = \mat{L}_t\T b_{t+1|n+1}\)</span> for <span class="math inline">\(t = n, \dots, 1\)</span>. Then the states can be updated as, <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\alpha}}_{t|n + 1} &amp;= \hat{\vec{a}}_{t|n} + \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \vec{v}_{n + 1} , \\
+\mat{V}_{t|n + 1} &amp;= \mat{V}_{t|n} - \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \mat{Z}_{n + 1} \vec{b}_{t|n + 1}\T \mat{P}_t ,
+\end{aligned}
+\]</span> for <span class="math inline">\(n = t, t + 1, \dots\)</span>, with <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\alpha}}_{n|n} &amp;= \vec{a}_n + \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \vec{v}_n, \\
+\mat{V}_{n|n} &amp;= \mat{P}_n - \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \mat{Z}_n \mat{P}_n ,
+\end{aligned}
+\]</span> The values of <span class="math inline">\(\mat{P}_t\)</span>, <span class="math inline">\(\mat{L}_t\)</span>, <span class="math inline">\(\mat{F}_{n + 1}\)</span>, and <span class="math inline">\(\vec{v}_{n + 1}\)</span> are available from the Kalman filter.</p>
+</div>
+<div id="disturbance-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Disturbance smoothing</h3>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.5)</span></p>
+<p>Disturbance smoothing calculates the smoothed estimates, <span class="math inline">\(\hat{\vec{\varepsilon}}_t = \E(\vec{\varepsilon} | \mat{Y}_n)\)</span> and <span class="math inline">\(\hat{\vec{\eta}} = \E(\vec{\eta}_t | \mat{Y}_n)\)</span>.</p>
+<p><span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\varepsilon}}_t &amp;= \mat{H}_t (\mat{F}^{-1} \vec{v}_t - \mat{K}_t\T \vec{r}_t) , &amp;
+\Var(\vec{\varepsilon}_t | \mat{Y}_n) &amp;= \mat{H}_t - \mat{H}_t (\mat{F}_t^{-1} + \mat{K}_t\T \mat{N}_t \mat{K}_t) \mat{H}_t , \\
+\hat{\vec{\eta}}_t &amp;= \mat{Q}_t \mat{R}_t\T \vec{r}_t , &amp;
+\Var(\vec{\eta}_t | \mat{Y}_n) &amp;= \mat{Q}_t - \mat{Q}_t \mat{R}_t\T \mat{N}_t \mat{R}_t \mat{Q}_t , \\
+\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , &amp;
+\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t
+\end{aligned}
+\]</span></p>
+<p>Alternatively, these equations can be rewritten as, <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\varepsilon}}_t &amp;= \mat{H}_t \vec{u}_t , &amp;
+\Var(\vec{\varepsilon}_t | \mat{Y}_n) &amp;= \mat{H}_t - \mat{H}_t \mat{D}_t \mat{H}_t , \\
+\hat{\vec{\eta}}_t &amp;= \mat{Q}_t \mat{R}_t\T \vec{r}_t , &amp;
+\Var(\vec{\eta}_t | \mat{Y}_n) &amp;= \mat{Q}_t - \mat{Q}_t \mat{R}_t\T \mat{N}_t \mat{R}_t \mat{Q}_t , \\
+\vec{u}_t &amp;= \mat{F}^{-1} \vec{v}_t - \mat{K}_t\T \vec{r}_t , &amp;
+\mat{D}_t &amp;= \mat{F}_t^{-1} + \mat{K}_t\T \mat{N}_t \mat{K}_t , \\
+\vec{r}_{t - 1} &amp;= \mat{Z}_t\T \vec{u}_t + \mat{T}_t\T \vec{r}_t , &amp;
+\mat{N}_{t - 1} &amp;= \mat{Z}_t\T \mat{D}_t \mat{Z}_t + \mat{T}_t\T \mat{N}_t \mat{T}_t - \mat{Z}_t\T \mat{K}_t\T \mat{N}_t \mat{T}_t - \mat{T}_t\T \mat{N}_t \mat{K}_t \mat{Z}_t .
+\end{aligned}
+\]</span> This reformulation can be computationally useful since it relies on the system matrices <span class="math inline">\(\mat{Z}_t\)</span> and <span class="math inline">\(\mat{T}_t\)</span> which are often sparse.</p>
+<p>The smoothing error <span class="math inline">\(\vec{u}_t\)</span> and <span class="math inline">\(\vec{r}_t\)</span> are important in their own right. The vector <span class="math inline">\(\vec{r}_t\)</span> is the scaled smoothed estimator of <span class="math inline">\(\vec{\eta}_t\)</span>.</p>
+<p>The disturbance smoothing recursions require only <span class="math inline">\(\vec{v}_t\)</span>, <span class="math inline">\(\mat{f}_t\)</span>, and <span class="math inline">\(\mat{K}_t\)</span> from the Kalman filter. Unlike the state smoother, they do not require the vector <span class="math inline">\(\vec{a}_t\)</span> or matrix <span class="math inline">\(\mat{P}_t\)</span>.</p>
+</div>
+<div id="fast-state-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.4</span> Fast state smoothing</h3>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.6.2)</span></p>
+<p>If the variances of the states do not need to be calculated, then a faster smoothing algorithm can be used (Koopman 1993). The fast state smoother is defiend as, <span class="math display">\[
+\hat{\vec{\alpha}}_t = \mat{T}_t \hat{\vec{\alpha}}_t + \mat{R}_t \mat{Q}_t \mat{R}_t\T \vec{r}_t ,
+\]</span> for <span class="math inline">\(t = 1, \dots, n\)</span>. This is initialized via, <span class="math display">\[
+\hat{\vec{\alpha}}_1 = \vec{a}_1 + \mat{P}_1 \vec{r}_0 .
+\]</span> Thus the smoother is run, but only calculating <span class="math inline">\(\vec{r}_n, \dots, \vec{r}_0\)</span>. Then, <span class="math inline">\(\hat{\vec{\alpha}}_1, \dots \hat{\vec{\alpha}}_t\)</span> are calculated using the above equation.</p>
+</div>
+<div id="classical-state-smoothing" class="section level3">
+<h3><span class="header-section-number">3.2.5</span> Classical state smoothing</h3>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.6.1)</span></p>
+<p>The original state smoothing algorithm from Anderson and Moore (1979) is <span class="math display">\[
+\begin{aligned}[t]
+\hat{\vec{\alpha}}_t &amp;= \vec{a}_{t|t} + \mat{P}_{t|t} \mat{T}_t\T \mat{P}_{t + 1}^{-1}(\hat{\vec{\alpha}}_{t + 1} - \vec{a}_{t + 1}) .
+\end{aligned}
+\]</span> Note that <span class="math inline">\(\mat{T} \mat{P}_{t|t} = \mat{L}_t \mat{P}_t\)</span>. Relative to the other state smoothing algorithm the classical smoother is more computationally burdensome because it requires inverting <span class="math inline">\(\mat{P}_{t + 1}\)</span>. The other state smoother only requires inverting <span class="math inline">\(\mat{F}_t\)</span>, but that has already been inverted in the filtering pass.</p>
+<p>&lt;– ## Jacknife and Deleted observations</p>
+<p>Results in West and Harrison (1997), p. 104 and such. –&gt;</p>
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="filtering.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="simulation-smoothers.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +394,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssmodels.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

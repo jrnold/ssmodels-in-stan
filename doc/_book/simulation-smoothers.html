@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="smoothing.html">
+<link rel="next" href="missing-observations.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,37 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="simulation-smoothers" class="section level2">
+<h2><span class="header-section-number">3.3</span> Simulation smoothers</h2>
+<div id="mean-corrections" class="section level3">
+<h3><span class="header-section-number">3.3.1</span> Mean corrections</h3>
+<p><span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span></p>
+<p>Simulation smoother by mean corrections. Ch. 4.9.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div id="de-jong-shephard-method" class="section level3">
+<h3><span class="header-section-number">3.3.2</span> de Jong-Shephard method</h3>
+<p>While the mean-corrections method usually works, it may fail in some cases due to imposed ill-defined variance matrices (see Jungbacker and Koopman 2007, sec 1). These recursions were developed in de Jong and Shephard (1995),</p>
+<p><strong>TODO</strong></p>
+</div>
+<div id="forward-filter-backwards-smoother" class="section level3">
+<h3><span class="header-section-number">3.3.3</span> Forward-Filter Backwards smoother</h3>
+<p><strong>TODO</strong></p>
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="smoothing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="missing-observations.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +286,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssmodels.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

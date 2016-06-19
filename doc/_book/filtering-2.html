@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="misc.html">
+<link rel="next" href="software.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,60 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="filtering-2" class="section level2">
+<h2><span class="header-section-number">8.2</span> Filtering</h2>
+<pre><code>matrix ssm_filter_predict_obs(vector y, matrix Z, matrix H, vector a, matrix P)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_t = \E(\alpha_t | Y_{t - 1})\)</span> and <span class="math inline">\(\mat{P}_t = \Var(\alpha_t | Y_{t - 1})\)</span>, calculate the one-step ahead forecast error <span class="math inline">\(v_t = y_t - \E(y_t | Y_{t - 1})\)</span> and the precision of the forecast, <span class="math inline">\(F^{-1}_t = \Var(y_t | Y_{t - 1})^{-1}\)</span>.</p>
+<p>This returns a <span class="math inline">\(p \times (p + 1)\)</span> matrix containing both <span class="math inline">\(v_t\)</span> and <span class="math inline">\(F^{-1}\)</span>, <span class="math display">\[
+\begin{bmatrix}
+v_t &amp; F^{-1}_t
+\end{bmatrix} =
+\begin{bmatrix}
+v_{t,1} &amp; F^{-1}_{t, 1, 1} &amp;  F^{-1}_{t, 1, 2} &amp; \cdots &amp; F^{-1}_{t, 1, p} \\
+v_{t,2} &amp; F^{-1}_{t, 2, 1} &amp;  F^{-1}_{t, 2, 2} &amp; \cdots &amp; F^{-1}_{t, 2, p} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+v_{t,p} &amp; F^{-1}_{t, p, 1} &amp;  F^{-1}_{t, p, 2} &amp; \cdots &amp; F^{-1}_{t, p, p}
+\end{bmatrix} .
+\]</span></p>
+<pre><code>matrix ssm_filter_update(...)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_t = \E(\alpha_t | Y_{t - 1})\)</span> and <span class="math inline">\(\mat{P}_t = \Var(\alpha_t | Y_{t - 1})\)</span>, the one-step ahead forecast error <span class="math inline">\(v_t = y_t - \E(y_t | Y_{t - 1})\)</span>, and the precision of the forecast, <span class="math inline">\(F^{-1}_t = \Var(y_t | Y_{t - 1})^{-1}\)</span>, calculate the filtered state <span class="math inline">\(a_{t| t} = \E(\alpha_t | Y_t)\)</span> and <span class="math inline">\(P_{t | t} = \Var(\alpha_t | Y_t)\)</span>.</p>
+<p>Returns a <span class="math inline">\(m \times (1 + m)\)</span> matrix with <span class="math inline">\(a_{t|t}\)</span> and <span class="math inline">\(P_{t|t}\)</span>, <span class="math display">\[
+\begin{bmatrix}
+a_{t|t} &amp; P_{t|t}
+\end{bmatrix} =
+\begin{bmatrix}
+a_{t|t,1} &amp; P_{t|t, 1, 1} &amp;  P_{t|t, 1, 2} &amp; \cdots &amp; P_{t|t, 1, m} \\
+a_{t|t,2} &amp; P_{t|t, 2, 1} &amp;  P_{t|t, 2, 2} &amp; \cdots &amp; P_{t|t, 2, m} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+a_{t|t,m} &amp; P_{t|t, m, 1} &amp;  P_{t|t, m, 2} &amp; \cdots &amp; P_{t|t, m, m}
+\end{bmatrix} .
+\]</span></p>
+<pre><code>matrix ssm_filter_predict_state(...)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_t = \E(\alpha_t | Y_{t - 1})\)</span> and <span class="math inline">\(\mat{P}_t = \Var(\alpha_t | Y_{t - 1})\)</span>, the one-step ahead forecast error <span class="math inline">\(v_t = y_t - \E(y_t | Y_{t - 1})\)</span>, and the precision of the forecast, <span class="math inline">\(F^{-1}_t = \Var(y_t | Y_{t - 1})^{-1}\)</span>, predict the state in the next period, <span class="math inline">\(a_{t+ t} = \E(\alpha_{t + 1}| Y_t)\)</span> and <span class="math inline">\(P_{t + t1} = \Var(\alpha_{t + 1} | Y_t)\)</span>.</p>
+<p>Returns a <span class="math inline">\(p \times (1 + p)\)</span> matrix with <span class="math inline">\(a_{t + 1}\)</span> and <span class="math inline">\(P_{t + 1}\)</span>, <span class="math display">\[
+\begin{bmatrix}
+a_{t + 1} &amp; P_{t + 1}
+\end{bmatrix} =
+\begin{bmatrix}
+a_{t + 1,1} &amp; P_{t + 1, 1, 1} &amp;  P_{t + 1, 1, 2} &amp; \cdots &amp; P_{t + 1, 1, m} \\
+a_{t + 1,2} &amp; P_{t + 1, 2, 1} &amp;  P_{t + 1, 2, 2} &amp; \cdots &amp; P_{t + 1, 2, m} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+a_{t + 1,m} &amp; P_{t + 1, m, 1} &amp;  P_{t + 1, m, 2} &amp; \cdots &amp; P_{t + 1, m, m}
+\end{bmatrix} .
+\]</span></p>
+<pre><code>matrix ssm_filter_predict_state_2(...)</code></pre>
+<p>Given <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{a}_{t|t} = \E(\alpha_t | Y_{t})\)</span> and <span class="math inline">\(\mat{P}_{t|t} = \Var(\alpha_t | Y_{t |t})\)</span>, predict the state in the next period, <span class="math inline">\(a_{t+ t} = \E(\alpha_{t + 1}| Y_t)\)</span> and <span class="math inline">\(P_{t + t1} = \Var(\alpha_{t + 1} | Y_t)\)</span>.</p>
+<p>Returns a <span class="math inline">\(p \times (1 + p)\)</span> matrix with <span class="math inline">\(a_{t|t}\)</span> and <span class="math inline">\(P_{t|t}\)</span>, in the same format as <code>ssm_filter_predict_state_2</code>.</p>
+
 </div>
+<!-- </div> -->
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="misc.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="software.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +309,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssfunctions.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

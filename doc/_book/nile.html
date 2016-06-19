@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices-1.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="example-models-1.html">
+<link rel="next" href="airline-passenger-miles.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,16 +229,62 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Parameter Estimation</h1> 
+<div id="nile" class="section level2">
+<h2><span class="header-section-number">7.1</span> Nile</h2>
+<p>This is a short (<span class="math inline">\(n = 100\)</span>) univariate time series of the annual flow volumes of the Nile River at Aswan between 1871 and 1970. This series is described in <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span> and had been analyzed by <span class="citation">Cobb (<a href="#ref-Cobb1978">1978</a>)</span> and <span class="citation">Balke (<a href="#ref-Balke1993">1993</a>)</span>. It is included with R as the dataset <code>Nile</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;Nile&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;datasets&quot;</span>) 
+Nile_ &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">year =</span> <span class="kw">year</span>(<span class="kw">ts_to_date</span>(<span class="kw">time</span>(Nile))),
+                    <span class="dt">flow =</span> <span class="kw">as.numeric</span>(Nile))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(Nile_, <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> flow)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_line</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Annual Flow&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;&quot;</span>)</code></pre></div>
+<p><img src="ssmodels-in-stan_files/figure-html/Nile_plot-1.png" width="672" /></p>
+<div id="local-level-model-1" class="section level3">
+<h3><span class="header-section-number">7.1.1</span> Local Level Model</h3>
+<p>The Nile data can be modeled as a local level model, <span class="math display">\[
+\begin{aligned}[t] 
+y_t &amp;= \mu_t + \varepsilon_t &amp; \varepsilon_t &amp; \sim N(0, \sigma_{\varepsilon}^2) \\ 
+\mu_{t + 1} &amp;= \mu_t + \eta_t &amp; 
+\eta_t &amp; \sim N(0, \sigma^2_{\eta}) 
+\end{aligned} 
+\]</span> This is a time-invariant SSM with <span class="math inline">\(m = 1\)</span> states, <span class="math inline">\(p = 1\)</span> observations at each time period, and <span class="math inline">\(r = 1\)</span> system disturbances, <span class="math display">\[ 
+\begin{aligned}[t] 
+\mat{T} = \mat{Z} = \mat{R} &amp;= \begin{bmatrix} 1 \end{bmatrix} \\ 
+\mat{c} = \mat{Q} &amp;= \begin{bmatrix} 0 \end{bmatrix} \\ 
+\mat{H} &amp;= \begin{bmatrix} \sigma_{\varepsilon}^2 \end{bmatrix} \\
+\mat{Q} &amp;= \begin{bmatrix} \sigma_{\eta}^2 \end{bmatrix}
+\end{aligned}
+\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">StructTS</span>(Nile, <span class="dt">type =</span> <span class="st">&quot;level&quot;</span>)</code></pre></div>
+<pre><code>## 
+## Call:
+## StructTS(x = Nile, type = &quot;level&quot;)
+## 
+## Variances:
+##   level  epsilon  
+##    1469    15099</code></pre>
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+<div id="ref-Cobb1978">
+<p>Cobb, George W. 1978. “The Problem of the Nile: Conditional Solution to a Changepoint Problem.” <em>Biometrika</em> 65 (2): 243–51. doi:<a href="https://doi.org/10.1093/biomet/65.2.243">10.1093/biomet/65.2.243</a>.</p>
+</div>
+<div id="ref-Balke1993">
+<p>Balke, Nathan S. 1993. “Detecting Level Shifts in Time Series.” <em>Journal of Business &amp; Economic Statistics</em> 11 (1). American Statistical Association: 81–92. <a href="http://www.jstor.org/stable/1391308" class="uri">http://www.jstor.org/stable/1391308</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="example-models-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="airline-passenger-miles.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -265,7 +311,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/estimation.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/examples.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

@@ -1,3 +1,4 @@
+# General patterns
 auto/
 *.log
 *.out
@@ -8,7 +9,11 @@ auto/
 *.bbl
 *.fls
 *_latexmk
-/default.bib
 *.bak
 .Rproj.user
 .$*$
+
+# Doc generated
+/doc/_book
+/doc/_bookdown_files
+/doc/libs/

@@ -2,15 +2,48 @@
 
 ## R packages
 
+@Tusell2011 reviews R packages for state space models (as of 2011).
+@Helske2012 includes an more recent review of R packages implementing state space models.
+
+- The **stats** package includes functions for univariate Kalman filtering and smoothing (`KalmanLike`, `KalmanRun`, `KalmanSmooth`, `KalmanForecast`)  which are used by `StructTS` and `arima`.
 - dse
 - sspir
 - dlm
 - KFAS
-- The function `StructTS` is included in the recommended **stats** package.
+
 - dlmodeler - provides a unified interface to multiple packages
 - rucm: structural time series
 - MARSS - maximum likelihood estimation of a large glass of Guassian state space models with an EM-algorithm
 
-
-
 ## Other
+
+The [JSS Volume 41](https://www.jstatsoft.org/issue/view/v041) [@CommandeurKoopmanOoms2011] contains articles on state space implementations in multiple languages
+
+- STAMP [@Mendelssohn2011a]
+- Ox/SsfPack [@Pelagatti2011a]
+- R [@PetrisPetrone2011a]
+- SsfPack in S+FinMetrics [@Zivot2011a]
+- Matlab [@PengAston2011a]
+- FORTRAN [@Bell2011a]
+- eViews [@Bossche2011a]
+- RATS [@Doan2011a]
+- Stata [@DrukkerGates2011a]
+- gretl [@Lucchetti2011a]
+- SAS [@Selukar2011a]
+- Ox [@Bos2011a]
+
+### Stata
+
+Stata's [timeseries](http://www.stata.com/manuals14/ts.pdf) capabilities includes the command `ssmodels` to estimate general state space models, as well as common special cases: `arima` (SARIMAX models), `dfactor` (Dynamic Factor), and `ucm` (Unobserved Components Models).
+
+### Python
+
+The [statsmodels] module [statsmodels.tsa] contains functions and classes for time series analysis including autoregressive (AR), vector autoregressive (VAR), autoregressive moving avergage models (ARMA), and functions fo Kalman filtering. Currently the 
+Kalman filter only handles the special univariate case for ARIMA.
+
+The **statsmodels** module [statsmodels.tsa.statespace](http://www.statsmodels.org/dev/statespace.html#) contains more general state space code. The examples are very good.
+
+An [example](http://pages.uoregon.edu/cfulton/posts/state_space_mh.html) of using `statsmodels.tsa.statespace` and [PyMC](http://pymcmc.readthedocs.io/en/latest/) to simulate from the posterior
+of a state space model. See [State Space Modeling in Python](http://pages.uoregon.edu/cfulton/posts/state_space_python.html).
+
+@StricklandBurdettMengersenEtAl2014a introduce [PySSM](https://bitbucket.org/christophermarkstrickland/pyssm) to simulate state space models using PyMCMC (not to be confused with the more popular PyMC).

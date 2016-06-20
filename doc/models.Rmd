@@ -151,7 +151,6 @@ Since $\mat{Q}$ is diagonal, the errors $\eta$ are uncorrelated, but $\mat{R} \m
 
 ### Seasonal Factor Models
 
-
 [@PetrisPetroneEtAl2009, Sec 3.2.2]
 
 A seasonal factor model with $s$ seasons is,
@@ -454,3 +453,159 @@ y_t &=
 \end{aligned}
 $$
 Note that $r = 1$.
+
+AR(p) example
+
+Let the states be $\vec{\alpha}_t = (y_{t}, y_{t - 1}, \cdots, y_{t - p + 1})'$.
+$$
+\begin{aligned}[t]
+y_t &=
+\begin{bmatrix}
+1 & 0 & cdots & 0 & 0
+\end{bmatrix}
+\vec{alpha}_t
+\\
+\vec{alpha}_{t + 1} 
+&= 
+\begin{bmatrix}
+\phi_1 & \phi_2 & \cdots & \phi_{p-1} & \phi_p \\
+1 & 0 & \cdots & 0 & 0 \\
+0 & 1 & \cdots & 0 & 0  \\
+\vdots & & \ddots & \vdots & \vdots \\
+0 & \cdots & 0 & 1 & 0 
+\end{bmatrix}
++ 
+\begin{bmatrix}
+1 \\
+0 \\
+\vdots \\
+0 \\
+0
+\end{bmatrix}
+\eta_t 
+&
+\eta_t \sim N(0, \sigma^2_{\eta}
+\end{aligned}
+$$
+
+## ARMA(p, q) Hamilton
+
+The lagged sum of an AR($p$) process is an ARMA process.
+The dimension of the state is $m = \max(p, q + 1)$.
+Let $\phi_{j} = 0$ for $j > p$, and $\theta_j = 0$ for $j > q$.
+$$
+\begin{aligned}[t]
+y_t &=
+\begin{bmatrix}
+1 & \theta_1 & cdots & \theta_m & \theta_{m - 1}
+\end{bmatrix}
+\vec{alpha}_t
+\\
+\vec{alpha}_{t + 1} 
+&= 
+\begin{bmatrix}
+\phi_1 & \phi_2 & \cdots & \phi_{m-1} & \phi_m \\
+1 & 0 & \cdots & 0 & 0 \\
+0 & 1 & \cdots & 0 & 0  \\
+\vdots & & \ddots & \vdots & \vdots \\
+0 & \cdots & 0 & 1 & 0 
+\end{bmatrix}
++ 
+\begin{bmatrix}
+1 \\
+0 \\
+\vdots \\
+0 \\
+0
+\end{bmatrix}
+\eta_t 
+&
+\eta_t \sim N(0, \sigma^2_{\eta}
+\end{aligned}
+$$
+
+Source: http://www-stat.wharton.upenn.edu/~stine/stat910/lectures/14_state_space.pdf
+
+## ARMA(p, q) Harvey
+
+Let $m = \max(p, q + 1)$
+$$
+\begin{aligned}[t]
+y_t &=
+\begin{bmatrix}
+1 & 0 & 0 & \cdots & 0
+\end{bmatrix}
+\vec{alpha}_t
+\\
+\vec{alpha}_{t + 1} 
+&= 
+\begin{bmatrix}
+\phi_1 & 1 & 0 & \cdots & 0 \\
+\phi_2 & 0 & 0 & \cdots  & 0 \\
+\phi_3 & 1 & 0 & \cdots  & 0  \\
+\vdots & \vdots & \vdots \ddots & \vdots \\
+\phi_2 & 0 & 0 & \cdots  & 0 
+\end{bmatrix}
++ 
+\begin{bmatrix}
+1 \\
+\theta_1 \\
+\theta_2 \\
+\vdots \\
+\theta_{m - 1} \\
+\end{bmatrix}
+\eta_t 
+&
+\eta_t \sim N(0, \sigma^2_{\eta}
+\end{aligned}
+$$
+
+## ARMA(p, q) Akaike
+
+In this representation, the state vector is the conditional expectation of the ARMA process.
+
+Define the conditional expectation $\hat{y}_{t|s} = \E\[y_t | y_1, \dots, y_s \]$.
+The state recursion is,
+$$
+\hat{y}_{t + m | t} = \phi_1 \hat{y}_{t + d - 1} + \dots + \phi_m \hat{y}_{t + 1|t}
+$$
+Define the state vector as,
+$$
+\vec{\alpha_t} = (\hat{y}_{t|t} - y_t, \hat{y}_{t + 1|t}, \dots, \hat{y}_{t + d - 1|t})'
+$$
+The state equation updates the conditional expectations as new information arrives with the observation of $y_{t + 1}$.
+$$
+\begin{aligned}[t]
+y_t &=
+\begin{bmatrix}
+1 & 0 & 0 & \cdots & 0
+\end{bmatrix}
+\vec{alpha}_t
+\\
+\vec{alpha}_{t + 1} 
+&= 
+\begin{bmatrix}
+0 & 1 & 0 & \cdots & 0 \\
+0 & 0 & 1 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & 1 \\
+\phi_{m} & \phi_{m - 1} & \phi_{m - 2} & \cdots & \phi_1
+\end{bmatrix}
++ 
+\begin{bmatrix}
+1 \\
+\theta_1 \\
+\theta_2 \\
+\vdots \\
+\theta_{m - 1} \\
+\end{bmatrix}
+\eta_t 
+&
+\eta_t \sim N(0, \sigma^2_{\eta}
+\end{aligned}
+$$
+
+
+## Canonical Representation
+
+See [Robert Stine's Stat 910 Notes](http://www-stat.wharton.upenn.edu/~stine/stat910/lectures/14_state_space.pdf) and de Jong and Penzer (2004).

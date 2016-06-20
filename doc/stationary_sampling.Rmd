@@ -1,0 +1,11 @@
+# Sampling from Autocorrelations
+
+Objective: sample from space in which AR parameters are stationary,
+and MA parameters are invertible.
+Since these spaces are complicated, it is easiest to transform
+the coefficients from an autocorrelation function to a partial autocorrelation function.
+
+Documentation for this method:
+
+- @Jones1980a (cited by help for `arima`)
+- @Jones1987a (cited by help for `dlm::ARtransPars`)

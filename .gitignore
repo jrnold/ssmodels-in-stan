@@ -8,8 +8,6 @@ auto/
 *.bbl
 *.fls
 *_latexmk
-/doc/*.html
-/doc/*.pdf
 /default.bib
 *.bak
 .Rproj.user

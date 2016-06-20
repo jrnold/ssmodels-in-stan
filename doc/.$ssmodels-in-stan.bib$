@@ -1,0 +1,580 @@
+% Encoding: UTF-8
+
+
+@Online{DryerHaspelmath2013a,
+  Title                    = {The World Atlas of Language Structures Online},
+  Date                     = {2013},
+  Editor                   = {Dryer, Matthew S. and Haspelmath, Martin},
+  URL                      = {http://wals.info},
+  Organization             = {Max Planck Institute for Evolutionary Anthropology},
+  Urldate                  = {2016-06},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{WestHarrison1997,
+  Title                    = {{Bayesian} forecasting and dynamic models},
+  Author                   = {West, M. and Harrison, J.},
+  ISBN                     = {9780387947259},
+  Publisher                = {Springer},
+  Series                   = {Springer series in statistics},
+  URL                      = {http://books.google.com/books?id=jcl8lD75fkYC},
+  Year                     = {1997},
+  Lccn                     = {96038166},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{Tusell2011,
+  Title                    = {{Kalman} filtering in {R}},
+  Author                   = {Fernando Tusell},
+  Date                     = {2011-03},
+  Journaltitle             = {Journal of Statistical Software},
+  ISSN                     = {1548-7660},
+  Number                   = {2},
+  Pages                    = {1--27},
+  URL                      = {http://www.jstatsoft.org/v39/i02},
+  Volume                   = {39},
+  Abstract                 = {Support in R for state space estimation via Kalman filtering was limited to one package, until fairly recently. In the last five years, the situation has changed with no less than four additional packages offering general implementations of the Kalman filter, including in some cases smoothing, simulation smoothing and other functionality. This paper reviews some of the offerings in R to help the prospective user to make an informed choice.},
+  Accepted                 = {2010-08-17},
+  Bibdate                  = {2010-08-17},
+  Coden                    = {JSSOBK},
+  Day                      = {1},
+  Owner                    = {jrnold},
+  Submitted                = {2010-01-12},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{ShumwayStoffer2010,
+  Title                    = {time series analysis and its applications},
+  Author                   = {Shumway, R.H. and Stoffer, D.S.},
+  Date                     = {2010},
+  ISBN                     = {9781441978653},
+  Publisher                = {Springer},
+  Series                   = {Springer Texts in Statistics},
+  URL                      = {http://books.google.com/books?id=NIhXa6UeF2cC},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{PetrisPetroneEtAl2009,
+  Title                    = {dynamic linear models with {R}},
+  Author                   = {Petris, G. and Petrone, S. and Campagnoli, P.},
+  Date                     = {2009},
+  ISBN                     = {9780387772370},
+  Publisher                = {Springer},
+  Series                   = {Use R!},
+  URL                      = {http://books.google.com/books?id=VCt3zVq8TO8C},
+  Lccn                     = {2009926480},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{PetrisPetrone2011a,
+  Title                    = {State Space Models in {R}},
+  Author                   = {Giovanni Petris and Sonia Petrone},
+  Date                     = {2011-05},
+  Journaltitle             = {Journal of Statistical Software},
+  ISSN                     = {1548-7660},
+  Number                   = {4},
+  Pages                    = {1--25},
+  URL                      = {http://www.jstatsoft.org/v41/i04},
+  Volume                   = {41},
+  Accepted                 = {2010-11-10},
+  Bibdate                  = {2010-11-10},
+  Coden                    = {JSSOBK},
+  Day                      = {12},
+  Owner                    = {jrnold},
+  Submitted                = {2010-01-26},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{Petris2010a,
+  Title                    = {an {R} package for dynamic linear models},
+  Author                   = {Giovanni Petris},
+  Date                     = {2010},
+  Journaltitle             = {Journal of Statistical Software},
+  Number                   = {12},
+  Pages                    = {1--16},
+  URL                      = {http://www.jstatsoft.org/v36/i12/},
+  Volume                   = {36},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{KoopmanShephardDoornik1999,
+  Title                    = {statistical algorithms for models in state space using {SsfPack 2.2}},
+  Author                   = {Koopman, Siem Jan and Shephard, Neil and Doornik, Jurgen A.},
+  Date                     = {1999},
+  Journaltitle             = {Econometrics Journal},
+  DOI                      = {10.1111/1368-423X.00023},
+  ISSN                     = {1368-423X},
+  Number                   = {1},
+  Pages                    = {107--160},
+  Volume                   = {2},
+  Abstract                 = {This paper discusses and documents the algorithms of SsfPack 2.2. SsfPack is a suite of C routines for carrying out computations involving the statistical analysis of univariate and multivariate models in state space form. The emphasis is on documenting the link we have made to the Ox computing environment. SsfPack allows for a full range of different state space forms: from a simple time-invariant model to a complicated time-varying model. Functions can be used which put standard models such as ARMA and cubic spline models in state space form. Basic functions are available for filtering, moment smoothing and simulation smoothing. Ready-to-use functions are provided for standard tasks such as likelihood evaluation, forecasting and signal extraction. We show that SsfPack can be easily used for implementing, fitting and analysing Gaussian models relevant to many areas of econometrics and statistics. Some Gaussian illustrations are given.},
+  Keywords                 = {Kalman filtering and smoothing, Markov chain Monte Carlo, Ox, Simulation smoother, State space},
+  Owner                    = {jeff},
+  Publisher                = {Blackwell Publishers Ltd},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{KoopmanShephardDoornik2008,
+  Title                    = {statistical algorithms for models in state space form: {SsfPack} 3.0},
+  Author                   = {Koopman, Siem Jan and Neil Shephard and Doornik, Jurgen A.},
+  Date                     = {2008},
+  ISBN                     = {9780955707636},
+  Publisher                = {Timberlake Consultants Press},
+  URL                      = {http://books.google.com/books?id=hLyfQAAACAAJ},
+  Lccn                     = {2009378150},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{KoopmanShephard1992,
+  Title                    = {exact score for time series models in state space form},
+  Author                   = {Koopman, Siem Jan and Shephard, Neil},
+  Date                     = {1992},
+  Journaltitle             = {Biometrika},
+  ISSN                     = {00063444},
+  Language                 = {English},
+  Number                   = {4},
+  Pages                    = {823--826},
+  URL                      = {http://www.jstor.org/stable/2337237},
+  Volume                   = {79},
+  Abstract                 = {This paper shows that the score vector for Gaussian state space models takes on a simple form which can be computed in a single pass of the Kalman filter and a smoother.},
+  Jstor_formatteddate      = {Dec., 1992},
+  Owner                    = {jrnold},
+  Publisher                = {Biometrika Trust},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{KoopmanHarvey2003,
+  Title                    = {computing observation weights for signal extraction and filtering},
+  Author                   = {Siem Jan Koopman and Andrew Harvey},
+  Date                     = {2003},
+  Journaltitle             = {Journal of Economic Dynamics and Control },
+  DOI                      = {10.1016/S0165-1889(02)00061-1},
+  ISSN                     = {0165-1889},
+  Number                   = {7},
+  Pages                    = {1317--1333},
+  URL                      = {http://www.sciencedirect.com/science/article/pii/S0165188902000611},
+  Volume                   = {27},
+  Abstract                 = {We present algorithms for computing the weights implicitly assigned to observations when estimating unobserved components, by filtering or smoothing, using a model in state space form. The algorithms are based on recursions derived from the Kalman filter and associated smoother. Since the method applies to any model with a linear state space form, it is not restricted to time-invariant systems and it can be used in a number of situations where other methods break down. Applications include the comparison of signal extraction weights with those used by nonparametric procedures and the computation of weights assigned to observations in making forecasts. },
+  Keywords                 = {Kalman filter},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{KoopmanHarvey2003a,
+  Title                    = {Computing observation weights for signal extraction and filtering},
+  Author                   = {Siem Jan Koopman and Andrew Harvey},
+  Date                     = {2003},
+  Journaltitle             = {Journal of Economic Dynamics and Control },
+  DOI                      = {10.1016/S0165-1889(02)00061-1},
+  ISSN                     = {0165-1889},
+  Number                   = {7},
+  Pages                    = {1317--1333},
+  URL                      = {http://www.sciencedirect.com/science/article/pii/S0165188902000611},
+  Volume                   = {27},
+  Abstract                 = {We present algorithms for computing the weights implicitly assigned to observations when estimating unobserved components, by filtering or smoothing, using a model in state space form. The algorithms are based on recursions derived from the Kalman filter and associated smoother. Since the method applies to any model with a linear state space form, it is not restricted to time-invariant systems and it can be used in a number of situations where other methods break down. Applications include the comparison of signal extraction weights with those used by nonparametric procedures and the computation of weights assigned to observations in making forecasts. },
+  Keywords                 = {Kalman filter},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{Helske2012,
+  Title                    = {{KFAS}: {K}alman filter and smoother for exponential family state space models.},
+  Author                   = {Jouni Helske},
+  Date                     = {2012},
+  Note                     = {R package version 0.9.11},
+  URL                      = {http://CRAN.R-project.org/package=KFAS},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{HarveyTrimburDijk2007a,
+  Title                    = {Trends and cycles in economic time series: A Bayesian approach},
+  Author                   = {Andrew C. Harvey and Thomas M. Trimbur and Herman K. Van Dijk},
+  Date                     = {2007},
+  Journaltitle             = {Journal of Econometrics },
+  DOI                      = {10.1016/j.jeconom.2006.07.006},
+  ISSN                     = {0304-4076},
+  Number                   = {2},
+  Pages                    = {618--649},
+  URL                      = {http://www.sciencedirect.com/science/article/pii/S0304407606001497},
+  Volume                   = {140},
+  Abstract                 = {Trends and cyclical components in economic time series are modeled in a Bayesian framework. This enables prior notions about the duration of cycles to be used, while the generalized class of stochastic cycles employed allows the possibility of relatively smooth cycles being extracted. The posterior distributions of such underlying cycles can be very informative for policy makers, particularly with regard to the size and direction of the output gap and potential turning points. From the technical point of view a contribution is made in investigating the most appropriate prior distributions for the parameters in the cyclical components and in developing Markov chain Monte Carlo methods for both univariate and multivariate models. Applications to \{US\} macroeconomic series are presented. },
+  Keywords                 = {Output gap},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{HarveyKoopman1992,
+  Title                    = {diagnostic checking of unobserved-components time series models},
+  Author                   = {Harvey, Andrew C. and Koopman, Siem Jan},
+  Date                     = {1992},
+  Journaltitle             = {Journal of Business \& Economic Statistics},
+  ISSN                     = {07350015},
+  Language                 = {English},
+  Number                   = {4},
+  Pages                    = {377--389},
+  URL                      = {http://www.jstor.org/stable/1391813},
+  Volume                   = {10},
+  Abstract                 = {Diagnostic checking of the specification of time series models is normally carried out using the innovations--that is, the one-step-ahead prediction errors. In an unobserved-components model, other sets of residuals are available. These auxiliary residuals are estimators of the disturbances associated with the unobserved components. They can often yield information that is less apparent from the innovations, but they suffer from the disadvantage that they are serially correlated even in a correctly specified model with known parameters. This article shows how the properties of the auxiliary residuals may be obtained, how they are related to each other and to the innovations, and how they can be used to construct test statistics. Applications are presented showing how residuals can be used to detect and distinguish between outliers and structural change.},
+  Jstor_articletype        = {research-article},
+  Jstor_formatteddate      = {Oct., 1992},
+  Owner                    = {jrnold},
+  Publisher                = {American Statistical Association},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{HarveyKoopman1992a,
+  Title                    = {Diagnostic Checking of Unobserved-Components Time Series Models},
+  Author                   = {Harvey, Andrew C. and Koopman, Siem Jan},
+  Date                     = {1992},
+  Journaltitle             = {Journal of Business \& Economic Statistics},
+  ISSN                     = {07350015},
+  Language                 = {English},
+  Number                   = {4},
+  Pages                    = {377--389},
+  URL                      = {http://www.jstor.org/stable/1391813},
+  Volume                   = {10},
+  Abstract                 = {Diagnostic checking of the specification of time series models is normally carried out using the innovations--that is, the one-step-ahead prediction errors. In an unobserved-components model, other sets of residuals are available. These auxiliary residuals are estimators of the disturbances associated with the unobserved components. They can often yield information that is less apparent from the innovations, but they suffer from the disadvantage that they are serially correlated even in a correctly specified model with known parameters. This article shows how the properties of the auxiliary residuals may be obtained, how they are related to each other and to the innovations, and how they can be used to construct test statistics. Applications are presented showing how residuals can be used to detect and distinguish between outliers and structural change.},
+  Owner                    = {jrnold},
+  Publisher                = {American Statistical Association},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{HarveyDurbin1986,
+  Title                    = {The Effects of Seat Belt Legislation on British Road Casualties: A Case Study in Structural Time Series Modelling},
+  Author                   = {Harvey, A. C. and Durbin, J.},
+  Date                     = {1986},
+  Journaltitle             = {Journal of the Royal Statistical Society. Series A (General)},
+  ISSN                     = {00359238},
+  Language                 = {English},
+  Number                   = {3},
+  Pages                    = {187--227},
+  URL                      = {http://www.jstor.org/stable/2981553},
+  Volume                   = {149},
+  Abstract                 = {Monthly data on road casualties in Great Britain are analysed in order to assess the effects on casualty rates of the seat belt law introduced on January 31\textsuperscript{st}, 1983. Such analysis is known technically as intervention analysis. The form of intervention analysis used in this paper is based on structural time series modelling and differs in significant respects from standard intervention analysis based on ARIMA modelling. The relative merits of the two approaches are compared. Structural modelling intervention techniques are used to estimate the changes in casualty rates for various categories of road users following the introduction of the seat belt law.},
+  Owner                    = {jrnold},
+  Publisher                = {Wiley for the Royal Statistical Society},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{Harvey1990,
+  Title                    = {Forecasting, Structural Time Series Models and the Kalman Filter},
+  Author                   = {Harvey, Andrew C.},
+  Date                     = {1990},
+  ISBN                     = {9780521405737},
+  Publisher                = {Cambridge University Press},
+  URL                      = {http://books.google.com/books?id=Kc6tnRHBwLcC},
+  Lccn                     = {89031417},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{Harvey1993a,
+  Title                    = {Time Series Models},
+  Author                   = {Harvey, Andrew C.},
+  Date                     = {1993},
+  Edition                  = {2nd},
+  ISBN                     = {978-0262082242},
+  Publisher                = {MIT Press},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{HarveyKoopman2000,
+  Title                    = {Signal extraction and the formulation of unobserved components models},
+  Author                   = {Harvey, Andrew and Koopman, Siem Jan},
+  Date                     = {2000},
+  Journaltitle             = {Econometrics Journal},
+  DOI                      = {10.1111/1368-423X.00040},
+  ISSN                     = {1368-423X},
+  Number                   = {1},
+  Pages                    = {84--107},
+  Volume                   = {3},
+  Abstract                 = {This paper looks at unobserved components models and examines the implied weighting patterns for signal extraction. There are four main themes. The first concerns the implications of correlated disturbances driving the components, especially those cases in which the correlation is perfect. The second is about the way in which ARIMA-based methods for trend extraction relate to those based on unobserved components. The third explores the impact of heteroscedasticity and irregular spacing and shows how setting up models with t-distributed disturbances leads to weighting patterns which are robust to outliers and breaks. Finally, a comparison is made between implied weighting patterns with kernels used in non-parametric trend estimation and equivalent kernels used in spline smoothing. It is demonstrated that with irregularly spaced data, the weighting used by conventional spline smoothing techniques is not the same as that obtained from the time series model based approach.},
+  Keywords                 = {Cubic splines, Kalman filter and smoother, Kernels, Robustness, Structural time series model, Trend, WienerâKolmogorov filter.},
+  Owner                    = {jeff},
+  Publisher                = {Blackwell Publishers Ltd},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{HarveyKoopman2000a,
+  Title                    = {signal extraction and the formulation of unobserved components models},
+  Author                   = {Harvey, Andrew and Koopman, Siem Jan},
+  Date                     = {2000},
+  Journaltitle             = {Econometrics Journal},
+  DOI                      = {10.1111/1368-423X.00040},
+  ISSN                     = {1368-423X},
+  Number                   = {1},
+  Pages                    = {84--107},
+  Volume                   = {3},
+  Abstract                 = {This paper looks at unobserved components models and examines the implied weighting patterns for signal extraction. There are four main themes. The first concerns the implications of correlated disturbances driving the components, especially those cases in which the correlation is perfect. The second is about the way in which ARIMA-based methods for trend extraction relate to those based on unobserved components. The third explores the impact of heteroscedasticity and irregular spacing and shows how setting up models with t-distributed disturbances leads to weighting patterns which are robust to outliers and breaks. Finally, a comparison is made between implied weighting patterns with kernels used in non-parametric trend estimation and equivalent kernels used in spline smoothing. It is demonstrated that with irregularly spaced data, the weighting used by conventional spline smoothing techniques is not the same as that obtained from the time series model based approach.},
+  Keywords                 = {Cubic splines, Kalman filter and smoother, Kernels, Robustness, Structural time series model, Trend, WienerâKolmogorov filter.},
+  Owner                    = {jeff},
+  Publisher                = {Blackwell Publishers Ltd},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{HarveyKoopmanShephard2004,
+  Title                    = {state space and unobserved component models: theory and applications},
+  Author                   = {Harvey, A. and Koopman, S.J. and Shephard, N.},
+  Date                     = {2004},
+  ISBN                     = {9780521835954},
+  Publisher                = {Cambridge University Press},
+  URL                      = {http://books.google.com/books?id=sJb9ZrXVskwC},
+  Lccn                     = {03063508},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{GiordaniKohn2008,
+  Title                    = {efficient {B}ayesian inference for multiple change-point and mixture innovation models},
+  Author                   = {Giordani, Paolo and Kohn, Robert},
+  Date                     = {2008},
+  Journaltitle             = {Journal of Business \& Economic Statistics},
+  DOI                      = {10.1198/073500107000000241},
+  Eprint                   = {http://amstat.tandfonline.com/doi/pdf/10.1198/073500107000000241},
+  Number                   = {1},
+  Pages                    = {66--77},
+  Volume                   = {26},
+  Abstract                 = { Time series subject to parameter shifts of random magnitude and timing are commonly modeled with a change-point approach using Chib's algorithm to draw the break dates. We outline some advantages of an alternative approach in which breaks come through mixture distributions in state innovations, and for which the sampler of Gerlach, Carter, and Kohn allows reliable and efficient inference. We show how the same sampler can be used to model shifts in variance that occur independently of shifts in other parameters and how to draw the break dates efficiently when regime durations follow a Poisson process. Finally, we introduce to the time series literature the concept of adaptive Metropolis--Hastings sampling for discrete latent variable models. We develop an easily implemented adaptive algorithm that improves on the work of Gerlach et al. and promises to significantly reduce computing time in a variety of problems including mixture innovation, change-point, regime switching, and outlier detection. The efficiency gains on two models for U.S. inflation and real interest rates are 2.57\% and 3.41\%. },
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{Fruehwirth-Schnatter1994,
+  Title                    = {data augmentation and dynamic linear models},
+  Author                   = {Fr\"{u}hwirth-Schnatter, Sylvia},
+  Date                     = {1994},
+  Journaltitle             = {Journal of Time Series Analysis},
+  DOI                      = {10.1111/j.1467-9892.1994.tb00184.x},
+  ISSN                     = {1467-9892},
+  Number                   = {2},
+  Pages                    = {183--202},
+  Volume                   = {15},
+  Abstract                 = {Abstract. We define a subclass of dynamic linear models with unknown hyperpara-meter called d-inverse-gamma models. We then approximate the marginal probability density functions of the hyperparameter and the state vector by the data augmentation algorithm of Tanner and Wong. We prove that the regularity conditions for convergence hold. For practical implementation a forward-filtering-backward-sampling algorithm is suggested, and the relation to Gibbs sampling is discussed in detail.},
+  Keywords                 = {Approximate Bayesian analysis, data augmentation, dynamic linear models, Gibbs sampling, Kalman filtering, state space models},
+  Owner                    = {jeff},
+  Publisher                = {Blackwell Publishing Ltd},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{Eason199985,
+  Title                    = {The use of landmarks to define territorial boundaries},
+  Author                   = {Perri K. Eason and Gary A. Cobbs and Kristin G. Trinca},
+  Date                     = {1999},
+  Journaltitle             = {Animal Behaviour},
+  DOI                      = {DOI: 10.1006/anbe.1999.1133},
+  ISSN                     = {0003-3472},
+  Number                   = {1},
+  Pages                    = {85--91},
+  URL                      = {http://www.sciencedirect.com/science/article/B6W9W-45K0X5C-19/2/5ee7d57f887f7cc261d53c4ec1141b0e},
+  Volume                   = {58},
+  Abstract                 = {Numerous anecdotal reports suggest that members of many territorial species use naturally occurring landmarks to define the boundaries of their territories. In the work reported here, we first tested whether artificial landmarks would be adopted as boundaries by territorial male cicada killer wasps, Sphecius speciosus . To perform this test, we set out wooden dowels on a flat, grassy lawn on which male wasps were defending mating territories. The dowels were situated so that they did not coincide with any existing territorial boundary. After we provided the dowels, the wasps established new territorial boundaries coinciding with the dowels. We hypothesized that using visual landmarks as territorial borders might lower defensive costs, and indeed, focal samples on territorial wasps revealed that borders that were defined by dowels cost less to defend than did borders that were not defined by any landmark. This result suggests that the use of natural landmarks as territorial boundaries may have evolved as a result of the reduced defensive costs that accrue to these boundaries. Furthermore, defensive costs may not depend directly on territory size: territory owners may be able to reduce defensive costs by selecting sites with high tactical defensibility.},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{DurbinKoopman2002,
+  Title                    = {a simple and efficient simulation smoother for state space time series analysis},
+  Author                   = {Durbin, J. and Koopman, S. J.},
+  Date                     = {2002},
+  Journaltitle             = {Biometrika},
+  ISSN                     = {00063444},
+  Language                 = {English},
+  Number                   = {3},
+  Pages                    = {603--615},
+  URL                      = {http://www.jstor.org/stable/4140605},
+  Volume                   = {89},
+  Abstract                 = {A simulation smoother in state space time series analysis is a procedure for drawing samples from the conditional distribution of state or disturbance vectors given the observations. We present a new technique for this which is both simple and computationally efficient. The treatment includes models with diffuse initial conditions and regression effects. Computational comparisons are made with the previous standard method. Two applications are provided to illustrate the use of the simulation smoother for Gibbs sampling for Bayesian inference and importance sampling for classical inference.},
+  Jstor_articletype        = {research-article},
+  Jstor_formatteddate      = {Sep., 2002},
+  Owner                    = {jeff},
+  Publisher                = {Biometrika Trust},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{DurbinKoopman2001,
+  Title                    = {time series analysis by state space methods},
+  Author                   = {Durbin, J. and Koopman, S.S.J.},
+  Date                     = {2001},
+  ISBN                     = {9780198523543},
+  Publisher                = {Oxford University Press, Incorporated},
+  Series                   = {Oxford statistical sciences series},
+  URL                      = {http://books.google.com/books?id=XRCu5iSz\_HwC},
+  Lccn                     = {00054845},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{DurbinKoopman2012,
+  Title                    = {time series analysis by state space methods: second edition},
+  Author                   = {Durbin, J. and Koopman, S.J.},
+  Date                     = {2012},
+  ISBN                     = {9780199641178},
+  Publisher                = {OUP Oxford},
+  Series                   = {Oxford Statistical Science Series},
+  URL                      = {http://books.google.com/books?id=fOq39Zh0olQC},
+  Lccn                     = {2011945385},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{DeJongShephard1995,
+  Title                    = {The simulation smoother for time series models},
+  Author                   = {{De Jong}, Piet and Shephard, Neil},
+  Date                     = {1995},
+  Journaltitle             = {Biometrika},
+  DOI                      = {10.1093/biomet/82.2.339},
+  Eprint                   = {http://biomet.oxfordjournals.org/content/82/2/339.full.pdf+html},
+  Number                   = {2},
+  Pages                    = {339--350},
+  URL                      = {http://biomet.oxfordjournals.org/content/82/2/339.abstract},
+  Volume                   = {82},
+  Abstract                 = {Recently suggested procedures for simulating from the posterior density of states given a Gaussian state space time series are refined and extended. We introduce and study the simulation smoother, which draws from the multivariate posterior distribution of the disturbances of the model, so avoiding the degeneracies inherent in state samplers. The technique is important in Gibbs sampling with non-Gaussian time series models, and for performing Bayesian analysis of Gaussian time series.},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{DeJongPenzer1998,
+  Title                    = {diagnosing shocks in time series},
+  Author                   = {{de Jong}, Piet and Penzer, Jeremy},
+  Date                     = {1998},
+  Journaltitle             = {Journal of the American Statistical Association},
+  ISSN                     = {01621459},
+  Language                 = {English},
+  Number                   = {442},
+  Pages                    = {796--806},
+  URL                      = {http://www.jstor.org/stable/2670129},
+  Volume                   = {93},
+  Abstract                 = {Efficient means of modeling aberrant behavior in times series are developed. Our methods are based on state-space forms and allow test statistics for various interventions to be computed from a single run of the Kalman filter smoother. The approach encompasses existing detection methodologies. Departures commonly observed in practice, such as outlying values, level shifts, and switches, are readily dealt with. New diagnostic statistics are proposed. Implications for structural models, autoregressive integrated moving average models, and models with explanatory variables are given.},
+  Jstor_articletype        = {research-article},
+  Jstor_formatteddate      = {Jun., 1998},
+  Owner                    = {jrnold},
+  Publisher                = {American Statistical Association},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{CommandeurKoopmanOoms2011,
+  Title                    = {statistical software for state space methods},
+  Author                   = {Jacques J. F. Commandeur and Siem Jan Koopman and Marius Ooms},
+  Date                     = {2011-05},
+  Journaltitle             = {Journal of Statistical Software},
+  ISSN                     = {1548-7660},
+  Number                   = {1},
+  Pages                    = {1--18},
+  URL                      = {http://www.jstatsoft.org/v41/i01},
+  Volume                   = {41},
+  Abstract                 = {In this paper we review the state space approach to time series analysis and establish the notation that is adopted in this special volume of the Journal of Statistical Software. We first provide some background on the history of state space methods for the analysis of time series. This is followed by a concise overview of linear Gaussian state space analysis including the modelling framework and appropriate estimation methods. We discuss the important class of unobserved component models which incorporate a trend, a seasonal, a cycle, and fixed explanatory and intervention variables for the univariate and multivariate analysis of time series. We continue the discussion by presenting methods for the computation of different estimates for the unobserved state vector: filtering, prediction, and smoothing. Estimation approaches for the other parameters in the model are also considered. Next, we discuss how the estimation procedures can be used for constructing confidence intervals, detecting outlier observations and structural breaks, and testing model assumptions of residual independence, homoscedasticity, and normality. We then show how ARIMA and ARIMA components models fit in the state space framework to time series analysis. We also provide a basic introduction for non-Gaussian state space models. Finally, we present an overview of the software tools currently available for the analysis of time series with state space methods as they are discussed in the other contributions to this special volume.},
+  Accepted                 = {2010-12-20},
+  Bibdate                  = {2010-12-20},
+  Coden                    = {JSSOBK},
+  Day                      = {12},
+  Owner                    = {jrnold},
+  Submitted                = {2009-08-22},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{CommandeurKoopman2007,
+  Title                    = {an introduction to state space time series analysis},
+  Author                   = {Commandeur, Jacques J.F. and Koopman, Siem Jan},
+  Date                     = {2007},
+  ISBN                     = {9780191607806},
+  Publisher                = {OUP Oxford},
+  Series                   = {Practical Econometrics Series},
+  URL                      = {http://books.google.com/books?id=OCmljPYfgkUC},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{Cobb1978,
+  Title                    = {The problem of the Nile: Conditional solution to a changepoint problem},
+  Author                   = {Cobb, George W.},
+  Date                     = {1978},
+  Journaltitle             = {Biometrika},
+  DOI                      = {10.1093/biomet/65.2.243},
+  Eprint                   = {http://biomet.oxfordjournals.org/content/65/2/243.full.pdf+html},
+  Number                   = {2},
+  Pages                    = {243--251},
+  URL                      = {http://biomet.oxfordjournals.org/content/65/2/243.abstract},
+  Volume                   = {65},
+  Abstract                 = {Inference is considered for the point in a sequence of random variables at which the probability distribution changes. An approximation to the conditional distribution of the maximum likelihood estimator of the changepoint given the ancillary values of observations adjacent to the estimated changepoint is derived and shown to be numerically equal to a Bayesian posterior distribution for the changepoint. A hydrological example is given to show that inferences based on the conditional distribution of the maximum likelihood estimator can differ sharply from inferences based on the marginal distribution},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{CarterKohn1994,
+  Title                    = {On {G}ibbs sampling for state space models},
+  Author                   = {Carter, C. K. And Kohn, R.},
+  Date                     = {1994},
+  Journaltitle             = {Biometrika},
+  DOI                      = {10.1093/biomet/81.3.541},
+  Eprint                   = {http://biomet.oxfordjournals.org/content/81/3/541.full.pdf+html},
+  Number                   = {3},
+  Pages                    = {541--553},
+  URL                      = {http://biomet.oxfordjournals.org/content/81/3/541.abstract},
+  Volume                   = {81},
+  Abstract                 = {SUMMARY We show how to use the Gibbs sampler to carry out Bayesian inference on a linear state space model with errors that are a mixture of normals and coefficients that can switch over time. Our approach simultaneously generates the whole of the state vector given the mixture and coefficient indicator variables and simultaneously generates all the indicator variables conditional on the state vectors. The states are generated efficiently using the Kalman filter. We illustrate our approach by several examples and empirically compare its performance to another Gibbs sampler where the states are generated one at a time. The empirical results suggest that our approach is both practical to implement and dominates the Gibbs sampler that generates the states one at a time.},
+  Owner                    = {jeff},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{BoxJenkinsReinsel1994,
+  Title                    = {Time series analysis: forecasting and control},
+  Author                   = {Box, G.E.P. and Jenkins, G.M. and Reinsel, G.C.},
+  Date                     = {1994},
+  ISBN                     = {9780130607744},
+  Publisher                = {Prentice Hall},
+  Series                   = {Forecasting and Control Series},
+  URL                      = {http://books.google.com/books?id=sRzvAAAAMAAJ},
+  Lccn                     = {93034620},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@InBook{Bell2004,
+  Title                    = {on {RegComponent} time series models and their applications},
+  Author                   = {Bell, William R.},
+  Booktitle                = {State Space and Unobserved Component Models: Theory and Applications},
+  Date                     = {2004},
+  Chapter                  = {12},
+  Editor                   = {Andrew Harvey and Siem Jan Koopman and Neil Shephard},
+  ISBN                     = {9780521835954},
+  Pages                    = {248--283},
+  URL                      = {http://books.google.com/books?id=sJb9ZrXVskwC},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+
+@Article{Balke1993,
+  Title                    = {Detecting Level Shifts in Time Series},
+  Author                   = {Balke, Nathan S.},
+  Date                     = {1993},
+  Journaltitle             = {Journal of Business \& Economic Statistics},
+  ISSN                     = {07350015},
+  Language                 = {English},
+  Number                   = {1},
+  Pages                    = {81--92},
+  URL                      = {http://www.jstor.org/stable/1391308},
+  Volume                   = {11},
+  Abstract                 = {This article demonstrates the difficulty that traditional outlier detection methods, such as that of Tsay, have in identifying level shifts in time series. Initializing the outlier/level-shift search with an estimated autoregressive moving average model lowers the power of the level-shift detection statistics. Furthermore, the rule employed by these methods for distinguishing between level shifts and innovation outliers does not work well in the presence of level shifts. A simple modification to Tsay's procedure is proposed that improves the ability to correctly identify level shifts. This modification is relatively easy to implement and appears to be quite effective in practice.},
+  Owner                    = {jeff},
+  Publisher                = {American Statistical Association},
+  Timestamp                = {2016.06.18}
+}
+
+@Book{anderson1979optimal,
+  Title                    = {optimal filtering},
+  Author                   = {Anderson, Brian D. O. and Moore, John Barratt},
+  Date                     = {1979},
+  ISBN                     = {9780136381228},
+  Publisher                = {Prentice-Hall},
+  Series                   = {Prentice-Hall information and system sciences series},
+  URL                      = {http://books.google.com/books?id=1o0oAQAAMAAJ},
+  Lccn                     = {78008938},
+  Owner                    = {jrnold},
+  Timestamp                = {2016.06.18}
+}
+

@@ -1,8 +1,10 @@
 Package: SSModelsStan
 Type: Package
-Title: What the Package Does (Title Case)
+Title: State Space Models in Stan
 Version: 0.1.0
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Authors@R: person("Jeffrey", "Arnold", email = "jeffrey.arnold@gmail.com",
+                   role = c("aut", "cre"))
+Description: Functions and data for State Space Models in Stan.
+License: MIT + file LICENSE
 LazyData: TRUE
+RoxygenNote: 5.0.1

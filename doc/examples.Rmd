@@ -1,1 +1,64 @@
 # Examples
+
+## Nile
+
+## Seatbelts
+
+## Airlines
+
+## Stata Examples
+
+### sspace
+
+#### Ex 1: An AR(1) model
+
+An AR(1) model,
+$$
+y - \mu = \phi(y_{t - 1} - \mu) + \varepsilon_t
+$$
+can be written in state space form as,
+$$
+\begin{aligned}[t]
+y_t &= \mu + \alpha_t \\
+\alpha_{t + 1} &= \phi \alpha_t + \varepsilon_t
+\end{aligned}
+$$
+where the state is $\alpha_t = y_t - \mu$.
+
+Fit the first difference of the natural log of the capacity utilization rate
+for the manufacturing section of the U.S. economy.
+This model treats the series as first-difference stationary, and models its first
+difference as an AR(1) process.
+
+This is the stata dataset `manufac`, variable `lncaputil`.
+
+#### Ex 2: An ARMA (1, 1) model
+
+A zero-mean, first-order, autoregressive moving-average process (ARMA(1, 1)) model,
+$$
+y_t = \phi y_{t - 1} + \theta \varepsilon_{t - 1} + \varepsilon_t
+$$
+can be written as a state space model,
+$$
+\begin{aligned}[t]
+y_t &= \mu + \begin{bmatrix} 1 & 0 \end{bmatrix} \vec{\alpha}_t \\
+\vec{\alpha}_{t + 1} &=
+\begin{bmatrix}
+\phi & 1 \\
+0 & 0
+\end{bmatrix}
+\vec{\alpha}_t
++
+\begin{bmatrix}
+1 \\
+\theta
+\end{bmatrix}
+\varepsilon_t
+&
+\varepsilon_t
+& \sim N(0, \sigma^2 \varepsilon)
+\end{aligned}
+$$
+where there state vector is $\vec{\alpha}_t = (y_t, \theta \varepsilon_t)$
+
+This also uses the `manufac` dataset, and variable `lncaputil`.

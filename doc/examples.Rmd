@@ -46,6 +46,19 @@ StructTS(Nile, type = "level")
 ```
 
 
+```{r}
+nile_model_data <- within(list(), {
+  y <- as.numeric(Nile)
+  n <- length(y)
+  r <- m <- y
+  ZZ <- TT <- RR <- matrix(1)
+  cc <- dd <- matrix(0)
+})
+
+
+```
+
+
 ## Airline Passenger Miles
 
 Monthly totals of international airline passengers, 1949 to 1960, used in the

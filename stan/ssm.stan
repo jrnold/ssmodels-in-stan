@@ -42,11 +42,140 @@ matrix to_vector_rowwise(matrix x) {
   return res;
 }
 
+// Length of vectors that SSM returns
+// value    size      location
+// log-lik  1         1
+// v        p         2
+// F^-1     p^2       2 + p
+// K        mp        2 + p + p^2
+// a_t      m         2 + p + p^2 + mp
+// P^t      m         2 + p + p^2 + mp + m
+int ssm_filter_return_size(int m, int p) {
+  int sz;
+  sz <- 1 + p + p * p + m + m * m + m * p
+  return sz;
+}
+
+real ssm_filter_get_loglik(vector x, int m, int p) {
+  real y;
+  y <- x[1];
+  return y;
+}
+
+vector ssm_filter_get_v(vector x, int m, int p) {
+  vector[p] v;
+  y <- segment(x, 2, p);
+  return y;
+}
+
+matrix ssm_filter_get_Finv(vector x, int m, int p) {
+  matrix[p * p] y;
+  y <- to_matrix_colwise(segment(x, 2 + p, p * p), p, p);
+  return y;
+}
+
+matrix ssm_filter_get_K(vector x, int m, int p) {
+  matrix[p * p] y;
+  y <- to_matrix_colwise(segment(x, 2 + p + p * p, m * p), m, p);
+  return y;
+}
+
+vector ssm_filter_get_a(vector x, int m, int p) {
+  vector[m] y;
+  y <- segment(x, 2 + p + p * p + m * p, m);
+  return y;
+}
+
+matrix ssm_filter_get_P(vector x, int m, int p) {
+  matrix[m * m] y;
+  y <- to_matrix_colwise(segment(x,  2 + p + p * p + m * p + m, m * m), m, m);
+  return y;
+}
 
 // Filtering
+vector[] ssm_filter(vector[] y,
+                    vector c, matrix Z, matrix H,
+                    vector d, matrix T, matrix R, matrix Q,
+                    vector a1, matrix P1) {
 
-vector ssm_filter_pred_obs(vector y, matrix Z, matrix H, vector a, matrix P) {
+  // p = rows(Z)
+  // r = cols(Z)
+  // n = size(y)
+  // returned data
+  vector[ssf_filter_return_size(rows(Z), cols(Z))] res[size(y)];
+  // temp variables
+  int p;
+  int r;
+  int n;
+  vector[rows(Z)] v;
+  matrix[rows(Z), rows(Z)] F;
+  matrix[rows(Z), rows(Z)] Finv;
+  matrix[rows(Z), cols(Z)] K;
 
+  // sizes
+  n <- size(y); // number of obs
+  p <- rows(Z); // obs size
+  m <- cols(Z); // number of states
+
+  for (t in 1:n) {
+    // PREDICT STATES
+    // one step ahead predictive distribion of p(\theta_t | y_{1:(t-1)})
+    a <- g[t] + G[t] * m;
+    R <- quad_form(C, G[t] ') + W[t];
+    m <- a;
+    C <- R;
+    // print("t=", t, ", a=", a);
+    // print("t=", t, ", R=", R);
+    for (j in 1:r) {
+      if (int_step(miss[t, j])) {
+        e[j] <- 0.0;
+        Q_inv[j] <- 0.0;
+      } else {
+        // print("t = ", t, ", predict");
+        // PREDICT OBS
+        // one step ahead predictive distribion of p(y_t | y_{1:(t-1)})
+        Fj <- row(F[t], j) ';
+        f <- b[t, j] + dot_product(Fj, m);
+        Q <- quad_form(C, Fj) + V[t, j];
+        Q_inv[j] <- 1.0 / Q;
+        // forecast error
+        e[j] <- y[t, j] - f;
+        // Kalman gain
+        K <- C * Fj * Q_inv[j];
+        // print("t = ", t, ", filter");
+        // FILTER STATES
+        // posterior distribution of p(\theta_t | y_{1:t})
+        m <- m + K * e[j];
+        C <- make_symmetric_matrix(C - K * Q * K ');
+      }
+      // print("t=", t, ", j=", j, ", m=", m);
+      // print("t=", t, ", j=", j, ", C=", C);
+      // print("t=", t, ", j=", j, ", Q_inv=", Q_inv);
+      // print("t=", t, ", j=", j, ", f=", f);
+      // print(" ");
+    }
+    for(i in 1:p) {
+      res[t + 1, i] <- m[i];
+    }
+    C_vec <- to_vector(C);
+    for (i in 1:(p * p)) {
+      res[t + 1, p + i] <- C_vec[i];
+    }
+    for(i in 1:p) {
+      res[t + 1, p + p * p + i] <- a[i];
+    }
+    R_vec <- to_vector(R);
+    for (i in 1:(p * p)) {
+      res[t + 1, 2 * p + p * p + i] <- R_vec[i];
+    }
+    for (i in 1:r) {
+      res[t + 1, 2 * p + 2 * p * p + i] <- e[i];
+    }
+    for (i in 1:r) {
+      res[t + 1, 2 * p + 2 * p * p + r + i] <- Q_inv[i];
+    }
+  }
+  return res;
 }
 
 // // Partial Autocorrelations to Autocorrelations transformation

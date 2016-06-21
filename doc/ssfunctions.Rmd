@@ -47,6 +47,21 @@ This function fills in elements row-major.
 ## Filtering
 
 ```
+```
+
+```
+vector[] dlm_filter(vector[] y,
+                    vector c, matrix Z, matrix H,
+                    vector d, matrix T, matrix R, matrix Q,
+                    vector a1, matrix P1)
+```
+
+
+
+
+
+
+```
 matrix ssm_filter_predict_obs(vector y, matrix Z, matrix H, vector a, matrix P)
 ```
 
@@ -108,3 +123,12 @@ matrix ssm_filter_predict_state_2(...)
 Given $p \times 1$ vector $\vec{a}_{t|t} = \E(\alpha_t | Y_{t})$ and $\mat{P}_{t|t} = \Var(\alpha_t | Y_{t |t})$, predict the state in the next period, $a_{t+ t} = \E(\alpha_{t + 1}| Y_t)$ and $P_{t + t1} = \Var(\alpha_{t + 1} | Y_t)$.
 
 Returns a $p \times (1 + p)$ matrix with $a_{t|t}$ and $P_{t|t}$, in the same format as `ssm_filter_predict_state_2`.
+
+```
+matrix ssm_filter(...)
+```
+Kalman filter for a state-space model
+
+```
+
+```

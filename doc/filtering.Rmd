@@ -4,41 +4,48 @@
 
 From [@DurbinKoopman2012, Sec 4.3]
 
+
+$$
+\begin{aligned}[t]
+
+ .
+\end{aligned}
+$$
+
+Let $\vec{a}_t = \E(\vec{\alpha}_t | y_{1, \dots, t - 1})$ be the expected value
+$\vec{P}_t = \Var(\vec{\alpha}_t | y_{1, \dots, t - 1})$ be the variance
+of the state in $t + 1$ given data up to time $t$.
+To calculate $\vec{\alpha}_{t + 1}$ and $\mat{P}_{t + 1}$ given the arrival of new
+data at time $t$,
+$$
+\begin{aligned}[t]
+\vec{v}_t &= \vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t, \\
+\mat{F}_t &= \mat{Z}_t \mat{P}_t \mat{Z}_t\T + \mat{H}_t, \\
+\mat{K}_t &= \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} \\
+\vec{a}_{t + 1} &= \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t + \vec{c}_t \\
+\mat{P}_{t + 1} &= \mat{T}_t \mat{P}_t (\mat{T}_t - \mat{K}_t \mat{Z}_t)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T .
+\end{aligned}
+$$
+The vector $\vec{v}_t$ are the *one-step ahead forecast errors$,
+and the matrix $\mat{K}_t$ is called the *Kalman gain*.
+
+The filter can also be written to estimate the *filtered states*,
+where $\vec{a}_{t|t} = \E(\vec{\alpha}_t | y_{1, \dots, t})$ is the expected value
+and $\vec{P}_{t|t} = \Var(\vec{\alpha}_t | y_{1, \dots, t})$ is the variance of
+the state $\vec{\alpha}_t$ given information up to *and including* $\vec{y}_t$.
+The filter written this way is,
 $$
 \begin{aligned}[t]
 \vec{v}_t &= \vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t, \\
 \mat{F}_t &= \mat{Z}_t \mat{P}_t \mat{Z}_t\T + \mat{H}_t, \\
 \vec{a}_{t|t} &= \vec{a}_t + \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} v_t , \\
 \mat{P}_{t|t} &= \mat{P}_t - \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t \mat{P}_t , \\
-\vec{a}_{t + 1} &= \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t + \vec{c}_t \\
-&= \mat{T}_{t} \vec{a}_{t|t} + \vec{c}_t, \\
-\mat{P}_{t + 1} &= \mat{T}_t \mat{P}_t (\mat{T}_t - \mat{K}_t \mat{Z}_t)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T \\
-& = \mat{T}_t \mat{P}_{t|t} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
+\vec{a}_{t + 1} &= \mat{T}_{t} \vec{a}_{t|t} + \vec{c}_t, \\
+\mat{P}_{t + 1} & = \mat{T}_t \mat{P}_{t|t} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T .
 \end{aligned}
 $$
-The vector $\vec{v}_t$ are the *one-step ahead forecast errors$.
 
-The matrix $\mat{K}_t$ is called the *Kalman gain*,
-$$
-\mat{K}_t = \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} .
-$$
-This gives,
-$$
-\begin{aligned}[t]
-\vec{a}_{t + 1} &= \mat{T} \vec{a}_{t|t}  = \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t , \\
-\vec{P}_{t + 1} &= \mat{T}_t \mat{P}_t \left( \mat{T}_t - \mat{K}_t \mat{Z}_t \right)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T .
-\end{aligned}
-$$
-These two equations are called the *prediction step*.
-The steps for $\vec{a}_{t|t}$ and $\mat{P}_{t|t}$ are called the *updating step*.
-$$
-\begin{aligned}[t]
-\vec{a}_t &= \E(\vec{\alpha}_t | y_{1, \dots, t - 1}), &
-\vec{P}_t &= \Var(\vec{\alpha}_t | y_{1, \dots, t - 1}), \\
-\vec{a}_{t|t} &= \E(\vec{\alpha}_t | y_{1, \dots, t}), &
-\vec{P}_{t|t} &= \Var(\vec{\alpha}_t | y_{1, \dots, t}) .
-\end{aligned}
-$$
+
 
 matrix/vector         dimension
 --------------------- --------------
@@ -229,12 +236,6 @@ $$
 Note that $\mat{T} \mat{P}_{t|t} = \mat{L}_t \mat{P}_t$.
 Relative to the other state smoothing algorithm the classical smoother is more computationally burdensome because it requires inverting $\mat{P}_{t + 1}$.
 The other state smoother only requires inverting $\mat{F}_t$, but that has already been inverted in the filtering pass.
-
-<--
-## Jacknife and Deleted observations
-
-Results in West and Harrison (1997), p. 104 and such.
--->
 
 ## Simulation smoothers
 

@@ -47,9 +47,6 @@ This function fills in elements row-major.
 ## Filtering
 
 ```
-```
-
-```
 vector[] dlm_filter(vector[] y,
                     vector c, matrix Z, matrix H,
                     vector d, matrix T, matrix R, matrix Q,

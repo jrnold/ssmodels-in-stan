@@ -20,8 +20,6 @@ ggplot(Nile_, aes(x = year, y = flow)) +
   ylab("Annual Flow") + xlab("")
 ```
 
-
-
 ### Local Level Model
 
 The Nile data can be modeled as a local level model,
@@ -206,6 +204,86 @@ StructTS(Seatbelts[ , "DriversKilled"], type = "trend")
 StructTS(Seatbelts[ , "DriversKilled"], type = "BSM")
 ```
 
+## Local Level Model
+
+```{r seatbelts_ll}
+seatbelts_data <- within(list(), {
+  y <- matrix(log10(Seatbelts_$DriversKilled))
+  n <- length(y)
+  p <- 1
+  r <- 1
+  m <- 1
+  T <- matrix(1)
+  Z <- matrix(1)
+  R <- matrix(1)
+  d <- array(0, 1)
+  c <- array(rep(0, m))
+  a1 <- array(rep(0, m))
+  P1 <- diag(1e6, m, m) * var(as.numeric(y))
+})
+# seatbelts_local_lvl_init <- list(sigma_eta = c(6.02, 1e-6, .02),
+#                                  sigma_epsilon = .04)
+seatbelts_local_lvl_sample <- sampling(var_only_mod,
+                         chains = 1,
+                         iter = 500,
+                         init = 0,
+                         data = seatbelts_data, verbose = TRUE)
+summary(seatbelts_local_lvl_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
+```
+
+```{r}
+
+# ssm_gen_extractor(loglik = list(dim = 1))
+gen_ssm_extractor <- function(...) {
+  params <- list(...)
+  ret <- list()
+  start <- 0
+  for (i in seq_along(params)) {
+    x <- params[[i]]
+    len <- prod(x)
+    ret[[names(params)[i]]] <- 
+      list(start = start + 1,
+           end = start + len,
+           len = len,
+           dim = x)
+    start <- start + len
+  }
+  ret
+}
+
+gen_ssm_filter_extractor <- function(m, p) {
+  gen_ssm_extractor(loglik = 1,
+                    v = p,
+                    Finv = c(p, p),
+                    K = c(m, p),
+                    a = m,
+                    P = c(m, m))
+}
+
+
+extract_ssm_filter_values <- function(x, m, p, params = NULL) {
+  f <- function(x, extractor) {
+    g <- function(x, el) {
+      .n <- nrow(x)
+      array(t(x[ , el[["start"]]:el[["end"]]]), c(el[["dim"]], .n))
+    }
+    map(extractor, ~ g(x, .x))
+  }
+  extractor <- gen_ssm_filter_extractor(m, p)
+  if (!is.null(params)) {
+    extractor <- extractor[params]
+  }
+  map(array_tree(x, 1), ~ f(.x, extractor))
+}
+
+```
+
+
+## Basic Structural Model (Trend, Seasonal)
+
+
+
+
 ```{r}
 seatbelts_data <- within(list(), {
   y <- matrix(log10(Seatbelts_$DriversKilled))
@@ -281,6 +359,39 @@ ggplot(UKgas_, aes(x = date, y = therms)) +
   scale_y_log10("log10(therms)") +
   scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
   xlab("")
+```
+
+```{r}
+seatbelts_data <- within(list(), {
+  y <- matrix(log10(Seatbelts_$DriversKilled))
+  n <- length(y)
+  p <- 1
+  r <- 3
+  m <- 13
+  T_lvls <- as.numeric(upper.tri(matrix(0, 2, 2), diag = TRUE))
+  T_seas <- rbind(rep(-1, 11), diag(1, 10, 11))
+  T <- matrix(0, 13, 13)
+  T[1:2, 1:2] <- T_lvls
+  T[3:13, 3:13] <- T_seas
+  Z <- matrix(c(c(1, 0, 1), rep(0, 10)), 1, 13)
+  R <- rbind(matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1), 3, 3),
+             matrix(0, 10, 3))
+  d <- array(0, 1)
+  c <- rep(0, m)
+  a1 <- rep(0, m)
+  P1 <- diag(1e6, m, m) * var(as.numeric(y))
+})
+seatbelts_init <- list(sigma_eta = c(6.02, 1e-6, .02),
+                      sigma_epsilon = .04)
+seatbelts_ll_sample <-
+  sampling(var_only_mod,
+           chains = 1,
+           iter = 500,
+           init = list(seatbelts_init),
+           data = seatbelts_data, verbose = TRUE)
+summary(seatbelts_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 ```
 
 ## Stata 

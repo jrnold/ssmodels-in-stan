@@ -260,28 +260,27 @@ vector[] ssm_filter(
 
     idx <- ssm_filter_return_idx(m, p);
     a <- a1;
-    res[1, idx[5, 2]:idx[5, 3]] <- a;
     P <- P1;
-    P_vec <- to_vector_colwise(P);
-    res[1, idx[6, 2]:idx[6, 3]] <- P_vec;
     for (t in 1:n) {
+      // updating
       v <- ssm_filter_update_v(y[t], a, d, Z);
-      res[t, idx[2, 2]:idx[2, 3]] <- v;
       Finv <- ssm_filter_update_Finv(P, Z, H);
+      ll <- ssm_filter_update_ll(v, Finv);
+      K <- ssm_filter_update_K(P, T, Z, Finv);
+      // saving
+      res[t, 1] <- ll;
+      res[t, idx[2, 2]:idx[2, 3]] <- v;
       Finv_vec <- to_vector_colwise(Finv);
       res[t, idx[3, 2]:idx[3, 3]] <- Finv_vec;
-      K <- ssm_filter_update_K(P, T, Z, Finv);
       K_vec <- to_vector_colwise(K);
       res[t, idx[4, 2]:idx[4, 3]] <- K_vec;
-      ll <- ssm_filter_update_ll(v, Finv);
-      res[t, 1] <- ll;
+      res[1, idx[5, 2]:idx[5, 3]] <- a;
+      P_vec <- to_vector_colwise(P);
+      res[1, idx[6, 2]:idx[6, 3]] <- P_vec;
       // don't save a, P for last iteration
       if (t < n) {
         a <- ssm_filter_update_a(a, c, T, v, K);
-        res[t + 1, idx[5, 2]:idx[5, 3]] <- a;
         P <- ssm_filter_update_P(P, Z, T, Q, R, K);
-        P_vec <- to_vector_colwise(P);
-        res[t + 1, idx[6, 2]:idx[6, 3]] <- P_vec;
       }
     }
   }
@@ -294,6 +293,264 @@ vector[] ssm_filter(
 // ssm_smoother_states
 // ssm_smoother_states_fast
 // ssm_smoother_sim
+
+
+vector ssm_smooth_update_r(vector r, matrix Z, vector v, matrix Finv,
+                             matrix L) {
+  vector[num_elements(r)] r_new;
+  r_new <- Z' * Finv * v + L ' * r;
+  return r_new;
+}
+
+matrix ssm_smooth_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
+  matrix[rows(N), cols(N)] N_new;
+  N_new <- quad_form(Finv, Z) * quad_form(N, L);
+  return N_new;
+}
+
+int ssm_smooth_state_sz(int m) {
+  int sz;
+  sz <- m + m * m;
+  return sz;
+}
+
+vector ssm_smooth_state_get_mean(vector x, int m) {
+  vector[m] alpha;
+  alpha <- x[1:m];
+  return alpha;
+}
+
+vector ssm_smooth_state_get_var(vector x, int m) {
+  matrix[m, m] V;
+  V <- to_matrix_colwise(x[(m + 1):(m + m * m)]);
+  return V;
+}
+
+// Durbin Koopmans 4.44
+vector[] ssm_smooth_state(vector[] filter, int m, int p,
+                          matrix Z, matrix T) {
+  vector[ssm_smooth_state_sz(m)] res[size(filter)];
+  int n;
+  n <- num_elements(filter[1]);
+  {
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[m] alpha;
+    matrix[m, m] V;
+    vector[m * m] V_vec;
+    vector[p] v;
+    matrix[m, p] K;
+    matrix[p, p] Finv;
+    vector[m] a;
+    matrix[m, m] P;
+
+    r <- rep_vector(0, m);
+    N <- rep_matrix(0, m, m);
+    for (i in 1:n) {
+      int t;
+      // move backwards in time
+      t <- n - i + 1;
+      // updating
+      K <- ssm_filter_get_K(filter[t], m, p);
+      v <- ssm_filter_get_v(filter[t], m, p);
+      Finv <- ssm_filter_get_Finv(filter[t], m, p);
+      a <- ssm_filter_get_a(filter[t], m, p);
+      P <- ssm_filter_get_P(filter[t], m, p);
+      if (t == n) {
+        L <- diag_matrix(rep_vector(1, m));
+      } else {
+        L <- T - K * Z;
+      }
+      r <- ssm_smooth_update_r(r, Z, v, Finv, L);
+      N <- ssm_smooth_update_N(N, Z, Finv, L);
+      alpha <- a + P * r;
+      V <- to_symmetric_matrix(P - P * N * P);
+      // saving
+      res[t, 1:m] <- alpha;
+      V_vec <- to_vector_colwise(V);
+      res[t, (m + 1):(m + m * m)] <- V_vec;
+    }
+  }
+  return res;
+}
+
+int ssm_smooth_eps_sz(int p) {
+  int sz;
+  sz <- p + p * p;
+  return sz;
+}
+
+vector ssm_smooth_eps_get_mean(vector x, int m) {
+  vector[p] eps;
+  eps <- x[1:p]
+  return eps;
+}
+
+vector ssm_smooth_eps_get_var(vector x, int m) {
+  matrix[p, p] eta_var;
+  eps_var <- to_matrix_colwise(x[(p + 1):(p + p * p)]);
+  return eps_var;
+}
+
+// Observation disturbance smoother
+// Durbin Koopmans Sec 4.5.3 (eq 4.69)
+vector[] ssm_smooth_eps(vector[] filter, int m, int p,
+                        matrix H, matrix Z, matrix T) {
+  vector[ssm_smooth_eps_sz(p)] res[size(filter)];
+  int n;
+  n <- size(filter);
+  {
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[p] v;
+    matrix[m, p] K;
+    matrix[p, p] Finv;
+    vector[p] eps;
+    matrix[p, p] var_eps;
+    vector[p * p] var_eps_vec;
+
+    r <- rep_vector(0, m);
+    N <- rep_matrix(0, m, m);
+    for (i in 1:n) {
+      int t;
+      // move backwards in time
+      t <- n - i + 1;
+      // updating
+      K <- ssm_filter_get_K(filter[t], m, p);
+      v <- ssm_filter_get_v(filter[t], m, p);
+      Finv <- ssm_filter_get_Finv(filter[t], m, p);
+      if (t == n) {
+        L <- diag_matrix(rep_vector(1, m));
+      } else {
+        L <- T - K * Z;
+      }
+      r <- ssm_smooth_update_r(r, Z, v, Finv, L);
+      N <- ssm_smooth_update_N(N, Z, Finv, L);
+      eps <- H * (Finv * v - K ' * r);
+      var_eps <- to_symmetric_matrix(H - H * (Finv + quad_form(N, K)) * H);
+      // saving
+      res[t, 1:p] <- eps;
+      var_eps_vec <- to_vector_colwise(var_eps);
+      res[t, (p + 1):(p + p * p)] <- var_eps_vec;
+    }
+  }
+  return res;
+}
+
+
+int ssm_smooth_eta_sz(int m) {
+  int sz;
+  sz <- m + m * m;
+  return sz;
+}
+
+vector ssm_smooth_eta_get_mean(vector x, int m) {
+  vector[m] eta;
+  eta <- x[1:m]
+  return eta;
+}
+
+vector ssm_smooth_eta_get_var(vector x, int m) {
+  matrix[m, m] eta_var;
+  eta_var <- to_matrix_colwise(x[(m + 1):(m + m * m)]);
+  return eta_var;
+}
+
+// State disturbance smoother
+// Durbin Koopmans Sec 4.5.3 (eq 4.69)
+vector[] ssm_smooth_eta(vector[] filter, int m, int p,
+                        matrix Z, matrix T, matrix R, matrix Q) {
+  vector[ssm_smooth_eta_sz(m)] res[size(filter)];
+  int n;
+  n <- size(filter);
+  {
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[p] v;
+    matrix[m, p] K;
+    matrix[p, p] Finv;
+    vector[m] eta;
+    matrix[m, m] var_eta;
+    vector[m * m] var_eta_vec;
+
+    r <- rep_vector(0, m);
+    N <- rep_matrix(0, m, m);
+    for (i in 1:n) {
+      int t;
+      // move backwards in time
+      t <- n - i + 1;
+      // updating
+      K <- ssm_filter_get_K(filter[t], m, p);
+      v <- ssm_filter_get_v(filter[t], m, p);
+      Finv <- ssm_filter_get_Finv(filter[t], m, p);
+      if (t == n) {
+        L <- diag_matrix(rep_vector(1, m));
+      } else {
+        L <- T - K * Z;
+      }
+      r <- ssm_smooth_update_r(r, Z, v, Finv, L);
+      N <- ssm_smooth_update_N(N, Z, Finv, L);
+      eta <- Q * R ' * r;
+      var_eta <- to_symmetric_matrix(Q - Q * quad_form(R, N) * Q);
+      // saving
+      res[t, 1:m] <- eta;
+      var_eta_vec <- to_vector_colwise(var_eta);
+      res[t, (m + 1):(m + m * m)] <- var_eta_vec;
+    }
+  }
+  return res;
+}
+
+
+// Fast state smoother
+// Durbin Koopmans Sec 4.5.3 (eq 4.69)
+vector[] ssm_smooth_state_fast(vector[] filter, int m, int p,
+                               matrix Z, matrix T, matrix Q, matrix R) {
+  vector[m] alpha[size(filter)];
+  int n;
+  n <- size(filter);
+  {
+    vector[m] r;
+    matrix[m, m] L;
+    vector[p] v;
+    matrix[m, p] K;
+    matrix[p, p] Finv;
+    vector[m] a1;
+    matrix[m, m] P1;
+    vector[m] eta[n];
+
+    // find smoothed state disturbances
+    r <- rep_vector(0, m);
+    for (i in 1:n) {
+      int t;
+      // move backwards in time
+      t <- n - i + 1;
+      // updating
+      K <- ssm_filter_get_K(filter[t], m, p);
+      v <- ssm_filter_get_v(filter[t], m, p);
+      Finv <- ssm_filter_get_Finv(filter[t], m, p);
+      if (t == n) {
+        L <- diag_matrix(rep_vector(1, m));
+      } else {
+        L <- T - K * Z;
+      }
+      r <- ssm_smooth_update_r(r, Z, v, Finv, L);
+      eta[t] <- Q * R ' * r;
+      // saving
+    }
+    // calculate smoothed states
+    a1 <- ssm_filter_get_a(filter[1], m, p);
+    P1 <- ssm_filter_get_P(filter[1], m, p);
+    alpha[1] <- a1 + P1 * r;
+    for (t in 1:(n - 1)) {
+      alpha[t + 1] <- T * alpha[t] + R * eta[t];
+    }
+  }
+  return alpha;
+}
 
 ////// Simulators /////////////////
 int[,] ssm_sim_return_idx(int m, int p) {
@@ -390,6 +647,15 @@ vector[] ssm_sim2_rng(int n,
   return ret;
 }
 
+// Smoothing Simulators
+
+// ssm_simsmo_eta_rng
+// ssm_simsmo_eps_rng
+// ssm_simsmo_alpha_rng
+// and de jong methods
+// ssm_simsmodj_eta_rng
+// ssm_simsmodj_eps_rng
+// ssm_simsmodj_alpha_rng
 
 // Partial Autocorrelations to Autocorrelations transformation
 // Maps (-1, 1)^p to AR space

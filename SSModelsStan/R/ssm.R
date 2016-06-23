@@ -42,18 +42,31 @@ gen_ssm_filter_extractor <- function(m, p) {
 #'   \code{"v"}, \code{"Finv"}, \code{"K"}, \code{"a"}, \code{"P"}.
 #'   If \code{NULL}, all values are extracted.
 #' @return A named \code{list} of \code{array} objects, one for each parameter.
-#'
+#' @export
 extract_param_from_ssm_filter <- function(x, m, p, params = NULL) {
-  f <- function(x, extractor) {
-    g <- function(x, el) {
-      .n <- nrow(x)
-      array(t(x[ , el[["start"]]:el[["end"]]]), c(el[["dim"]], .n))
-    }
-    map(extractor, ~ g(x, .x))
+  f <- function(el, x) {
+    d <- dim(x)[1:2]
+    aperm(array(aperm(x[ , , el[["start"]]:el[["end"]], drop = FALSE]),
+                c(el[["dim"]], rev(d))))
   }
   extractor <- gen_ssm_filter_extractor(m, p)
   if (!is.null(params)) {
     extractor <- extractor[params]
   }
-  map(array_tree(x, 1), ~ f(.x, extractor))
+  map(extractor, ~ f(.x, x))
 }
+
+# extract_param_from_ssm_filter <- function(x, m, p, params = NULL) {
+#   f <- function(x, extractor) {
+#     g <- function(x, el) {
+#       .n <- nrow(x)
+#       array(t(x[ , el[["start"]]:el[["end"]]]), c(el[["dim"]], .n))
+#     }
+#     map(extractor, ~ g(x, .x))
+#   }
+#   extractor <- gen_ssm_filter_extractor(m, p)
+#   if (!is.null(params)) {
+#     extractor <- extractor[params]
+#   }
+#   map(array_tree(x, 1), ~ f(.x, extractor))
+# }

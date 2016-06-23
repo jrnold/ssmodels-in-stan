@@ -25,9 +25,13 @@ matrix to_matrix_rowwise(vector v, int m, int n) {
 
 vector to_vector_colwise(matrix x) {
   vector[num_elements(x)] res;
-  for (r in 1:rows(x)) {
-    for (c in 1:cols(x)) {
-      res[r * (c - 1) + r] <- x[r, c];
+  int n;
+  int m;
+  n <- rows(x);
+  m <- cols(x);
+  for (i in 1:n) {
+    for (j in 1:m) {
+      res[n * (j - 1) + i] <- x[i, j];
     }
   }
   return res;
@@ -35,9 +39,13 @@ vector to_vector_colwise(matrix x) {
 
 vector to_vector_rowwise(matrix x) {
   vector[num_elements(x)] res;
-  for (r in 1:rows(x)) {
-    for (c in 1:cols(x)) {
-      res[(r - 1) * c + c] <- x[r, c];
+  int n;
+  int m;
+  n <- rows(x);
+  m <- cols(x);
+  for (i in 1:rows(x)) {
+    for (j in 1:cols(x)) {
+      res[(i - 1) * m + j] <- x[i, j];
     }
   }
   return res;
@@ -125,23 +133,24 @@ matrix ssm_filter_get_P(vector x, int m, int p) {
 
 
 // Filtering
-vector[] ssm_filter(int n, int p, int m,
+vector[] ssm_filter(
                 vector[] y,
                 vector c, matrix Z, matrix H,
                 vector d, matrix T, matrix R, matrix Q,
                 vector a1, matrix P1) {
 
-  // p = rows(Z)
-  // r = cols(Z)
-  // n = size(y)
   // returned data
-  vector[ssm_filter_return_size(m, p)] res[n];
+  vector[ssm_filter_return_size(cols(Z), rows(Z))] res[size(y)];
   int r;
+  int n;
+  int p;
+  int m;
+
 
   // sizes
-  //n <- size(y); // number of obs
-  //p <- rows(Z); // obs size
-  //m <- cols(Z); // number of states
+  n <- size(y); // number of obs
+  p <- rows(Z); // obs size
+  m <- cols(Z); // number of states
   r <- cols(Q); // number of state disturbances
 
   //print("Sizes: n = ", m, ", p = ", n, ", m = ", m, ", r = ", r);

@@ -32,7 +32,7 @@ transformed parameters {
       Q[i, i] <- pow(sigma_eta[i], 2);
     }
     H <- rep_matrix(pow(sigma_epsilon, 2), 1, 1);
-    filter_res <- ssm_filter(n, 1, m, y, c, Z, H, d, T, R, Q, a1, P1);
+    filter_res <- ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
   }
 }
 model {

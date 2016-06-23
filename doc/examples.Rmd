@@ -70,8 +70,6 @@ nile_ll_sample <- sampling(local_level_mod,
                          data = nile_data)
 summary(nile_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 
-
-
 ```
 
 ```{r Nile-predicted-states}
@@ -410,6 +408,7 @@ ggplot(dplyr::filter(ukgas_states, state <= 3),
 ## Global Temperature
 
 See KFAS for example
+
 
 ## Cubic Spline Smoothing
 

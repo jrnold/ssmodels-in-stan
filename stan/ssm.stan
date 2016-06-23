@@ -1,4 +1,4 @@
-// Utility Functions
+/////////// Utility Functions  /////////////////
 matrix to_symmetric_matrix(matrix x) {
   return 0.5 * (x + x ');
 }
@@ -50,6 +50,11 @@ vector to_vector_rowwise(matrix x) {
   }
   return res;
 }
+
+/////////// SSM Utilities ////////////////
+
+
+/////////// SSM Filter  /////////////////
 
 // Length of vectors that SSM returns
 // value    size      location
@@ -132,6 +137,94 @@ matrix ssm_filter_get_P(vector x, int m, int p) {
 }
 
 
+// Filtering and Log-likelihood
+vector ssm_filter_update_a(vector a, vector c, matrix T, vector v, matrix K) {
+  vector[num_elements(a)] a_new;
+  a_new <- T * a + K * v + c;
+  return a_new;
+}
+
+matrix ssm_filter_update_P(matrix P, matrix Z, matrix T,
+                           matrix Q, matrix R, matrix K) {
+  matrix[rows(P), cols(P)] P_new;
+  P_new <- to_symmetric_matrix(T * P * (T - K * Z)' + quad_form(Q, R'));
+  return P_new;
+}
+
+vector ssm_filter_update_v(vector y, vector a, vector d, matrix Z) {
+  vector[num_elements(y)] v;
+  v <- y - Z * a - d;
+  return v;
+}
+
+matrix ssm_filter_update_F(matrix P, matrix Z, matrix H) {
+  matrix[rows(H), cols(H)] F;
+  F <- quad_form(P, Z') + H;
+  return F;
+}
+
+matrix ssm_filter_update_Finv(matrix P, matrix Z, matrix H) {
+  matrix[rows(H), cols(H)] Finv;
+  Finv <- inverse(ssm_filter_update_F(P, Z, H));
+  return Finv;
+}
+
+matrix ssm_filter_update_K(matrix P, matrix T, matrix Z, matrix Finv) {
+  matrix[cols(Z), rows(Z)] K;
+  K <- T * P * Z' * Finv;
+  return K;
+}
+
+real ssm_filter_update_ll(vector v, matrix Finv) {
+  real ll;
+  int p;
+  p <- num_elements(v);
+  // det(A^{-1}) = 1 / det(A) -> log det(A^{-1}) = - log det(A)
+  ll <- (- 0.5 * (p * log(2 * pi())
+         - log_determinant(Finv)
+         + quad_form(Finv, v)));
+  return ll;
+}
+
+real ssm_loglik(vector[] y,
+                vector c, matrix Z, matrix H,
+                vector d, matrix T, matrix R, matrix Q,
+                vector a1, matrix P1) {
+  real ll;
+  int n;
+  int m;
+  int p;
+
+  n <- size(y); // number of obs
+  m <- cols(Z);
+  p <- rows(Z);
+  {
+    vector[n] ll_obs;
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    matrix[p, p] Finv;
+    matrix[m, p] K;
+
+    a <- a1;
+    P <- P1;
+    for (t in 1:n) {
+      v <- ssm_filter_update_v(y[t], a, d, Z);
+      Finv <- ssm_filter_update_Finv(P, Z, H);
+      K <- ssm_filter_update_K(P, T, Z, Finv);
+      ll_obs[t] <- ssm_filter_update_ll(v, Finv);
+      // don't save a, P for last iteration
+      if (t < n) {
+        a <- ssm_filter_update_a(a, c, T, v, K);
+        P <- ssm_filter_update_P(P, Z, T, Q, R, K);
+      }
+    }
+    ll <- sum(ll_obs);
+  }
+  return ll;
+}
+
+
 // Filtering
 vector[] ssm_filter(
                 vector[] y,
@@ -146,7 +239,6 @@ vector[] ssm_filter(
   int p;
   int m;
 
-
   // sizes
   n <- size(y); // number of obs
   p <- rows(Z); // obs size
@@ -159,12 +251,11 @@ vector[] ssm_filter(
     matrix[m, m] P;
     vector[m * m] P_vec;
     vector[p] v;
-    matrix[p, p] F;
     matrix[p, p] Finv;
     vector[p * p] Finv_vec;
     matrix[m, p] K;
     vector[m * p] K_vec;
-    real loglik;
+    real ll;
     int idx[6, 3];
 
     idx <- ssm_filter_return_idx(m, p);
@@ -174,24 +265,21 @@ vector[] ssm_filter(
     P_vec <- to_vector_colwise(P);
     res[1, idx[6, 2]:idx[6, 3]] <- P_vec;
     for (t in 1:n) {
-      v <- y[t] - Z * a - d;
+      v <- ssm_filter_update_v(y[t], a, d, Z);
       res[t, idx[2, 2]:idx[2, 3]] <- v;
-      F <- quad_form(P, Z') + H;
-      Finv <- inverse(F);
+      Finv <- ssm_filter_update_Finv(P, Z, H);
       Finv_vec <- to_vector_colwise(Finv);
       res[t, idx[3, 2]:idx[3, 3]] <- Finv_vec;
-      K <- T * P * Z' * Finv;
+      K <- ssm_filter_update_K(P, T, Z, Finv);
       K_vec <- to_vector_colwise(K);
       res[t, idx[4, 2]:idx[4, 3]] <- K_vec;
-      loglik <- - 0.5 * (p * log(2 * pi())
-                         + log_determinant(F)
-                         + quad_form(Finv, v));
-      res[t, 1] <- loglik;
+      ll <- ssm_filter_update_ll(v, Finv);
+      res[t, 1] <- ll;
       // don't save a, P for last iteration
       if (t < n) {
-        a <- T * a + K * v + c;
+        a <- ssm_filter_update_a(a, c, T, v, K);
         res[t + 1, idx[5, 2]:idx[5, 3]] <- a;
-        P <- to_symmetric_matrix(T * P * (T - K * Z)' + quad_form(Q, R'));
+        P <- ssm_filter_update_P(P, Z, T, Q, R, K);
         P_vec <- to_vector_colwise(P);
         res[t + 1, idx[6, 2]:idx[6, 3]] <- P_vec;
       }
@@ -200,17 +288,42 @@ vector[] ssm_filter(
   return res;
 }
 
+////// Smoothers //////////////////
+
 // ssm_smoother_disturbances
 // ssm_smoother_states
 // ssm_smoother_states_fast
 // ssm_smoother_sim
 
-// ssm_sim
+////// Simulators /////////////////
+int[,] ssm_sim_return_idx(int m, int p) {
+  int sz[6, 3];
+  // y
+  sz[1, 1] <- p;
+  // a
+  sz[2, 1] <- m;
+  // Fill in start and stop points
+  sz[1, 2] <- 1;
+  sz[1, 3] <- sz[1, 2] + sz[1, 1] - 1;
+  for (i in 2:2) {
+    sz[i, 2] <- sz[i - 1, 3] + 1;
+    sz[i, 3] <- sz[i, 2] + sz[i, 1] - 1;
+  }
+  return sz;
+}
+
+int ssm_sim_return_size(int m, int p) {
+  int sz;
+  sz <- ssm_sim_return_idx(m, p)[2, 3];
+  return sz;
+}
+
+// only save y and a
 vector[] ssm_sim_rng(int n,
                     vector c, matrix Z, matrix H,
                     vector d, matrix T, matrix R, matrix Q,
                     vector a1, matrix P1) {
-  vector[rows(Z)] y[n];
+  vector[ssm_sim_return_size(cols(Z), rows(Z))] ret[n];
   int p;
   int m;
   int r;
@@ -218,32 +331,72 @@ vector[] ssm_sim_rng(int n,
   m <- cols(Z);
   r <- cols(Q);
   {
+    vector[p] y;
+    vector[p] eps;
     vector[m] a;
     vector[m] eta;
-    vector[p] eps;
     matrix[m, m] RQR;
+    int idx[2, 3];
+
+    idx <- ssm_sim_return_idx(m, p);
     RQR <- quad_form_sym(Q, R);
     a <- multi_normal_rng(a1, P1);
+    ret[1, idx[2, 2]:idx[2, 3]] <- a;
     for (t in 1:n) {
-      y[t] <- multi_normal_rng(d + Z * a, H);
+      y <- multi_normal_rng(d + Z * a, H);
+      ret[1, idx[1, 2]:idx[1, 3]] <- y;
       if (t < n) {
-        a <- multi_normal_rng(c + T * a, quad_form_sym(Q, R));
+        a <- multi_normal_rng(c + T * a, RQR);
+        ret[1, idx[2, 2]:idx[2, 3]] <- a;
       }
     }
   }
-  return y;
+  return ret;
 }
 
-// // Partial Autocorrelations to Autocorrelations transformation
-// // Maps (-1, 1)^p to AR space
-// // Translated from R stats C function partrans
-// // https://github.com/wch/r-source/blob/e5b21d0397c607883ff25cca379687b86933d730/src/library/stats/src/pacf.c
+// simulate from fixed starting values
+vector[] ssm_sim2_rng(int n,
+                    vector c, matrix Z, matrix H,
+                    vector d, matrix T, matrix R, matrix Q,
+                    vector a1) {
+  vector[ssm_sim_return_size(cols(Z), rows(Z))] ret[n];
+  int p;
+  int m;
+  int r;
+  p <- rows(Z);
+  m <- cols(Z);
+  r <- cols(Q);
+  {
+    vector[p] y;
+    vector[p] eps;
+    vector[m] a;
+    vector[m] eta;
+    matrix[m, m] RQR;
+    int idx[2, 3];
+
+    idx <- ssm_sim_return_idx(m, p);
+    RQR <- quad_form_sym(Q, R);
+    a <- a1;
+    ret[1, idx[2, 2]:idx[2, 3]] <- a;
+    for (t in 1:n) {
+      y <- multi_normal_rng(d + Z * a, H);
+      ret[1, idx[1, 2]:idx[1, 3]] <- y;
+      if (t < n) {
+        a <- multi_normal_rng(c + T * a, RQR);
+        ret[1, idx[2, 2]:idx[2, 3]] <- a;
+      }
+    }
+  }
+  return ret;
+}
+
+
+// Partial Autocorrelations to Autocorrelations transformation
+// Maps (-1, 1)^p to AR space
+// Translated from R stats C function partrans
+// https://github.com/wch/r-source/blob/e5b21d0397c607883ff25cca379687b86933d730/src/library/stats/src/pacf.c
 // vector pacf_to_acf(vector x) {
-//   vector[size(x)] ret;
-//   vector[size(x)] work;
-//   real a;
-//   int p;
-//   p = size(x);
+//   int n;
 //
 //   // elements must be between -1 and 1
 //   for (i in 1:p) {

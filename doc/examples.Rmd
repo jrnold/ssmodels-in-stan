@@ -62,11 +62,12 @@ nile_data <- within(list(), {
   a1 <- array(0, 1)
   P1 <- matrix(10 ^ 7)
 })
-nile_init <- list(list(sigma_epsilon = sqrt(15099),
-                       sigma_eta = sqrt(1469)))
+nile_init <- list(list(sigma_epsilon = sqrt(var(y)),
+                       sigma_eta = sqrt(var(y))))
 nile_ll_sample <- sampling(local_level_mod,
                          chains = 1,
                          iter = 2000,
+                         init = nile_init,
                          data = nile_data)
 summary(nile_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 
@@ -79,17 +80,24 @@ nile_params <-
 
 nile_states <- nile_params[["a"]] %>%
   apply(2:3, mean)
-
 ggplot(mutate(Nile_, state = nile_states), aes(x = year)) +
   geom_point(aes(y = flow)) +
   geom_line(aes(y = state))
 ```
 
+```{r Nile-smoothed-states}
+nile_smooth <- apply(drop(rstan::extract(nile_ll_sample, "alpha2")[[1]]), 2, mean)
+ggplot(mutate(Nile_, state = nile_smooth), aes(x = year)) +
+  geom_point(aes(y = flow)) +
+  geom_line(aes(y = state))
+```
+
+
 
 ```{r Nile-local-level-optimization}
 nile_ll_optim <- optimizing(local_level_mod, data = nile_data,
-                            init = list(sigma_eta = 5,
-                                        sigma_epsilon = 100))
+                            init = list(sigma_eta = sd(Nile),
+                                        sigma_epsilon = sd(Nile)))
 nile_ll_optim$par[c("sigma_eta", "sigma_epsilon")]
 ```
 
@@ -134,7 +142,7 @@ StructTS(log10(AirPassengers), type = "BSM")
 var_only_code <- stanc_builder(find_rstudio_root_file("stan/var_only.stan"))
 rm(var_only_mod)
 var_only_mod <- stan_model(model_code = var_only_code[["model_code"]],
-                              model_name = var_only_code[["model_name"]])
+                           model_name = var_only_code[["model_name"]])
 
 ```
 
@@ -143,7 +151,7 @@ airlines_data <- within(list(), {
   y <- matrix(log10(as.numeric(AirPassengers))) - 2
   n <- length(y)
   p <- 1
-  r <- 3
+  q <- 3
   m <- 13
   T_lvls <- as.numeric(upper.tri(matrix(0, 2, 2), diag = TRUE))
   T_seas <- rbind(rep(-1, 11), diag(1, 10, 11))
@@ -160,8 +168,8 @@ airlines_data <- within(list(), {
   a1 <- rep(0, m)
   P1 <- diag(1, m, m)
 })
-airlines_init <- list(sigma_eta = c(0.01206565, 2e-06, 0.01623185),
-                      sigma_epsilon = 1e-05)
+airlines_init <- list(sigma_eta = rep(sd(AirPassengers), 3),
+                      sigma_epsilon = sd(AirPassengers))
 airlines_ll_sample <- sampling(var_only_mod,
                          chains = 1,
                          iter = 500,
@@ -237,7 +245,7 @@ seatbelts_data <- within(list(), {
   y <- matrix(log10(Seatbelts_$drivers))
   n <- length(y)
   p <- 1
-  r <- 1
+  q <- 1
   m <- 1
   T <- matrix(1)
   Z <- matrix(1)
@@ -284,7 +292,7 @@ seatbelts_data <- within(list(), {
   y <- matrix(log10(Seatbelts_$drivers))
   n <- length(y)
   p <- 1
-  r <- 3
+  q <- 3
   m <- 13
   T_lvls <- as.numeric(upper.tri(matrix(0, 2, 2), diag = TRUE))
   T_seas <- rbind(rep(-1, 11), diag(1, 10, 11))
@@ -364,7 +372,7 @@ ukgas_data <- within(list(), {
   y <- matrix(log10(UKgas_$therms))
   n <- length(y)
   p <- 1
-  r <- 3
+  q <- 3
   m <- 5
   T_lvls <- as.numeric(upper.tri(matrix(0, 2, 2), diag = TRUE))
   T_seas <- rbind(rep(-1, 3), diag(1, 2, 3))

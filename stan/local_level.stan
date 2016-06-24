@@ -24,19 +24,31 @@ parameters {
   real<lower = 0.0> sigma_epsilon;
 }
 transformed parameters {
-  vector[6] filter_res[n];
+}
+model {
   {
     matrix[1, 1] H;
     matrix[1, 1] Q;
     H <- rep_matrix(pow(sigma_epsilon, 2), 1, 1);
     Q <- rep_matrix(pow(sigma_eta, 2), 1, 1);
-    filter_res <- ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
+    ssm_lp(y, c, Z, H, d, T, R, Q, a1, P1);
   }
 }
-model {
-  vector[n] ll;
-  for (i in 1:n) {
-    ll[i] <- ssm_filter_get_loglik(filter_res[i], 1, 1);
+generated quantities {
+  vector[filter_sz] filtered[n];
+  vector[m + m * m] eta[n];
+  vector[1] eps[n];
+  vector[m + m * m] alpha[n];
+  vector[1] alpha2[n];
+  {
+    matrix[1, 1] H;
+    matrix[1, 1] Q;
+    H <- rep_matrix(pow(sigma_epsilon, 2), 1, 1);
+    Q <- rep_matrix(pow(sigma_eta, 2), 1, 1);
+    filtered <- ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
+    eps <- ssm_smooth_eps(filtered, H, Z, T);
+    eta <- ssm_smooth_eta(filtered, Z, T, R, Q);
+    alpha <- ssm_smooth_state(filtered, Z, T);
+    alpha2 <- ssm_smooth_faststate(filtered, Z, T, R, Q);
   }
-  increment_log_prob(sum(ll));
 }

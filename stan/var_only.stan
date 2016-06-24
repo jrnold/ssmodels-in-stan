@@ -4,42 +4,62 @@ functions {
 data {
   int<lower = 1> n;
   int<lower = 1> m;
-  int<lower = 1> r;
+  int<lower = 1> q;
   vector[1] y[n];
   vector[m] a1;
   cov_matrix[m] P1;
   matrix[m, m] T;
   matrix[1, m] Z;
-  matrix[m, r] R;
+  matrix[m, q] R;
   vector[m] c;
   vector[1] d;
 }
 transformed data {
   int filter_sz;
-  filter_sz <- ssm_filter_return_size(m, 1);
+  int p;
+  p <- 1;
+  filter_sz <- ssm_filter_size(m, p);
 }
 parameters {
-  vector<lower = 0.0>[r] sigma_eta;
+  vector<lower = 0.0>[q] sigma_eta;
   real<lower = 0.0> sigma_epsilon;
 }
 transformed parameters {
-  vector[filter_sz] filter_res[n];
+}
+model {
   {
     matrix[1, 1] H;
-    matrix[r, r] Q;
-    Q <- rep_matrix(0.0, r, r);
-    for (i in 1:r) {
+    matrix[q, q] Q;
+    Q <- rep_matrix(0.0, q, q);
+    for (i in 1:q) {
       Q[i, i] <- pow(sigma_eta[i], 2);
     }
     H <- rep_matrix(pow(sigma_epsilon, 2), 1, 1);
-    filter_res <- ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
+    ssm_lp(y, c, Z, H, d, T, R, Q, a1, P1);
   }
 }
-model {
-  vector[n] ll;
-  for (i in 1:n) {
-    ll[i] <- ssm_filter_get_loglik(filter_res[i], m, 1);
+generated quantities {
+  vector[filter_sz] filtered[n];
+  vector[q + q * q] eta[n];
+  vector[p + p * p] eps[n];
+  vector[m + m * m] alpha[n];
+  vector[m] alpha2[n];
+  vector[m + m * m] alpha3[n];
+  vector[2 * p + m + q] sims[1];
+  {
+    matrix[1, 1] H;
+    matrix[q, q] Q;
+    Q <- rep_matrix(0.0, q, q);
+    for (i in 1:q) {
+      Q[i, i] <- pow(sigma_eta[i], 2);
+    }
+    H <- rep_matrix(pow(sigma_epsilon, 2), 1, 1);
+    filtered <- ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
+    eta <- ssm_smooth_eta(filtered, Z, T, R, Q);
+    eps <- ssm_smooth_eps(filtered, H, Z, T);
+    alpha <- ssm_smooth_state(filtered, Z, T);
+    alpha2 <- ssm_smooth_faststate(filtered, Z, T, R, Q);
+    alpha3 <- ssm_filter_states(filtered, Z);
+    sims <- ssm_sim_rng(1, c, Z, H, d, T, R, Q, a1, P1);
   }
-  print(sum(ll));
-  increment_log_prob(sum(ll));
 }

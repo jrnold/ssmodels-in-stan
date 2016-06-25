@@ -58,7 +58,7 @@ generated quantities {
     eta <- ssm_smooth_eta(filtered, Z, T, R, Q);
     eps <- ssm_smooth_eps(filtered, H, Z, T);
     alpha <- ssm_smooth_state(filtered, Z, T);
-    alpha2 <- ssm_smooth_faststate(filtered, Z, T, R, Q);
+    alpha2 <- ssm_smooth_faststate(filtered, c, Z, T, R, Q);
     alpha3 <- ssm_filter_states(filtered, Z);
     sims <- ssm_sim_rng(1, c, Z, H, d, T, R, Q, a1, P1);
   }

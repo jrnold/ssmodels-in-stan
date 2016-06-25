@@ -176,6 +176,12 @@ matrix ssm_filter_update_K(matrix P, matrix T, matrix Z, matrix Finv) {
   return K;
 }
 
+matrix ssm_filter_update_L(matrix Z, matrix T, matrix K) {
+  matrix[rows(T), cols(T)] L;
+  L <- T - K * Z;
+  return L;
+}
+
 real ssm_filter_update_ll(vector v, matrix Finv) {
   real ll;
   int p;
@@ -413,11 +419,7 @@ vector[] ssm_smooth_state(vector[] filter, matrix Z, matrix T) {
       Finv <- ssm_filter_get_Finv(filter[t], m, p);
       a <- ssm_filter_get_a(filter[t], m, p);
       P <- ssm_filter_get_P(filter[t], m, p);
-      if (t == n) {
-        L <- diag_matrix(rep_vector(1.0, m));
-      } else {
-        L <- T - K * Z;
-      }
+      L <- ssm_filter_update_L(Z, T, K);
       r <- ssm_smooth_update_r(r, Z, v, Finv, L);
       N <- ssm_smooth_update_N(N, Z, Finv, L);
       alpha <- a + P * r;
@@ -450,7 +452,7 @@ matrix ssm_smooth_eps_get_var(vector x, int p) {
 
 // Observation disturbance smoother
 // Durbin Koopmans Sec 4.5.3 (eq 4.69)
-vector[] ssm_smooth_eps(vector[] filter, matrix H, matrix Z, matrix T) {
+vector[] ssm_smooth_eps(vector[] filter, matrix Z, matrix H, matrix T) {
   vector[ssm_smooth_eps_size(rows(Z))] res[size(filter)];
   int n;
   int m;
@@ -478,11 +480,7 @@ vector[] ssm_smooth_eps(vector[] filter, matrix H, matrix Z, matrix T) {
       K <- ssm_filter_get_K(filter[t], m, p);
       v <- ssm_filter_get_v(filter[t], m, p);
       Finv <- ssm_filter_get_Finv(filter[t], m, p);
-      if (t == n) {
-        L <- diag_matrix(rep_vector(1.0, m));
-      } else {
-        L <- T - K * Z;
-      }
+      L <- ssm_filter_update_L(Z, T, K);
       r <- ssm_smooth_update_r(r, Z, v, Finv, L);
       N <- ssm_smooth_update_N(N, Z, Finv, L);
       eps <- H * (Finv * v - K ' * r);
@@ -548,11 +546,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       K <- ssm_filter_get_K(filter[t], m, p);
       v <- ssm_filter_get_v(filter[t], m, p);
       Finv <- ssm_filter_get_Finv(filter[t], m, p);
-      if (t == n) {
-        L <- diag_matrix(rep_vector(1.0, m));
-      } else {
-        L <- T - K * Z;
-      }
+      L <- ssm_filter_update_L(Z, T, K);
       r <- ssm_smooth_update_r(r, Z, v, Finv, L);
       N <- ssm_smooth_update_N(N, Z, Finv, L);
       eta <- Q * R ' * r;
@@ -569,8 +563,8 @@ vector[] ssm_smooth_eta(vector[] filter,
 // Fast state smoother
 // Durbin Koopmans Sec 4.5.3 (eq 4.69)
 vector[] ssm_smooth_faststate(vector[] filter,
-                               matrix Z, matrix T,
-                               matrix R, matrix Q) {
+                              vector c, matrix Z, matrix T,
+                              matrix R, matrix Q) {
   vector[cols(Z)] alpha[size(filter)];
   int n;
   int m;
@@ -600,11 +594,7 @@ vector[] ssm_smooth_faststate(vector[] filter,
       K <- ssm_filter_get_K(filter[t], m, p);
       v <- ssm_filter_get_v(filter[t], m, p);
       Finv <- ssm_filter_get_Finv(filter[t], m, p);
-      if (t == n) {
-        L <- diag_matrix(rep_vector(1.0, m));
-      } else {
-        L <- T - K * Z;
-      }
+      L <- ssm_filter_update_L(Z, T, K);
       r <- ssm_smooth_update_r(r, Z, v, Finv, L);
       eta[t] <- Q * R ' * r;
       // saving
@@ -614,7 +604,7 @@ vector[] ssm_smooth_faststate(vector[] filter,
     P1 <- ssm_filter_get_P(filter[1], m, p);
     alpha[1] <- a1 + P1 * r;
     for (t in 1:(n - 1)) {
-      alpha[t + 1] <- T * alpha[t] + R * eta[t];
+      alpha[t + 1] <- c + T * alpha[t] + R * eta[t];
     }
   }
   return alpha;
@@ -647,6 +637,39 @@ int ssm_sim_size(int m, int p, int q) {
   return sz;
 }
 
+vector ssm_sim_get_y(vector x, int m, int p, int q) {
+  vector[m] y;
+  int idx[4, 3];
+  idx <- ssm_sim_idx(m, p, q);
+  y <- x[idx[1, 2]:idx[1, 3]];
+  return y;
+}
+
+vector ssm_sim_get_a(vector x, int m, int p, int q) {
+  vector[m] a;
+  int idx[4, 3];
+  idx <- ssm_sim_idx(m, p, q);
+  a <- x[idx[2, 2]:idx[2, 3]];
+  return a;
+}
+
+
+vector ssm_sim_get_eps(vector x, int m, int p, int q) {
+  vector[m] eps;
+  int idx[4, 3];
+  idx <- ssm_sim_idx(m, p, q);
+  eps <- x[idx[3, 2]:idx[3, 3]];
+  return eps;
+}
+
+vector ssm_sim_get_eta(vector x, int m, int p, int q) {
+  vector[m] eta;
+  int idx[4, 3];
+  idx <- ssm_sim_idx(m, p, q);
+  eta <- x[idx[4, 2]:idx[4, 3]];
+  return eta;
+}
+
 // only save y and a
 vector[] ssm_sim_rng(int n,
                     vector c, matrix Z, matrix H,
@@ -673,18 +696,23 @@ vector[] ssm_sim_rng(int n,
     zero_p <- rep_vector(0.0, p);
     zero_q <- rep_vector(0.0, q);
     zero_m <- rep_vector(0.0, m);
-    eta <- zero_q;
     a <- multi_normal_rng(a1, P1);
     for (t in 1:n) {
       eps <- multi_normal_rng(zero_p, H);
       y <- d + Z * a + eps;
+      // since eta_t is for alpha_{t + 1}
+      if (t == n) {
+        eta <- zero_q;
+      } else {
+        eta <- multi_normal_rng(zero_q, Q);
+      }
       // save
       ret[t, idx[1, 2]:idx[1, 3]] <- y;
       ret[t, idx[2, 2]:idx[2, 3]] <- a;
       ret[t, idx[3, 2]:idx[3, 3]] <- eps;
       ret[t, idx[4, 2]:idx[4, 3]] <- eta;
+      // a_{t + 1}
       if (t < n) {
-        eta <- multi_normal_rng(zero_q, Q);
         a <- c + T * a + R * eta;
       }
     }
@@ -694,10 +722,127 @@ vector[] ssm_sim_rng(int n,
 
 
 // Smoothing Simulators
+int[,] ssm_simsmo_dist_idx(int p, int q) {
+  int sz[2, 3];
+  // eps
+  sz[1, 1] <- p;
+  // eta
+  sz[2, 1] <- q;
 
-// ssm_simsmo_eta_rng
-// ssm_simsmo_eps_rng
+  // Fill in start and stop points
+  sz[1, 2] <- 1;
+  sz[1, 3] <- sz[1, 2] + sz[1, 1] - 1;
+  sz[2, 2] <- sz[1, 3] + 1;
+  sz[2, 3] <- sz[2, 2] + sz[2, 1] - 1;
+  return sz;
+}
+
+int ssm_simsmo_dist_size(int p, int q) {
+  int sz;
+  sz <- ssm_simsmo_dist_idx(p, q)[2, 3];
+  return sz;
+}
+
+vector ssm_simsmo_get_eta(vector x, int p, int q) {
+  int idx[2, 3];
+  vector[q] eta;
+  idx <- ssm_simsmo_dist_idx(p, q);
+  eta <- x[idx[2, 2]:idx[2, 3]];
+  return eta;
+}
+
+vector ssm_simsmo_get_eps(vector x, int p, int q) {
+  int idx[2, 3];
+  vector[p] eps;
+  idx <- ssm_simsmo_dist_idx(p, q);
+  eps <- x[idx[1, 2]:idx[1, 3]];
+  return eps;
+}
+
 // ssm_simsmo_alpha_rng
+vector[] ssm_simsmo_dist_rng(vector[] eps, vector[] eta,
+                      vector c, matrix Z, matrix H,
+                      vector d, matrix T, matrix R, matrix Q,
+                      vector a1, matrix P1) {
+    vector[ssm_simsmo_dist_size(rows(T), rows(Q))] draws[size(eps)];
+    int n;
+    int p;
+    int m;
+    int q;
+    n <- size(eps);
+    p <- rows(Z);
+    m <- rows(T);
+    q <- rows(Q);
+    {
+      vector[ssm_filter_size(m, p)] filter[n];
+      vector[p] y[n];
+      vector[ssm_sim_size(m, p, q)] sims[n];
+      vector[ssm_smooth_eta_size(p)] epshat_plus[n];
+      vector[ssm_smooth_eta_size(q)] etahat_plus[n];
+      int idx[2, 3];
+      idx <- ssm_simsmo_dist_idx(p, q);
+      // simulate unconditional disturbances and observations
+      sims <- ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
+      for (i in 1:n) {
+        y[i] <- ssm_sim_get_y(sims[i], m, p, q);
+      }
+      // filter simulated y's
+      filter <- ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      // mean correct epsilon samples
+      epshat_plus <- ssm_smooth_eps(filter, Z, H, T);
+      for (i in 1:n) {
+        draws[i, idx[1, 2]:idx[1, 3]] <- (ssm_sim_get_eps(sims[i], m, p, q)
+                                      - ssm_smooth_eps_get_mean(epshat_plus[i], p)
+                                      + ssm_smooth_eps_get_mean(eps[i], p));
+      }
+      // mean correct eta samples
+      etahat_plus <- ssm_smooth_eta(filter, Z, T, R, Q);
+      for (i in 1:n) {
+        draws[i, idx[2, 2]:idx[2, 3]] <- (ssm_sim_get_eta(sims[i], m, p, q)
+                                      - ssm_smooth_eta_get_mean(etahat_plus[i], q)
+                                      + ssm_smooth_eta_get_mean(eta[i], q));
+      }
+    }
+    return draws;
+}
+
+// ssm_simsmo_alpha_rng
+vector[] ssm_simsmo_states_rng(vector[] alpha,
+                      vector c, matrix Z, matrix H,
+                      vector d, matrix T, matrix R, matrix Q,
+                      vector a1, matrix P1) {
+    vector[rows(T)] draws[size(alpha)];
+    int n;
+    int p;
+    int m;
+    int q;
+    n <- size(alpha);
+    p <- rows(Z);
+    m <- rows(T);
+    q <- rows(Q);
+    {
+      vector[ssm_filter_size(m, p)] filter[n];
+      vector[ssm_sim_size(m, p, q)] sims[n];
+      vector[p] y[n];
+      vector[m] alpha_hat_plus[n];
+      // simulate unconditional disturbances and observations
+      sims <- ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
+      for (i in 1:n) {
+        y[i] <- ssm_sim_get_y(sims[i], m, p, q);
+      }
+      // filter with simulated y's
+      filter <- ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      // mean correct epsilon samples
+      alpha_hat_plus <- ssm_smooth_faststate(filter, c, Z, T, R, Q);
+      for (i in 1:n) {
+        draws[i] <- (ssm_sim_get_a(sims[i], m, p, q)
+                    - alpha_hat_plus[i]
+                    + alpha[i]);
+      }
+    }
+    return draws;
+}
+
 // and de jong methods
 // ssm_simsmodj_eta_rng
 // ssm_simsmodj_eps_rng

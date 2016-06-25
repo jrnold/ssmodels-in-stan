@@ -239,12 +239,33 @@ The other state smoother only requires inverting $\mat{F}_t$, but that has alrea
 
 ## Simulation smoothers
 
+Simulation smoothing draws samples of the states, $p(\vec{\alpha}_1, \dots, \vec{\alpha}_n | \vec{y}_{1:n})$, or disturbances, $p(\vec{\varepsilon}_1, \dots, \vec{\varepsilon}_n | \vec{y}_{1:n})$ and $p(\vec{\eta}_1, \dots, \vec{\eta}_n | \vec{y}_{1:n})$.
 
 ### Mean corrections
 
 [@DurbinKoopman2012, Sec 4.9]
 
-Simulation smoother by mean corrections. Ch. 4.9.
+### Disturbances
+
+Let $\vec{w} = (\vec{\varepsilon}_1', \var{\eta}_1', \dots, \vec{\varepsilon}_n', \vec{\eta}_n')$ and let $\hat{\vec{w}} = \E(\vec{w} | \vec{y}_{1:n})$.
+We want to sample from $p(\vec{w} | \vec{y}_{1:n})$.
+
+1. Run filter and smoother to calculate $\hat{\vec{w}}$ which consists of the smoothed observation disturbances $\E(\vec{\varepsilon}_{1:n})$ and state disturbances $\E(\vec{\eta}_{1:n})$.
+2. Draw samples from the unconditional disturbances of $\vec{w}$,
+    $$
+    \begin{aligned}[t]
+    \vec{w} &\sim N(0, \Phi) &\Phi &= \ndiag(H_1, Q_1, \dots, H_n, Q_n) .
+    \end{aligned}
+    $$
+3. Simulate from the state space system using $\vec{w}$ to simulate observations $\vec{y}^+$.
+4. Run a filter and smoother on $\vec{y}^+$ to calculate $\E(\vec{varepsilon}_{1:n} | \vec{y}^+_{1:n})$ and $\E(\vec{eta}_{1:n} | \vec{y}^+_{1:n})$, and call the vector of these expected disturbances $\hat{\vec{w}}^+{1:n}$.
+5. A sample from $p(\vec{w} | \vec{y}_{1:n})$ is
+    $$
+    \tilde{\vec{w}} = \vec{w}^+ - \hat{\vec{w}}^+ + \hat{\vec{w}} .
+    $$
+
+
+### States
 
 **TODO**
 

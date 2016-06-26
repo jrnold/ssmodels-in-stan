@@ -497,4 +497,3 @@ where there state vector is $\vec{\alpha}_t = (y_t, \theta \varepsilon_t)$
 
 This also uses the `manufac` dataset, and variable `lncaputil`.
 
-

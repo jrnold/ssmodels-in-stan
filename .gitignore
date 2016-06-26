@@ -12,6 +12,8 @@ auto/
 *.bak
 .Rproj.user
 .$*$
+.Rhistory
+.RData
 
 # Doc generated
 /doc/_book

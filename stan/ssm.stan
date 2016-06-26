@@ -245,34 +245,16 @@ real ssm_filter_update_ll(vector v, matrix Finv) {
 }
 
 // check convergence of cov matrices
-int ssm_check_convergence(matrix A, matrix B) {
-  real tol;
+int ssm_check_convergence(matrix A, matrix B, real tol) {
   real eps;
-  // matrix[rows(A), cols(A)] eps;
   real m;
   real n;
-  m <- rows(A);
-  n <- cols(A);
-  // what's a good level to choose?
-  tol <- sqrt(machine_precision());
-  eps <- sum(columns_dot_self(A - B))
-        / (sqrt(m * n) * (1 + sum(columns_dot_self(A))));
+  eps <- max(to_vector(A - B)) / max(to_vector(A));
   if (eps < tol) {
-    print("converged");
     return 1;
   } else {
     return 0;
   }
-  // for (j in 1:cols(A)) {
-  //   for (i in 1:rows(A)) {
-  //     eps <- fabs(A[i, j] - B[i, j]) / fabs(B[i, j]);
-  //     if (eps > tol) {
-  //       return 0;
-  //     }
-  //   }
-  // }
-  // print("converged")
-  // return 1;
 }
 
 real ssm_lpdf(vector[] y,
@@ -297,29 +279,34 @@ real ssm_lpdf(vector[] y,
     matrix[m, p] K;
     // indicator for if the filter has converged
     // This only works for time-invariant state space models
-    // int converged;
-    // matrix[m, m] P_old;
-    // converged <- 0;
+    int converged;
+    matrix[m, m] P_old;
+    real tol;
+    converged <- 0;
+    tol <- 1e-7;
 
     a <- a1;
     P <- P1;
     for (t in 1:n) {
       v <- ssm_filter_update_v(y[t], a, d, Z);
-      // if (converged < 1) {
+      if (converged < 1) {
         Finv <- ssm_filter_update_Finv(P, Z, H);
         K <- ssm_filter_update_K(P, T, Z, Finv);
-      //}
+      }
       ll_obs[t] <- ssm_filter_update_ll(v, Finv);
       // don't save a, P for last iteration
       if (t < n) {
         a <- ssm_filter_update_a(a, c, T, v, K);
         // check for convergence
         // should only check for convergence if there are no missing values
-        // if (converged < 1) {
-        //   P_old <- P;
+        if (converged < 1) {
+          P_old <- P;
           P <- ssm_filter_update_P(P, Z, T, Q, R, K);
-        //   converged <- ssm_check_convergence(P, P_old);
-        // }
+          converged <- ssm_check_convergence(P, P_old, tol);
+          if (converged >= 1) {
+            print("Converged!");
+          }
+        }
       }
     }
     ll <- sum(ll_obs);

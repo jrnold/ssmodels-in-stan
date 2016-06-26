@@ -99,7 +99,7 @@ matrix stationary_cov(matrix T, matrix R) {
   int m2;
   m <- rows(T);
   m2 <- m * m;
-  RR <- to_vector_colwise(tcrossprod(R));
+  RR <- to_vector(tcrossprod(R));
   TT <- kronecker_prod(T, T);
   Q0 <- to_matrix_colwise((diag_matrix(rep_vector(1.0, m2)) - TT) \ RR, m, m);
   return Q0;
@@ -303,24 +303,12 @@ real ssm_lpdf(vector[] y,
           P_old <- P;
           P <- ssm_filter_update_P(P, Z, T, Q, R, K);
           converged <- ssm_check_convergence(P, P_old, tol);
-          if (converged >= 1) {
-            print("Converged!");
-          }
         }
       }
     }
     ll <- sum(ll_obs);
   }
   return ll;
-}
-
-void ssm_lp(vector[] y,
-            vector c, matrix Z, matrix H,
-            vector d, matrix T, matrix R, matrix Q,
-            vector a1, matrix P1) {
-  real ll;
-  ll <- ssm_lpdf(y, c, Z, H, d, T, R, Q, a1, P1);
-  increment_log_prob(ll);
 }
 
 // Filtering
@@ -353,35 +341,38 @@ vector[] ssm_filter(vector[] y,
     int idx[6, 3];
     // indicator for if the filter has converged
     // This only works for time-invariant state space models
-    // int converged;
-    // matrix[m, m] P_old;
-    // converged <- 0;
+    int converged;
+    matrix[m, m] P_old;
+    real tol;
+    converged <- 0;
+    tol <- 1e-7;
+
     idx <- ssm_filter_idx(m, p);
     a <- a1;
     P <- P1;
     for (t in 1:n) {
       // updating
       v <- ssm_filter_update_v(y[t], a, d, Z);
-      // if (converged < 1) {
+      if (converged < 1) {
         Finv <- ssm_filter_update_Finv(P, Z, H);
         K <- ssm_filter_update_K(P, T, Z, Finv);
-      // }
+      }
       ll <- ssm_filter_update_ll(v, Finv);
       // saving
       res[t, 1] <- ll;
       res[t, idx[2, 2]:idx[2, 3]] <- v;
-      res[t, idx[3, 2]:idx[3, 3]] <- to_vector_colwise(Finv);
-      res[t, idx[4, 2]:idx[4, 3]] <- to_vector_colwise(K);
+      res[t, idx[3, 2]:idx[3, 3]] <- to_vector(Finv);
+      res[t, idx[4, 2]:idx[4, 3]] <- to_vector(K);
       res[t, idx[5, 2]:idx[5, 3]] <- a;
-      res[t, idx[6, 2]:idx[6, 3]] <- to_vector_colwise(P);
+      res[t, idx[6, 2]:idx[6, 3]] <- to_vector(P);
       // predict a_{t + 1}, P_{t + 1}
       if (t < n) {
         a <- ssm_filter_update_a(a, c, T, v, K);
-        // if (converged < 1) {
-        //   P_old <- P;
-        P <- ssm_filter_update_P(P, Z, T, Q, R, K);
-        //   converged <- ssm_check_convergence(P, P_old);
-        // }
+        if (converged < 1) {
+          P_old <- P;
+          P <- ssm_filter_update_P(P, Z, T, Q, R, K);
+          converged <- ssm_check_convergence(P, P_old, tol);
+        }
       }
     }
   }
@@ -432,7 +423,7 @@ vector[] ssm_filter_states(vector[] filter, matrix Z) {
       PP <- to_symmetric_matrix(P - P * quad_form(Finv, Z) * P);
       // saving
       res[t, 1:m] <- aa;
-      res[t, (m + 1):(m + m * m)] <- to_vector_colwise(PP);
+      res[t, (m + 1):(m + m * m)] <- to_vector(PP);
     }
   }
   return res;
@@ -519,7 +510,7 @@ vector[] ssm_smooth_state(vector[] filter, matrix Z, matrix T) {
       V <- to_symmetric_matrix(P - P * N * P);
       // saving
       res[t, 1:m] <- alpha;
-      res[t, (m + 1):(m + m * m)] <- to_vector_colwise(V);
+      res[t, (m + 1):(m + m * m)] <- to_vector(V);
     }
   }
   return res;
@@ -580,7 +571,7 @@ vector[] ssm_smooth_eps(vector[] filter, matrix Z, matrix H, matrix T) {
       var_eps <- to_symmetric_matrix(H - H * (Finv + quad_form(N, K)) * H);
       // saving
       res[t, 1:p] <- eps;
-      res[t, (p + 1):(p + p * p)] <- to_vector_colwise(var_eps);
+      res[t, (p + 1):(p + p * p)] <- to_vector(var_eps);
     }
   }
   return res;
@@ -646,7 +637,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       var_eta <- to_symmetric_matrix(Q - Q * quad_form(N, R) * Q);
       // saving
       res[t, 1:q] <- eta;
-      res[t, (q + 1):(q + q * q)] <- to_vector_colwise(var_eta);
+      res[t, (q + 1):(q + q * q)] <- to_vector(var_eta);
     }
   }
   return res;

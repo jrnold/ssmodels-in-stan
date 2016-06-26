@@ -62,8 +62,8 @@ nile_data <- within(list(), {
   a1 <- array(0, 1)
   P1 <- matrix(10 ^ 7)
 })
-nile_init <- list(list(sigma_epsilon = sqrt(var(y)),
-                       sigma_eta = sqrt(var(y))))
+nile_init <- list(list(sigma_epsilon = array(sqrt(var(nile_data$y)), 1),
+                       sigma_eta = array(sqrt(var(nile_data$y)), 1)))
 nile_ll_sample <- sampling(local_level_mod,
                          chains = 1,
                          iter = 2000,

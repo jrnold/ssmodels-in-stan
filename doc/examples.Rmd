@@ -172,7 +172,7 @@ airlines_init <- list(sigma_eta = rep(sd(AirPassengers), 3),
                       sigma_epsilon = sd(AirPassengers))
 airlines_ll_sample <- sampling(var_only_mod,
                          chains = 1,
-                         iter = 500,
+                         iter = 200,
                          init = list(airlines_init),
                          data = airlines_data, verbose = TRUE)
 summary(airlines_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]

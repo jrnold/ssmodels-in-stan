@@ -85,3 +85,55 @@ vector unconstrain_stationary(vector x) {
   }
   return z;
 }
+
+// Kronecker product
+matrix kronecker_prod(A, B) {
+  matrix[rows(A) * rows(B), cols(A) * cols(B)] C;
+  int m;
+  int n;
+  int p;
+  int q;
+  m <- rows(A);
+  n <- cols(A);
+  p <- rows(B);
+  q <- cols(B);
+  for (i in 1:m) {
+    for (j in 1:n) {
+      int row_start;
+      int row_end;
+      int col_start;
+      int col_end;
+      row_start <- (i - 1) * p + 1;
+      row_end <- (i - 1) * p + p;
+      col_start <- (j - 1) * q + 1;
+      col_end <- (j - 1) * q + 1;
+      C[row_start:row_end, col_start:col_end] <- A[i, j] * B;
+    }
+  }
+  return C;
+}
+
+/*
+Initialize stationary Kalman Filter.
+
+The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0),
+where $Q_0$ is the solution to
+$$
+(T \crossprod T) vec(Q_0) = vec(R R')
+$$
+where $vec(Q_0)$ and $vec(R R')$ are the stacked columns of $Q_0$ and $R R'$
+
+*/
+matrix stationary_cov(T, R) {
+  matrix[rows(T), cols[T]] Q0;
+  matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
+  vector[rows(T) * rows(T)] RR;
+  int m;
+  int m2;
+  m <- rows(T);
+  m2 <- m * m;
+  RR <- to_vector_colwise(tcrossprod(R));
+  TT <- kronecker_prod(T, T);
+  Q0 <- (diag_matrix(rep_vector(1.0, m2)) - TT) \ RR;
+  return Q0;
+}

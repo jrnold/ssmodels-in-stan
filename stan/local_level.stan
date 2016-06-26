@@ -13,6 +13,12 @@ transformed data {
   matrix[1, 1] R;
   vector[1] c;
   vector[1] d;
+  int m;
+  int p;
+  int q;
+  m <- 1;
+  p <- 1;
+  q <- 1;
   T[1, 1] <- 1.0;
   Z[1, 1] <- 1.0;
   R[1, 1] <- 1.0;
@@ -35,10 +41,10 @@ model {
   }
 }
 generated quantities {
-  vector[filter_sz] filtered[n];
-  vector[m + m * m] eta[n];
-  vector[1] eps[n];
-  vector[m + m * m] alpha[n];
+  vector[6] filtered[n];
+  vector[2] eta[n];
+  vector[2] eps[n];
+  vector[2] alpha[n];
   vector[1] alpha2[n];
   {
     matrix[1, 1] H;
@@ -49,6 +55,6 @@ generated quantities {
     eps <- ssm_smooth_eps(filtered, H, Z, T);
     eta <- ssm_smooth_eta(filtered, Z, T, R, Q);
     alpha <- ssm_smooth_state(filtered, Z, T);
-    alpha2 <- ssm_smooth_faststate(filtered, Z, T, R, Q);
+    alpha2 <- ssm_smooth_faststate(filtered, c, Z, T, R, Q);
   }
 }

@@ -52,7 +52,7 @@ vector to_vector_rowwise(matrix x) {
 }
 
 // Kronecker product
-matrix kronecker_prod(A, B) {
+matrix kronecker_prod(matrix A, matrix B) {
   matrix[rows(A) * rows(B), cols(A) * cols(B)] C;
   int m;
   int n;
@@ -91,8 +91,8 @@ where $vec(Q_0)$ and $vec(R R')$ are the stacked columns of $Q_0$ and $R R'$
 See Durbin, Koopman Sect 5.6.2.
 
 */
-matrix stationary_cov(T, R) {
-  matrix[rows(T), cols[T]] Q0;
+matrix stationary_cov(matrix T, matrix R) {
+  matrix[rows(T), cols(T)] Q0;
   matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
   vector[rows(T) * rows(T)] RR;
   int m;
@@ -101,7 +101,7 @@ matrix stationary_cov(T, R) {
   m2 <- m * m;
   RR <- to_vector_colwise(tcrossprod(R));
   TT <- kronecker_prod(T, T);
-  Q0 <- (diag_matrix(rep_vector(1.0, m2)) - TT) \ RR;
+  Q0 <- to_matrix_colwise((diag_matrix(rep_vector(1.0, m2)) - TT) \ RR, m, m);
   return Q0;
 }
 
@@ -247,17 +247,32 @@ real ssm_filter_update_ll(vector v, matrix Finv) {
 // check convergence of cov matrices
 int ssm_check_convergence(matrix A, matrix B) {
   real tol;
-  matrix[rows(A), cols(A)] eps;
-  tol <- 1e-10;
-  eps <- crossprod(A - B);
-  for (j in 1:cols(eps)) {
-    for (i in 1:rows(eps)) {
-      if (eps[i, j] > tol) {
-        return 0;
-      }
-    }
+  real eps;
+  // matrix[rows(A), cols(A)] eps;
+  real m;
+  real n;
+  m <- rows(A);
+  n <- cols(A);
+  // what's a good level to choose?
+  tol <- sqrt(machine_precision());
+  eps <- sum(columns_dot_self(A - B))
+        / (sqrt(m * n) * (1 + sum(columns_dot_self(A))));
+  if (eps < tol) {
+    print("converged");
+    return 1;
+  } else {
+    return 0;
   }
-  return 1;
+  // for (j in 1:cols(A)) {
+  //   for (i in 1:rows(A)) {
+  //     eps <- fabs(A[i, j] - B[i, j]) / fabs(B[i, j]);
+  //     if (eps > tol) {
+  //       return 0;
+  //     }
+  //   }
+  // }
+  // print("converged")
+  // return 1;
 }
 
 real ssm_lpdf(vector[] y,
@@ -290,19 +305,19 @@ real ssm_lpdf(vector[] y,
     P <- P1;
     for (t in 1:n) {
       v <- ssm_filter_update_v(y[t], a, d, Z);
-      // if (! converged) {
+      // if (converged < 1) {
         Finv <- ssm_filter_update_Finv(P, Z, H);
         K <- ssm_filter_update_K(P, T, Z, Finv);
-      // }
+      //}
       ll_obs[t] <- ssm_filter_update_ll(v, Finv);
       // don't save a, P for last iteration
       if (t < n) {
         a <- ssm_filter_update_a(a, c, T, v, K);
         // check for convergence
         // should only check for convergence if there are no missing values
-        // if (! converged) {
+        // if (converged < 1) {
         //   P_old <- P;
-        P <- ssm_filter_update_P(P, Z, T, Q, R, K);
+          P <- ssm_filter_update_P(P, Z, T, Q, R, K);
         //   converged <- ssm_check_convergence(P, P_old);
         // }
       }
@@ -360,7 +375,7 @@ vector[] ssm_filter(vector[] y,
     for (t in 1:n) {
       // updating
       v <- ssm_filter_update_v(y[t], a, d, Z);
-      // if (! converged) {
+      // if (converged < 1) {
         Finv <- ssm_filter_update_Finv(P, Z, H);
         K <- ssm_filter_update_K(P, T, Z, Finv);
       // }
@@ -375,7 +390,7 @@ vector[] ssm_filter(vector[] y,
       // predict a_{t + 1}, P_{t + 1}
       if (t < n) {
         a <- ssm_filter_update_a(a, c, T, v, K);
-        // if (! converged) {
+        // if (converged < 1) {
         //   P_old <- P;
         P <- ssm_filter_update_P(P, Z, T, Q, R, K);
         //   converged <- ssm_check_convergence(P, P_old);
@@ -500,7 +515,7 @@ vector[] ssm_smooth_state(vector[] filter, matrix Z, matrix T) {
 
     r <- rep_vector(0.0, m);
     N <- rep_matrix(0.0, m, m);
-    for (i in 1:(n - 1)) {
+    for (i in 0:(n - 1)) {
       int t;
       // move backwards in time
       t <- n - i;
@@ -677,10 +692,10 @@ vector[] ssm_smooth_faststate(vector[] filter,
 
     // find smoothed state disturbances
     r <- rep_vector(0.0, m);
-    for (i in 1:n) {
+    for (i in 0:(n - 1)) {
       int t;
       // move backwards in time
-      t <- n - i + 1;
+      t <- n - i;
       // updating
       K <- ssm_filter_get_K(filter[t], m, p);
       v <- ssm_filter_get_v(filter[t], m, p);

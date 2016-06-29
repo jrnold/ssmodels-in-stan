@@ -51,6 +51,36 @@ vector to_vector_rowwise(matrix x) {
   return res;
 }
 
+matrix vector_to_symmat(vector x, int n) {
+  matrix[n, n] m;
+  int k;
+  k = 1;
+  for (j in 1:n) {
+    for (i in 1:j) {
+      m[i, j] = x[k];
+      k = k + 1;
+    }
+  }
+  return m;
+}
+
+vector symmat_to_vector(matrix x) {
+  vector[(rows(x) * (rows(x) + 1)) / 2] v;
+  int k;
+  k = 1;
+  // if x is m x n symmetric, then this will return
+  // only parts of an m x m matrix.
+  for (j in 1:rows(x)) {
+    for (i in 1:j) {
+      v[k] = x[i, j];
+      k = k + 1;
+    }
+  }
+  return v;
+}
+
+
+
 // Kronecker product
 matrix kronecker_prod(matrix A, matrix B) {
   matrix[rows(A) * rows(B), cols(A) * cols(B)] C;

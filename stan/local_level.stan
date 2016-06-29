@@ -37,7 +37,7 @@ model {
     matrix[1, 1] Q;
     H = rep_matrix(pow(sigma_epsilon, 2), 1, 1);
     Q = rep_matrix(pow(sigma_eta, 2), 1, 1);
-    ssm_lp(y, c, Z, H, d, T, R, Q, a1, P1);
+    target += ssm_constant_lpdf(y | c, Z, H, d, T, R, Q, a1, P1);
   }
 }
 generated quantities {
@@ -51,10 +51,12 @@ generated quantities {
     matrix[1, 1] Q;
     H = rep_matrix(pow(sigma_epsilon, 2), 1, 1);
     Q = rep_matrix(pow(sigma_eta, 2), 1, 1);
-    filtered = ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
-    eps = ssm_smooth_eps(filtered, H, Z, T);
-    eta = ssm_smooth_eta(filtered, Z, T, R, Q);
-    alpha = ssm_smooth_state(filtered, Z, T);
-    alpha2 = ssm_smooth_faststate(filtered, c, Z, T, R, Q);
+    filtered = ssm_filter(y, rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
+                          rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1), a1, P1);
+    eps = ssm_smooth_eps(filtered, rep_array(H, 1), rep_array(Z, 1), rep_array(T, 1));
+    eta = ssm_smooth_eta(filtered, rep_array(Z, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1));
+    alpha = ssm_smooth_state(filtered, rep_array(Z, 1), rep_array(T, 1));
+    alpha2 = ssm_smooth_faststate(filtered, rep_array(c, 1), rep_array(Z, 1), rep_array(T, 1),
+                                  rep_array(R, 1), rep_array(Q, 1));
   }
 }

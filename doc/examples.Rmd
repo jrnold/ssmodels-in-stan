@@ -48,9 +48,9 @@ StructTS(Nile, type = "level")
 
 ```{r Nile-Model}
 local_level_code <- stanc_builder(find_rstudio_root_file("stan/local_level.stan"))
-rm(local_level_mod)
-local_level_mod <- stan_model(model_code = local_level_code[["model_code"]],
-                              model_name = local_level_code[["model_namze"]])
+# rm(local_level_mod)
+# local_level_mod <- stan_model(model_code = local_level_code[["model_code"]],
+#                               model_name = local_level_code[["model_namze"]])
 
 
 ```
@@ -140,9 +140,9 @@ StructTS(log10(AirPassengers), type = "BSM")
 
 ```{r AirPassengers-StanModel}
 var_only_code <- stanc_builder(find_rstudio_root_file("stan/var_only.stan"))
-rm(var_only_mod)
-var_only_mod <- stan_model(model_code = var_only_code[["model_code"]],
-                           model_name = var_only_code[["model_name"]])
+# rm(var_only_mod)
+# var_only_mod <- stan_model(model_code = var_only_code[["model_code"]],
+#                            model_name = var_only_code[["model_name"]])
 
 ```
 

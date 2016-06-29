@@ -1,8 +1,26 @@
-/////////// Utility Functions  /////////////////
+///
+///  # Utility Functions
+///
+
+/**
+Ensure a matrix is symmetrix.
+
+@param x An $n \times n$ matrix.
+@return An $n times n$ symmetric matrix: $0.5 (x + x')$.
+
+*/
 matrix to_symmetric_matrix(matrix x) {
   return 0.5 * (x + x ');
 }
 
+/**
+Convert vector to a matrix (column-major).
+
+@param vector v An $n \times m$ vector.
+@param int m Number of columns in the vector
+@param int n Number of rows in the vector
+
+*/
 matrix to_matrix_colwise(vector v, int m, int n) {
   matrix[m, n] res;
   for (j in 1:n) {
@@ -13,6 +31,15 @@ matrix to_matrix_colwise(vector v, int m, int n) {
   return res;
 }
 
+/**
+Convert vector to a matrix (row-major).
+
+@param vector v An $n \times m$ vector.
+@param int m Number of columns in the matrix.
+@param int n Number of rows in the matrix.
+@return an
+
+*/
 matrix to_matrix_rowwise(vector v, int m, int n) {
   matrix[m, n] res;
   for (i in 1:n) {
@@ -23,6 +50,13 @@ matrix to_matrix_rowwise(vector v, int m, int n) {
   return res;
 }
 
+/**
+Convert a matrix to a vector (column-major)
+
+@param matrix x An $n \times m$ matrix.
+@return A vector with $n \times m$ elements.
+
+*/
 vector to_vector_colwise(matrix x) {
   vector[num_elements(x)] res;
   int n;
@@ -37,6 +71,13 @@ vector to_vector_colwise(matrix x) {
   return res;
 }
 
+/**
+Convert a matrix to a vector (row-major)
+
+@param matrix x An $n \times m$ matrix.
+@return A vector with $n \times m$ elements.
+
+*/
 vector to_vector_rowwise(matrix x) {
   vector[num_elements(x)] res;
   int n;
@@ -51,6 +92,59 @@ vector to_vector_rowwise(matrix x) {
   return res;
 }
 
+/**
+Calculate the number of unique elements in a symmetric matrix
+
+The number of unique elements in an $m \times m$ matrix is
+$(m \times (m + 1)) / 2$.
+
+@param matrix x An $n \times m$ matrix.
+@return int
+
+*/
+int symmat_size(int n) {
+  int sz;
+  // This calculates it iteratively because Stan gives a warning
+  // with integer division.
+  sz = 0;
+  for (i in 1:n) {
+    sz = sz + i;
+  }
+  return sz;
+}
+
+/**
+
+Given vector with $n$ elements containing the $m (m + 1) / 2$ elements of a symmetric matrix,
+return $m$.
+
+@param int n The number of unique elements in a symmetric matrix.
+@return int The dimension of the associated symmetric matrix.
+
+*/
+int find_symmat_dim(int n) {
+  // This could be solved by finding the positive root of m = m (m + 1)/2 but
+  // Stan doesn't support all the functions necessary to do this.
+  int i;
+  int tot;
+  tot = 1;
+  i = 1;
+  while (tot < n) {
+    tot = tot + i;
+    i = i + 1;
+  }
+  return tot;
+}
+
+
+/**
+Convert a vector to a symmetric matrix
+
+@param vector x The vector with the unique elements
+@param int n The dimensions of the returned matrix: $n \times n$.
+@return An $n \times n$ symmetric matrix.
+
+*/
 matrix vector_to_symmat(vector x, int n) {
   matrix[n, n] m;
   int k;
@@ -58,14 +152,25 @@ matrix vector_to_symmat(vector x, int n) {
   for (j in 1:n) {
     for (i in 1:j) {
       m[i, j] = x[k];
+      if (i != j) {
+        m[j, i] = m[i, j];
+      }
       k = k + 1;
     }
   }
   return m;
 }
 
+/**
+Convert an $n \times n$ symmetric matrix to a length $n (n + 1) / 2$ vector
+containing its unique elements.
+
+@param vector x An $n \times n$ matrix.
+@return A $n (n + 1) / 2$ vector with the unique elements in $x$.
+
+*/
 vector symmat_to_vector(matrix x) {
-  vector[(rows(x) * (rows(x) + 1)) / 2] v;
+  vector[symmat_size(rows(x))] v;
   int k;
   k = 1;
   // if x is m x n symmetric, then this will return
@@ -81,7 +186,24 @@ vector symmat_to_vector(matrix x) {
 
 
 
-// Kronecker product
+/**
+Kronecker product
+
+The Kronecker product of a $A$ and $B$ is
+$$
+A \crossprod B =
+\begin{bmatrix}
+a_{11} B \cdots a_{1n} B \\
+\vdots & \ddots & vdots \\
+a_{m1} B & \cdots & a_{mn} B
+\end{bmatrix} .
+$$
+
+@param matrix A An $m \times n$ matrix
+@param matrix B A $p \times q$ matrix
+@return A $mp \times nq$ matrix.
+
+*/
 matrix kronecker_prod(matrix A, matrix B) {
   matrix[rows(A) * rows(B), cols(A) * cols(B)] C;
   int m;
@@ -108,8 +230,12 @@ matrix kronecker_prod(matrix A, matrix B) {
   return C;
 }
 
-/*
-Initialize stationary Kalman Filter.
+/**
+Find the covariance of the stationary distribution of an ARMA model
+
+@param matrix T The $m \times m$ transition matrix
+@param matrix R The $m \times q$ system disturbance selection matrix
+@param A $m \times m$ matrix with the stationary covariance matrix.
 
 The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0),
 where $Q_0$ is the solution to
@@ -118,10 +244,10 @@ $$
 $$
 where $vec(Q_0)$ and $vec(R R')$ are the stacked columns of $Q_0$ and $R R'$
 
-See Durbin, Koopman Sect 5.6.2.
+See [@DurbinKoopmans2012, Sec 5.6.2].
 
 */
-matrix stationary_cov(matrix T, matrix R) {
+matrix arima_stationary_cov(matrix T, matrix R) {
   matrix[rows(T), cols(T)] Q0;
   matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
   vector[rows(T) * rows(T)] RR;
@@ -136,19 +262,45 @@ matrix stationary_cov(matrix T, matrix R) {
 }
 
 
-/////////// SSM Filter  /////////////////
+///
+/// # Filtering
+///
 
-// Length of vectors that SSM returns
-// value    size      location
-// log-lik  1         1
-// v        p         2
-// F^-1     p^2       2 + p
-// K        mp        2 + p + p^2
-// a_t      m         2 + p + p^2 + mp
-// P^t      m * m     2 + p + p^2 + mp + m
 
-// rows (loglik, v, Finv, K, a, P)
-// cols (loc, length)
+///
+/// ## Utility Functions
+///
+/// rows (loglik, v, Finv, K, a, P)
+/// cols (loc, length)
+
+/**
+Indexes of the return values of the Kalman filter functions:
+`ssm_filter`.
+
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return int[,] A $6 \times 3$ integer array containing the indexes of the return values of the Kalman filter.
+
+The results of Kalman filter for a given are returned as a vector:
+$$
+(L_t, \vec{v}_t, \mat{F}^{-1}_t, \mat{K}_t, \mat{a}_t, \mat{P}_t.
+$$
+This vector has $2 + p + p ^ 2 + mp + m ^ 2$ elements.
+The
+
+`ssm_filter_idx` returns a $6 \times 3$ integer array with the
+(length, start index, stop index) of ($L$, $\vec{v}$, $\vec{F}^-1$, $\mat{K}$, $\vec{a}$, $\mat{P}$).
+
+value    length    start                 stop
+-------- --------- --------------------- ----------------------
+log-lik  1         1                     1
+v        p         2                     1 + p
+F^-1     p^2       2 + p                 1 + p + p ^ 2
+K        mp        2 + p + p^2           1 + p + p ^ 2 + mp
+a_t      m         2 + p + p^2 + mp      1 + p + p ^ 2 + mp + m
+P^t      m * m     2 + p + p^2 + mp + m  1 + p + p ^ 2 + mp + m ^ 2
+
+*/
 int[,] ssm_filter_idx(int m, int p) {
   int sz[6, 3];
   // loglike
@@ -163,7 +315,6 @@ int[,] ssm_filter_idx(int m, int p) {
   sz[5, 1] = m;
   // P
   sz[6, 1] = m * m;
-
   // Fill in start and stop points
   sz[1, 2] = 1;
   sz[1, 3] = sz[1, 2] + sz[1, 1] - 1;
@@ -174,6 +325,14 @@ int[,] ssm_filter_idx(int m, int p) {
   return sz;
 }
 
+/**
+Number of elements in vector containing filter results
+
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return int The number of elements in the vector.
+
+*/
 int ssm_filter_size(int m, int p) {
   int sz;
   int idx[6, 3];
@@ -182,50 +341,136 @@ int ssm_filter_size(int m, int p) {
   return sz;
 }
 
+/**
+Get the log-likehood from the results of `ssm_filter`.
+
+@param vector A vector with results from `ssm_filter`.
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return real The log-likelihood $L_t$
+
+*/
 real ssm_filter_get_loglik(vector x, int m, int p) {
   real y;
   y = x[1];
   return y;
 }
 
+/**
+Get the forecast error from the results of `ssm_filter`.
+
+@param vector A vector with results from `ssm_filter`.
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return vector A $p \times 1$ vector with the forecast error, $v_t$.
+
+*/
 vector ssm_filter_get_v(vector x, int m, int p) {
   vector[p] y;
-  y = segment(x, 2, p);
+  int idx[6, 3];
+  idx = ssm_filter_idx(m, p);
+  y = segment(x, idx[2, 2], idx[2:3]);
   return y;
 }
 
+/**
+Get the forecast precision from the results of `ssm_filter`.
+
+@param vector A vector with results from `ssm_filter`.
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return matrix A $p \times p$ matrix with the forecast precision, $\mat{F}^{-1}_t$.
+
+*/
 matrix ssm_filter_get_Finv(vector x, int m, int p) {
   matrix[p, p] y;
   y = to_matrix_colwise(segment(x, 2 + p, p * p), p, p);
   return y;
 }
 
+/**
+Get the Kalman gain from the results of `ssm_filter`.
+
+@param vector A vector with results from `ssm_filter`.
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return matrix A $m \times p$ matrix with the Kalman gain, $\mat{F}^{-1}_t$.
+
+*/
 matrix ssm_filter_get_K(vector x, int m, int p) {
   matrix[m, p] y;
   y = to_matrix_colwise(segment(x, 2 + p + p * p, m * p), m, p);
   return y;
 }
 
+/**
+Get the expected value of the predicted state from the results of `ssm_filter`.
+
+@param vector A vector with results from `ssm_filter`.
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return vector An $m \times 1$ vector with the expected value of the predicted state, $\E(\vec{alpha}_t | \vec{y}_{1:(t-1)} = a_t$.
+
+*/
 vector ssm_filter_get_a(vector x, int m, int p) {
   vector[m] y;
   y = segment(x, 2 + p + p * p + m * p, m);
   return y;
 }
 
+/**
+Get the variance of the predicted state from the results of `ssm_filter`.
+
+@param vector A vector with results from `ssm_filter`.
+@param int m The number of states
+@param int p The size of the observation vector $\vec{y}_t$.
+@return matrix An $m \times m$ matrix with the variance of the predicted state, $\E(\vec{alpha}_t | \vec{y}_{1:(t-1)} = a_t$.
+
+*/
 matrix ssm_filter_get_P(vector x, int m, int p) {
   matrix[m, m] y;
   y = to_matrix_colwise(segment(x,  2 + p + p * p + m * p + m, m * m), m, m);
   return y;
 }
 
+/**
+Update the expected value of the predicted state, $a_{t + 1} = \E(\alpha_{t + 1} | \vec{y}_{1:t}$,
 
-// Filtering and Log-likelihood
+@param vector a An $m \times 1$ vector with the prected state, $a_t$.
+@param vector c An $m \times 1$ vector with the system intercept, $c_t$
+@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
+@param vector v A $p \times 1$ vector with the forecast error, $v_t$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
+@return vector A $m \times 1$ vector with the predicted state at $t + 1$, $a_{t + 1}$.
+
+The predicted state $a_{t + 1}$ is,
+$$
+a_{t + 1} = T_t a_t + K_t v_t + c_t .
+$$
+
+*/
 vector ssm_filter_update_a(vector a, vector c, matrix T, vector v, matrix K) {
   vector[num_elements(a)] a_new;
   a_new = T * a + K * v + c;
   return a_new;
 }
 
+/**
+Update the expected value of the predicted state, $P_{t + 1} = \Var(\alpha_{t + 1} | \vec{y}_{1:t}$,
+
+@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
+@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
+@param matrix RQR A $m \times m$ matrix with the system covariance matrix, $R_t Q_t R_t'$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
+@return matrix An $m \times 1$ vector with the predicted state at $t + 1$, $a_{t + 1}$.
+
+The predicted state variance $P_{t + 1}$ is,
+$$
+P_{t + 1} = T_t P_t (T_t - K_t Z_t)' + R_t Q_t R_t' .
+$$
+
+*/
 matrix ssm_filter_update_P(matrix P, matrix Z, matrix T,
                            matrix RQR, matrix K) {
   matrix[rows(P), cols(P)] P_new;
@@ -233,49 +478,145 @@ matrix ssm_filter_update_P(matrix P, matrix Z, matrix T,
   return P_new;
 }
 
+/**
+Update the forcast error, $\vec{v}_t = \vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}})$
+
+@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
+@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
+@param matrix RQR An $m \times m$ matrix with the system covariance matrix, $R_t Q_t R_t'$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
+@return vector An $m \times 1$ vector with the predicted state at $t + 1$, $a_{t + 1}$.
+
+The forecast error $v_t$ is
+$$
+\vec{v}_t =\vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t .
+$$
+
+*/
 vector ssm_filter_update_v(vector y, vector a, vector d, matrix Z) {
   vector[num_elements(y)] v;
   v = y - Z * a - d;
   return v;
 }
 
+/**
+Update the variance of the forcast error, $\mat{F}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))$
+
+@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
+@param matrix H A $p \times p$ matrix with the observation covariance matrix, $H_t$.
+@return matrix A $p \times p$ vector with $\mat{F}_t$.
+
+The variance of the forecast error $\mat{F}_t$ is
+$$
+\mat{F}_t = \mat{Z}_t \mat{P}_t \mat{Z}_t + \mat{H}_t .
+$$
+
+*/
 matrix ssm_filter_update_F(matrix P, matrix Z, matrix H) {
   matrix[rows(H), cols(H)] F;
   F = quad_form(P, Z') + H;
   return F;
 }
 
+/**
+Update the precision of the forcast error, $\mat{F}^{-1}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))^{-1}$
+
+@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
+@param matrix H A $p \times p$ matrix with the observation covariance matrix, $H_t$.
+@return matrix A $p \times p$ vector with $\mat{F}^{-1}_t$.
+
+This is the inverse of $\mat{F}_t$.
+
+*/
 matrix ssm_filter_update_Finv(matrix P, matrix Z, matrix H) {
   matrix[rows(H), cols(H)] Finv;
   Finv = inverse(ssm_filter_update_F(P, Z, H));
   return Finv;
 }
 
-matrix ssm_filter_update_K(matrix P, matrix T, matrix Z, matrix Finv) {
+/**
+Update the Kalman gain, $\mat{K}_t$.
+
+@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
+@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
+@param matrix Finv A $p \times p$ matrix
+@return matrix An $m \times p$ matrix with the Kalman gain, $K_t$.
+
+The Kalman gain is
+$$
+\mat{K}_t = \mat{T}_t \mat{P}_t \mat{Z}_t' F^{-1}_t .
+$$
+
+*/
+matrix ssm_filter_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
   matrix[cols(Z), rows(Z)] K;
   K = T * P * Z' * Finv;
   return K;
 }
 
+/**
+Update $L_t$
+
+@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$
+@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
+@return matrix An $m \times m$ matrix, $L_t$.
+
+$$
+\mat{L}_t = \mat{T}_t - \mat{K}_t \mat{Z}_t .
+$$
+
+*/
 matrix ssm_filter_update_L(matrix Z, matrix T, matrix K) {
   matrix[rows(T), cols(T)] L;
   L = T - K * Z;
   return L;
 }
 
+/**
+Calculate the log-likelihood for a period
+
+@param vector v A $p \times 1$ matrix with the forecast error, $v_t$.
+@param matrix Finv A $p \times p$ matrix with variance of the forecast error, $F^{-1}_t$.
+@return real An $m \times m$ matrix, $L_t$.
+
+The log-likehood of a single observation in a state-space model is
+$$
+\ell_t = - \frac{1}{2} p \log(2 \pi) - \frac{1}{2} \left(\log|\mat{F}_t| + \vec{v}_t' \mat{F}^{-1}_t \vec{v}_t  \right)
+$$
+*/
 real ssm_filter_update_ll(vector v, matrix Finv) {
   real ll;
   int p;
   p = num_elements(v);
   // det(A^{-1}) = 1 / det(A) -> log det(A^{-1}) = - log det(A)
-  ll = (- 0.5 * (p * log(2 * pi())
+  ll = (- 0.5 *
+        (p * log(2 * pi())
          - log_determinant(Finv)
-         + quad_form(Finv, v)));
+         + quad_form(Finv, v)
+       ));
   return ll;
 }
 
-// check convergence of cov matrices
-int ssm_check_convergence(matrix A, matrix B, real tol) {
+/**
+ Check if two matrices are approximately equal
+
+ @param matrix A An $m \times n$ matrix.
+ @param matrix B An $m \times n$ matrix.
+ @param real The relative tolerance for convergence.
+
+ The matrices $A$ and $B$ are considered approximately equal if
+ $$
+ \max(A - B) / \max(A) < \epsilon,
+ $$
+ where $\epsilon$ is the tolerance.
+
+ */
+int ssm_check_matrix_equal(matrix A, matrix B, real tol) {
   real eps;
   real m;
   real n;
@@ -322,7 +663,7 @@ real ssm_constant_lpdf(vector[] y,
       v = ssm_filter_update_v(y[t], a, d, Z);
       if (converged < 1) {
         Finv = ssm_filter_update_Finv(P, Z, H);
-        K = ssm_filter_update_K(P, T, Z, Finv);
+        K = ssm_filter_update_K(P, Z, T, Finv);
       }
       ll_obs[t] = ssm_filter_update_ll(v, Finv);
       // don't save a, P for last iteration
@@ -333,7 +674,7 @@ real ssm_constant_lpdf(vector[] y,
         if (converged < 1) {
           P_old = P;
           P = ssm_filter_update_P(P, Z, T, RQR, K);
-          converged = ssm_check_convergence(P, P_old, tol);
+          converged = ssm_check_matrix_equal(P, P_old, tol);
         }
       }
     }
@@ -413,7 +754,7 @@ real ssm_lpdf(vector[] y,
       }
       v = ssm_filter_update_v(y[t], a, d_t, Z_t);
       Finv = ssm_filter_update_Finv(P, Z_t, H_t);
-      K = ssm_filter_update_K(P, T_t, Z_t, Finv);
+      K = ssm_filter_update_K(P, Z_t, T_t, Finv);
       ll_obs[t] = ssm_filter_update_ll(v, Finv);
       // don't save a, P for last iteration
       if (t < n) {
@@ -426,7 +767,7 @@ real ssm_lpdf(vector[] y,
   return ll;
 }
 
-// Filtering
+
 vector[] ssm_filter(vector[] y,
                     vector[] d, matrix[] Z, matrix[] H,
                     vector[] c, matrix[] T, matrix[] R, matrix[] Q,
@@ -586,12 +927,9 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
 }
 
 
-////// Smoothers //////////////////
-
-// ssm_smoother_disturbances
-// ssm_smoother_states
-// ssm_smoother_states_fast
-// ssm_smoother_sim
+///
+/// # Smoothers
+///
 
 vector ssm_smooth_update_r(vector r, matrix Z, vector v, matrix Finv,
                            matrix L) {
@@ -703,14 +1041,21 @@ vector ssm_smooth_eps_get_mean(vector x, int p) {
   return eps;
 }
 
+/**
+
+*/
 matrix ssm_smooth_eps_get_var(vector x, int p) {
   matrix[p, p] eps_var;
   eps_var = to_matrix_colwise(x[(p + 1):(p + p * p)], p, p);
   return eps_var;
 }
 
-// Observation disturbance smoother
-// Durbin Koopmans Sec 4.5.3 (eq 4.69)
+/**
+
+Observation disturbance smoother
+See [@DurbinKoopman2012, Sec 4.5.3 (eq 4.69)]
+
+*/
 vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
   vector[ssm_smooth_eps_size(dims(Z)[2])] res[size(filter)];
   int n;
@@ -799,8 +1144,10 @@ matrix ssm_smooth_eta_get_var(vector x, int q) {
   return eta_var;
 }
 
-// State disturbance smoother
-// Durbin Koopmans Sec 4.5.3 (eq 4.69)
+/** State disturbance smoother
+
+See [@DurbinKoopman2012, Sec 4.5.3, eq 4.69]
+*/
 vector[] ssm_smooth_eta(vector[] filter,
                         matrix[] Z, matrix[] T,
                         matrix[] R, matrix[] Q) {
@@ -978,7 +1325,9 @@ vector[] ssm_smooth_faststate(vector[] filter,
   return alpha;
 }
 
-////// Simulators /////////////////
+///
+/// # Simulators and Smoothing Simulators
+///
 int[,] ssm_sim_idx(int m, int p, int q) {
   int sz[4, 3];
   // y

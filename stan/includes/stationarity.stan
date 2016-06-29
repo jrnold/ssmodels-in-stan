@@ -85,3 +85,78 @@ vector unconstrain_stationary(vector x) {
   }
   return z;
 }
+
+/**
+Kronecker product
+
+The Kronecker product of a $A$ and $B$ is
+$$
+A \crossprod B =
+\begin{bmatrix}
+a_{11} B \cdots a_{1n} B \\
+\vdots & \ddots & vdots \\
+a_{m1} B & \cdots & a_{mn} B
+\end{bmatrix} .
+$$
+
+@param matrix A An $m \times n$ matrix
+@param matrix B A $p \times q$ matrix
+@return A $mp \times nq$ matrix.
+
+*/
+matrix kronecker_prod(matrix A, matrix B) {
+  matrix[rows(A) * rows(B), cols(A) * cols(B)] C;
+  int m;
+  int n;
+  int p;
+  int q;
+  m = rows(A);
+  n = cols(A);
+  p = rows(B);
+  q = cols(B);
+  for (i in 1:m) {
+    for (j in 1:n) {
+      int row_start;
+      int row_end;
+      int col_start;
+      int col_end;
+      row_start = (i - 1) * p + 1;
+      row_end = (i - 1) * p + p;
+      col_start = (j - 1) * q + 1;
+      col_end = (j - 1) * q + 1;
+      C[row_start:row_end, col_start:col_end] = A[i, j] * B;
+    }
+  }
+  return C;
+}
+
+/**
+Find the covariance of the stationary distribution of an ARMA model
+
+@param matrix T The $m \times m$ transition matrix
+@param matrix R The $m \times q$ system disturbance selection matrix
+@param A $m \times m$ matrix with the stationary covariance matrix.
+
+The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0),
+where $Q_0$ is the solution to
+$$
+(T \crossprod T) vec(Q_0) = vec(R R')
+$$
+where $vec(Q_0)$ and $vec(R R')$ are the stacked columns of $Q_0$ and $R R'$
+
+See [@DurbinKoopmans2012, Sec 5.6.2].
+
+*/
+matrix arima_stationary_cov(matrix T, matrix R) {
+  matrix[rows(T), cols(T)] Q0;
+  matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
+  vector[rows(T) * rows(T)] RR;
+  int m;
+  int m2;
+  m = rows(T);
+  m2 = m * m;
+  RR = to_vector(tcrossprod(R));
+  TT = kronecker_prod(T, T);
+  Q0 = to_matrix_colwise((diag_matrix(rep_vector(1.0, m2)) - TT) \ RR, m, m);
+  return Q0;
+}

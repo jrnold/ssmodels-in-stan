@@ -320,11 +320,11 @@ real ssm_lpdf(vector[] y,
   int n;
   int m;
   int p;
-
+  int q;
   n = size(y); // number of obs
   m = cols(Z[1]);
   p = rows(Z[1]);
-  r = rows(Q[1]);
+  q = rows(Q[1]);
   {
     // system matrices for current iteration
     vector[p] d_t;
@@ -332,8 +332,8 @@ real ssm_lpdf(vector[] y,
     matrix[p, p] H_t;
     vector[m] c_t;
     matrix[m, m] T_t;
-    matrix[m, r] R_t;
-    matrix[r, r] Q_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
     matrix[m, m] RQR;
     // result matricees for each iteration
     vector[n] ll_obs;
@@ -400,8 +400,8 @@ real ssm_lpdf(vector[] y,
 
 // Filtering
 vector[] ssm_filter(vector[] y,
-                    vector[] c, matrix[] Z, matrix[] H,
-                    vector[] d, matrix[] T, matrix[] R, matrix[] Q,
+                    vector[] d, matrix[] Z, matrix[] H,
+                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                     vector a1, matrix P1) {
 
   // returned data
@@ -412,10 +412,10 @@ vector[] ssm_filter(vector[] y,
   int m;
 
   // sizes
-  n = size(y); // number of obs
-  p = rows(Z); // obs size
-  m = cols(Z); // number of states
-  q = cols(Q); // number of state disturbances
+  n = size(y[1]); // number of obs
+  p = rows(Z[1]); // obs size
+  m = cols(Z[1]); // number of states
+  q = cols(Q[1]); // number of state disturbances
 
   //print("Sizes: n = ", m, ", p = ", n, ", m = ", m, ", q = ", q);
   {
@@ -425,8 +425,8 @@ vector[] ssm_filter(vector[] y,
     matrix[p, p] H_t;
     vector[m] c_t;
     matrix[m, m] T_t;
-    matrix[m, r] R_t;
-    matrix[r, r] Q_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
     matrix[m, m] RQR;
     // result matricees for each iteration
     vector[m] a;
@@ -478,10 +478,10 @@ vector[] ssm_filter(vector[] y,
         }
       }
       // updating
-      v = ssm_filter_update_v(y[t], a, d, Z);
+      v = ssm_filter_update_v(y[t], a_t, d_t, Z_t);
       if (converged < 1) {
-        Finv = ssm_filter_update_Finv(P, Z, H);
-        K = ssm_filter_update_K(P, T, Z, Finv);
+        Finv = ssm_filter_update_Finv(P, Z_t, H_t);
+        K = ssm_filter_update_K(P, T_t, Z_t, Finv);
       }
       ll = ssm_filter_update_ll(v, Finv);
       // saving
@@ -493,8 +493,8 @@ vector[] ssm_filter(vector[] y,
       res[t, idx[6, 2]:idx[6, 3]] = to_vector(P);
       // predict a_{t + 1}, P_{t + 1}
       if (t < n) {
-        a = ssm_filter_update_a(a, c, T, v, K);
-        P = ssm_filter_update_P(P, Z, T, RQR, K);
+        a = ssm_filter_update_a(a, c_t, T_t, v, K);
+        P = ssm_filter_update_P(P, Z_t, T_t, RQR, K);
       }
     }
   }
@@ -742,11 +742,11 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       // updating
-      L = ssm_filter_update_L(Z, T, K);
-      r = ssm_smooth_update_r(r, Z, v, Finv, L);
-      N = ssm_smooth_update_N(N, Z, Finv, L);
+      L = ssm_filter_update_L(Z_t, T_t, K);
+      r = ssm_smooth_update_r(r, Z_t, v, Finv, L);
+      N = ssm_smooth_update_N(N, Z_t, Finv, L);
       eps = H * (Finv * v - K ' * r);
-      var_eps = to_symmetric_matrix(H - H * (Finv + quad_form(N, K)) * H);
+      var_eps = to_symmetric_matrix(H_t - H_t * (Finv + quad_form(N, K)) * H_t);
       // saving
       res[t, 1:p] = eps;
       res[t, (p + 1):(p + p * p)] = to_vector(var_eps);
@@ -818,6 +818,7 @@ vector[] ssm_smooth_eta(vector[] filter,
     if (size(Q) == 1) {
       Q_t = Q[1];
     }
+    // initialize smoother
     r = rep_vector(0.0, m);
     N = rep_matrix(0.0, m, m);
     for (i in 1:n) {
@@ -845,7 +846,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       L = ssm_filter_update_L(Z_t, T_t, K);
       r = ssm_smooth_update_r(r, Z_t, v, Finv, L);
       N = ssm_smooth_update_N(N, Z_t, Finv, L);
-      eta = Q * R ' * r;
+      eta = Q_t * R_t ' * r;
       var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form(N, R_t) * Q_t);
       // saving
       res[t, 1:q] = eta;
@@ -1014,8 +1015,8 @@ vector ssm_sim_get_eta(vector x, int m, int p, int q) {
 
 // only save y and a
 vector[] ssm_sim_rng(int n,
-                    vector[] c, matrix[] Z, matrix[] H,
-                    vector[] d, matrix[] T, matrix[] R, matrix[] Q,
+                    vector[] d, matrix[] Z, matrix[] H,
+                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                     vector a1, matrix P1) {
   vector[ssm_sim_size(cols(Z), rows(Z), cols(Q))] ret[n];
   int p;
@@ -1152,8 +1153,8 @@ vector ssm_simsmo_get_eps(vector x, int p, int q) {
 
 // ssm_simsmo_alpha_rng
 vector[] ssm_simsmo_dist_rng(vector[] eps, vector[] eta,
-                      vector c, matrix Z, matrix H,
-                      vector d, matrix T, matrix R, matrix Q,
+                      vector[] d, matrix[] Z, matrix[] H,
+                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                       vector a1, matrix P1) {
     vector[ssm_simsmo_dist_size(rows(T), rows(Q))] draws[size(eps)];
     int n;
@@ -1161,9 +1162,9 @@ vector[] ssm_simsmo_dist_rng(vector[] eps, vector[] eta,
     int m;
     int q;
     n = size(eps);
-    p = rows(Z);
-    m = rows(T);
-    q = rows(Q);
+    p = rows(Z[1]);
+    m = rows(T[1]);
+    q = rows(Q[1]);
     {
       vector[ssm_filter_size(m, p)] filter[n];
       vector[p] y[n];
@@ -1199,8 +1200,8 @@ vector[] ssm_simsmo_dist_rng(vector[] eps, vector[] eta,
 
 // ssm_simsmo_alpha_rng
 vector[] ssm_simsmo_states_rng(vector[] alpha,
-                      vector c, matrix Z, matrix H,
-                      vector d, matrix T, matrix R, matrix Q,
+                      vector[] d, matrix[] Z, matrix[] H,
+                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                       vector a1, matrix P1) {
     vector[rows(T)] draws[size(alpha)];
     int n;
@@ -1208,9 +1209,9 @@ vector[] ssm_simsmo_states_rng(vector[] alpha,
     int m;
     int q;
     n = size(alpha);
-    p = rows(Z);
-    m = rows(T);
-    q = rows(Q);
+    p = rows(Z[1]);
+    m = rows(T[1]);
+    q = rows(Q[1]);
     {
       vector[ssm_filter_size(m, p)] filter[n];
       vector[ssm_sim_size(m, p, q)] sims[n];

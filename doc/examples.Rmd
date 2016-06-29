@@ -50,7 +50,7 @@ StructTS(Nile, type = "level")
 local_level_code <- stanc_builder(find_rstudio_root_file("stan/local_level.stan"))
 rm(local_level_mod)
 local_level_mod <- stan_model(model_code = local_level_code[["model_code"]],
-                              model_name = local_level_code[["model_name"]])
+                              model_name = local_level_code[["model_namze"]])
 
 
 ```
@@ -67,7 +67,7 @@ nile_init <- list(list(sigma_epsilon = array(sqrt(var(nile_data$y)), 1),
 nile_ll_sample <- sampling(local_level_mod,
                          chains = 1,
                          iter = 2000,
-                         init = nile_init,
+                         init = 0,
                          data = nile_data)
 summary(nile_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 

@@ -16,14 +16,14 @@ transformed data {
   int m;
   int p;
   int q;
-  m <- 1;
-  p <- 1;
-  q <- 1;
-  T[1, 1] <- 1.0;
-  Z[1, 1] <- 1.0;
-  R[1, 1] <- 1.0;
-  c[1] <- 0.0;
-  d[1] <- 0.0;
+  m = 1;
+  p = 1;
+  q = 1;
+  T[1, 1] = 1.0;
+  Z[1, 1] = 1.0;
+  R[1, 1] = 1.0;
+  c[1] = 0.0;
+  d[1] = 0.0;
 }
 parameters {
   real<lower = 0.0> sigma_eta;
@@ -35,8 +35,8 @@ model {
   {
     matrix[1, 1] H;
     matrix[1, 1] Q;
-    H <- rep_matrix(pow(sigma_epsilon, 2), 1, 1);
-    Q <- rep_matrix(pow(sigma_eta, 2), 1, 1);
+    H = rep_matrix(pow(sigma_epsilon, 2), 1, 1);
+    Q = rep_matrix(pow(sigma_eta, 2), 1, 1);
     ssm_lp(y, c, Z, H, d, T, R, Q, a1, P1);
   }
 }
@@ -49,12 +49,12 @@ generated quantities {
   {
     matrix[1, 1] H;
     matrix[1, 1] Q;
-    H <- rep_matrix(pow(sigma_epsilon, 2), 1, 1);
-    Q <- rep_matrix(pow(sigma_eta, 2), 1, 1);
-    filtered <- ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
-    eps <- ssm_smooth_eps(filtered, H, Z, T);
-    eta <- ssm_smooth_eta(filtered, Z, T, R, Q);
-    alpha <- ssm_smooth_state(filtered, Z, T);
-    alpha2 <- ssm_smooth_faststate(filtered, c, Z, T, R, Q);
+    H = rep_matrix(pow(sigma_epsilon, 2), 1, 1);
+    Q = rep_matrix(pow(sigma_eta, 2), 1, 1);
+    filtered = ssm_filter(y, c, Z, H, d, T, R, Q, a1, P1);
+    eps = ssm_smooth_eps(filtered, H, Z, T);
+    eta = ssm_smooth_eta(filtered, Z, T, R, Q);
+    alpha = ssm_smooth_state(filtered, Z, T);
+    alpha2 = ssm_smooth_faststate(filtered, c, Z, T, R, Q);
   }
 }

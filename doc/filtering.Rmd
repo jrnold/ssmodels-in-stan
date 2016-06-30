@@ -98,6 +98,14 @@ Alternative methods **TODO**
 
 ## Smoothing
 
+While filtering calculates the conditional densities the states and disturbances given data prior to or up to the current time, 
+smoothing calculates the conditional densities states and disturbances given the entire series of observations, $\vec{y}_{1:n}$.
+
+*State smoothing* calculates the conditional mean, $\hat{\vec{\alpha}}_t = \E(\vec{\alpha}_t | \vec{y}_{1:n})$, and variance, $\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_{1:n})$, of the states.
+Observation disturbance smoothing calculates the conditional mean, $\hat{\vec{\varepsilon}}_t = \E(\vec{\varepsilon}_t | \vec{y}_{1:n})$, and variance, $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$, of the state disturbances.
+Likewise, state disturbance smoothing calculates the conditional mean, $\hat{\vec{\eta}}_t = \E(\vec{\eta}_t | \vec{y}_{1:n})$, and variance, $\Var(\vec{\eta}_t | \vec{y}_{1:n})$, of the state disturbances.
+
+
 Vector/Matrix                Dimension
 ---------------------------- -----------------------
 $\vec{r}_t$                   $m \times 1$
@@ -112,23 +120,21 @@ $\mat{D}_t$                   $p \times p$
 
 Table: Dimensions of vectors and matrices used in smoothing recursions
 
+
+
 ### State Smoothing
 
-[@DurbinKoopman2012, Sec 4.4.2]
-
-Smoothing calculates the estimate of the state using all observations, $\hat{\vec{\alpha}} = \E(\vec{\alpha}_t | \mat{Y}_n)$ and $\mat{V}_t = \Var(\vec{\alpha} | \mat{Y}_n)$.
-
-
-Smoother in Eq 4.44. Let $\hat{\vec{a}} = \E(\alpha_t | \vec{y}_1, \dots \vec{y}_n)$ and $\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_1, \dots \vec{y}_n)$, then
+Smoothing calculates conditional density of the states given all observations, $p(\vec{\alpha} | \vec{y}_{1:n})$.  Let $\hat{\vec{\alpha}} = \E(\vec{\alpha}_t | \vec{y}_{1:n})$ be the mean and $\mat{V}_t = \Var(\vec{\alpha} | \vec{y}_{1:n})$ be the variance of this density.
+The following recursions can be used to calculate these densities [@DurbinKoopman2012, Sec 4.4.4],
 $$
 \begin{aligned}[t]
-\vec{r}_{t - 1} &= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , \\
+\vec{r}_{t - 1} &= \mat{Z}_t\T \mat{F}_t^{-1} \vec{v}_t + \mat{L}_t\T \vec{r}_t , &
 \mat{N}_{t - 1} &= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t, \\
-\hat{\vec{\alpha}}_t &= \vec{a}_t + \mat{P}_t \vec{r}_{t - 1} , \\
+\hat{\vec{\alpha}}_t &= \vec{a}_t + \mat{P}_t \vec{r}_{t - 1} , &
 \mat{V}_t &= \mat{P}_t - \mat{P}_t \mat{N}_{t - 1} \mat{P}_t ,
 \end{aligned}
 $$
-for $t = n, \dots, 1$, with $\vec{r}_n = \vec{0}$, and $\mat{N}_t = \mat{0}$.
+for $t = n, \dots, 1$, with $\vec{r}_n = \vec{0}$, and $\mat{N}_n = \mat{0}$.
 
 During the filtering pass $\vec{v}_t$, $\mat{F}_t$, $\mat{K}_t$, and $\mat{P}_t$ for $t = 1, \dots, n$ need to be stored.
 Alternatively, $\vec{a}_t$ and $\mat{P}_t$ only can be stored, and $\vec{v}_t$, $\mat{F}_t$, $\mat{K}_t$ recalculated on the fly.
@@ -136,41 +142,14 @@ However, since the dimensions of $\vec{v}_t$, $\mat{F}_t$, $\mat{K}_t$ are usual
 
 
 
-### Updating Smoothed States
-
-[@DurbinKoopman2012, Sec 4.4.5]
-
-If a new observation arises, existing smoothed estimates of the states can be updated without
-having to run the full state smoother again.
-
-Suppose a new obervation, $\vec{y}_{n + 1}$, is available.
-We want to calculate $\hat{\vec{\alpha}}_{t|n + 1} = \E(\vec{\alpha} | \mat{Y}_{n + 1})$ and $\mat{V}_{t|n + 1} = \Var(\vec{\alpha}) | \mat{Y}_{n + 1}$, when we already have  $\hat{\vec{\alpha}}_{t|n} = \E(\vec{\alpha} | \mat{Y}_{n})$ and $\mat{V}_{t|n} = \Var(\vec{\alpha} | \mat{Y}_{n})$ from running smoother when $\mat{Y}_n$ was available.
-
-Let $b_{t|n + 1} = \mat{L}_t\T \cdots \mat{L}_n\T$ with $\vec{b}_{t|n + 1} = \mat{I}_m$.
-Then $b_{t|n + 1} = \mat{L}_t\T b_{t+1|n+1}$ for $t = n, \dots, 1$.
-Then the states can be updated as,
-$$
-\begin{aligned}[t]
-\hat{\vec{\alpha}}_{t|n + 1} &= \hat{\vec{a}}_{t|n} + \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \vec{v}_{n + 1} , \\
-\mat{V}_{t|n + 1} &= \mat{V}_{t|n} - \mat{P}_t \vec{b}_{t|n + 1} \mat{Z}_{n + 1}\T \mat{F}_{n + 1}^{-1} \mat{Z}_{n + 1} \vec{b}_{t|n + 1}\T \mat{P}_t ,
-\end{aligned}
-$$
-for $n = t, t + 1, \dots$, with
-$$
-\begin{aligned}[t]
-\hat{\vec{\alpha}}_{n|n} &= \vec{a}_n + \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \vec{v}_n, \\
-\mat{V}_{n|n} &= \mat{P}_n - \mat{P}_n \mat{Z}_n\T \mat{F}_n^{-1} \mat{Z}_n \mat{P}_n ,
-\end{aligned}
-$$
-The values of $\mat{P}_t$, $\mat{L}_t$, $\mat{F}_{n + 1}$, and $\vec{v}_{n + 1}$ are available from the Kalman filter.
-
-
 ### Disturbance smoothing
 
-[@DurbinKoopman2012, Sec 4.5]
 
-Disturbance smoothing calculates the smoothed estimates, $\hat{\vec{\varepsilon}}_t = \E(\vec{\varepsilon} | \mat{Y}_n)$ and $\hat{\vec{\eta}} = \E(\vec{\eta}_t | \mat{Y}_n)$.
 
+Disturbance smoothing calculates the density of the state and observation disturbances ($\vec{\eta}_t$ and $\vec{\varepsilon}_t$) given the full series of observations $\vec{y}_{1:n}$.
+Let $\hat{\vec{\varepsilon}}_t = \E(\vec{\varepsilon} | \vec{y}_{1:n})$ be the mean and $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$ be the variance of the smoothed density of the observation disturbances at time $t$, $p(\vec{\varepsilon}_t | \vec{y}_{1:n})$.
+Likewise, let $\hat{\vec{\eta}} = \E(\vec{\eta}_t | \vec{y}_{1:n})$ be the mean and $\Var(\vec{\eta}_t | \vec{y}_{1:n})$  be the variance of the smoothed density of the state disturbances at time $t$, $p(\vec{\eta}_t | \vec{y}_{1:n})$.
+The following recursions can be used to calculate these values [@DurbinKoopman2012, Eq 4.69]:
 $$
 \begin{aligned}[t]
 \hat{\vec{\varepsilon}}_t &= \mat{H}_t (\mat{F}^{-1} \vec{v}_t - \mat{K}_t\T \vec{r}_t) , &
@@ -181,9 +160,7 @@ $$
 \mat{N}_{t - 1} &= \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t + \mat{L}_t\T \mat{N}_t \mat{L}_t
 \end{aligned}
 $$
-
-
-Alternatively, these equations can be rewritten as,
+Alternatively, these equations can be rewritten as [@DurbinKoopman2012, Sec 4.5.3]:
 $$
 \begin{aligned}[t]
 \hat{\vec{\varepsilon}}_t &= \mat{H}_t \vec{u}_t , &
@@ -197,12 +174,9 @@ $$
 \end{aligned}
 $$
 This reformulation can be computationally useful since it relies on the system matrices $\mat{Z}_t$ and $\mat{T}_t$ which are often sparse.
+The disturbance smoothing recursions require only $\vec{v}_t$, $\mat{f}_t$, and $\mat{K}_t$ which are calculated with a forward pass of the Kalman filter.
+Unlike the state smoother, the disturbance smoothers do not require either the mean ($\vec{a}_t$) or variance ($\mat{P}_t$) of the predicted state density.
 
-The smoothing error $\vec{u}_t$ and $\vec{r}_t$ are important in their own right.
-The vector $\vec{r}_t$ is the scaled smoothed estimator of $\vec{\eta}_t$.
-
-The disturbance smoothing recursions require only $\vec{v}_t$, $\mat{f}_t$, and $\mat{K}_t$ from the Kalman filter.
-Unlike the state smoother, they do not require the vector $\vec{a}_t$ or matrix $\mat{P}_t$.
 
 
 ### Fast state smoothing
@@ -213,29 +187,14 @@ If the variances of the states do not need to be calculated, then a faster smoot
 can be used (Koopman 1993).
 The fast state smoother is defiend as,
 $$
-\hat{\vec{\alpha}}_t = \mat{T}_t \hat{\vec{\alpha}}_t + \mat{R}_t \mat{Q}_t \mat{R}_t\T \vec{r}_t ,
-$$
-for $t = 1, \dots, n$.
-This is initialized via,
-$$
-\hat{\vec{\alpha}}_1 = \vec{a}_1 + \mat{P}_1 \vec{r}_0 .
-$$
-Thus the smoother is run, but only calculating $\vec{r}_n, \dots, \vec{r}_0$.
-Then, $\hat{\vec{\alpha}}_1, \dots \hat{\vec{\alpha}}_t$ are calculated using the above equation.
-
-### Classical state smoothing
-
-See [@DurbinKoopman2012, Sec 4.6.1]
-
-The original state smoothing algorithm from Anderson and Moore (1979) is
-$$
 \begin{aligned}[t]
-\hat{\vec{\alpha}}_t &= \vec{a}_{t|t} + \mat{P}_{t|t} \mat{T}_t\T \mat{P}_{t + 1}^{-1}(\hat{\vec{\alpha}}_{t + 1} - \vec{a}_{t + 1}) .
+\hat{\vec{\alpha}}_t &= \mat{T}_t \hat{\vec{\alpha}}_t + \mat{R}_t \mat{Q}_t \mat{R}_t\T \vec{r}_t , && t = 2, \dots, n \\
+\hat{\vec{\alpha}}_1 &= \vec{a}_1 + \mat{P}_1 \vec{r}_0 .
 \end{aligned}
 $$
-Note that $\mat{T} \mat{P}_{t|t} = \mat{L}_t \mat{P}_t$.
-Relative to the other state smoothing algorithm the classical smoother is more computationally burdensome because it requires inverting $\mat{P}_{t + 1}$.
-The other state smoother only requires inverting $\mat{F}_t$, but that has already been inverted in the filtering pass.
+The values of $\vec{r}_t$ come from the recursions in the disturbance smoother.
+
+
 
 ## Simulation smoothers
 

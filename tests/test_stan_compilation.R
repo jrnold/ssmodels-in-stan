@@ -2,7 +2,7 @@ library("rstan")
 library("testthat")
 library("rprojroot")
 
-excepct_rstan_model_parses <- function(filename, ...) {
+expect_rstan_model_parses <- function(filename, ...) {
   include_dir <- find_rstudio_root_file("stan", "includes")
   exp <- capture_output(stanc_builder(file = filename, isystem = include_dir))
 }
@@ -17,4 +17,5 @@ for (stan_file in dir(find_rstudio_root_file("tests", "models"),
     expect_false(is(x$r, "try-error"))
   })
 }
+
 

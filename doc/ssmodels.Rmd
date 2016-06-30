@@ -29,7 +29,6 @@ The $r \times 1$ vector $\vec{\eta}_t$ is called the *state disturbance vector*,
 and the $p \times 1$ vector $\vec{\varepsilon}_t$ is called the *observation disturbance vector*.
 An assumption is that the state and observation disturbance vectors are uncorrelated, $\Cov(\vec{\varepsilon}_t, \vec{\eta}_t) = 0$.
 
-
 In a general state space model, the normality assumptions of the densities of $\vec{\varepsilon}$
 and $\vec{\eta}$ are dropped.
 

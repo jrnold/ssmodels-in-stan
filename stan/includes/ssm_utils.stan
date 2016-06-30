@@ -126,16 +126,13 @@ int find_symmat_dim(int n) {
   // This could be solved by finding the positive root of m = m (m + 1)/2 but
   // Stan doesn't support all the functions necessary to do this.
   int i;
-  int tot;
-  tot = 1;
-  i = 1;
-  while (tot < n) {
-    tot = tot + i;
+  i = 0;
+  while (n > 0) {
     i = i + 1;
+    n = n - 1;
   }
-  return tot;
+  return i;
 }
-
 
 /**
 Convert a vector to a symmetric matrix

@@ -391,13 +391,13 @@ int[,] ssm_filter_idx(int m, int p) {
   // v
   sz[2, 1] = p;
   // Finv
-  sz[3, 1] = find_symmat_dim(p);
+  sz[3, 1] = symmat_size(p);
   // K
   sz[4, 1] = m * p;
   // a
   sz[5, 1] = m;
   // P
-  sz[6, 1] = find_symmat_dim(m);
+  sz[6, 1] = symmat_size(m);
   // Fill in start and stop points
   sz[1, 2] = 1;
   sz[1, 3] = sz[1, 2] + sz[1, 1] - 1;
@@ -670,7 +670,7 @@ Length of the vectors returned by `ssm_filter_states`
 */
 int ssm_filter_states_size(int m) {
   int sz;
-  sz = m + m * m;
+  sz = m + symmat_size(m);
   return sz;
 }
 
@@ -685,7 +685,7 @@ Extract $a_{t|t}$ from the results of `ssm_filter_states`
 */
 vector ssm_filter_states_get_a(vector x, int m) {
   vector[m] a;
-  a = x[1:m];
+  a = x[ :m];
   return a;
 }
 
@@ -700,7 +700,7 @@ Extract $P_{t|t}$ from the results of `ssm_filter_states`
 */
 matrix ssm_filter_states_get_P(vector x, int m) {
   matrix[m, m] P;
-  P = to_matrix_colwise(x[(m + 1):(m + m * m)], m, m);
+  P = vector_to_symmat(x[(m + 1): ], m);
   return P;
 }
 
@@ -760,8 +760,8 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
       aa = a + P * Z_t ' * Finv * v;
       PP = to_symmetric_matrix(P - P * quad_form(Finv, Z_t) * P);
       // saving
-      res[t, 1:m] = aa;
-      res[t, (m + 1):(m + m * m)] = to_vector(PP);
+      res[t, :m] = aa;
+      res[t, (m + 1): ] = symmat_to_vector(PP);
     }
   }
   return res;
@@ -810,9 +810,9 @@ real ssm_lpdf(vector[] y,
   int p;
   int q;
   n = size(y); // number of obs
-  m = cols(Z[1]);
-  p = rows(Z[1]);
-  q = rows(Q[1]);
+  m = dims(Z)[2];
+  p = dims(Z)[3];
+  q = dims(Q)[2];
   {
     // system matrices for current iteration
     vector[p] d_t;
@@ -989,6 +989,9 @@ real ssm_constant_lpdf(vector[] y,
   }
   return ll;
 }
+
+
+
 ///
 /// # Common Smoother Functions
 ///
@@ -1005,7 +1008,7 @@ Update $\vec{r}_t$ in smoothing recursions
 
 In smoothing recursions, the vector $\vec{r}_t$ is updated with,
 $$
-\vec{r}_t = \mat{Z}' \mat{F}^{-1}_t \vec{v}_t + \mat{L}' \vec{r}_{t - 1} .
+\vec{r}_{t - 1} = \mat{Z}' \mat{F}^{-1}_t \vec{v}_t + \mat{L}' \vec{r}_{t} .
 $$
 
 See [@DurbinKoopman2012, p. 91]
@@ -1028,7 +1031,7 @@ Update $\mat{N}_t$ in smoothing recursions
 
 In smoothing recursions, the matrix $\vec{N}_t$ is updated with,
 $$
-\mat{N}_t = \mat{Z})_t' \mat{F}^{-1}_t \mat{Z}_t + \mat{L}_t' \mat{N}_t \mat{L}_t .
+\mat{N}_{t - 1} = \mat{Z})_t' \mat{F}^{-1}_t \mat{Z}_t + \mat{L}_t' \mat{N}_t \mat{L}_t .
 $$
 
 See [@DurbinKoopman2012, p. 91]
@@ -1038,6 +1041,9 @@ matrix ssm_smooth_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   N_new = quad_form(Finv, Z) + quad_form(N, L);
   return N_new;
 }
+
+
+
 ///
 /// # State Smoother
 ///
@@ -1064,7 +1070,7 @@ Extract $\hat{\vec{\alpha}}_t$ from vectors returned by `ssm_smooth_state`
 */
 vector ssm_smooth_state_get_mean(vector x, int m) {
   vector[m] alpha;
-  alpha = x[1:m];
+  alpha = x[ :m];
   return alpha;
 }
 
@@ -1077,7 +1083,7 @@ Extract $mat{V}_t$ from vectors returned by `ssm_smooth_state`
 */
 matrix ssm_smooth_state_get_var(vector x, int m) {
   matrix[m, m] V;
-  V = to_matrix_colwise(x[(m + 1):(m + symmat_size(m))], m, m);
+  V = vector_to_symmat(x[(m + 1): ], m);
   return V;
 }
 
@@ -1102,7 +1108,13 @@ $$
 Use the `ssm_smooth_state_get_mean` and `ssm_smooth_state_get_var` to extract components
 from the returned vectors.
 
-See [@DurbinKoopman2012, Eq 4.44 (eq 4.69)]
+value                                        length          start                 end
+-------------------------------------------- --------------- --------------------- --------------------
+$\hat{\vec{\alpha}}_t$                       $m$             $1$                   $m$
+$\mat{V}_t                                   $m (m + 1) / 2$ $m + 1$               $m + m (m + 1) / 2$
+
+
+See @DurbinKoopman2012, Eq 4.44 and eq 4.69.
 */
 vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
   vector[ssm_smooth_state_size(dims(Z)[3])] res[size(filter)];
@@ -1167,12 +1179,14 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
       alpha = a + P * r;
       V = to_symmetric_matrix(P - P * N * P);
       // saving
-      res[t, 1:m] = alpha;
-      res[t, (m + 1):symmat_size(m)] = symmat_to_vector(V);
+      res[t, :m] = alpha;
+      res[t, (m + 1): ] = symmat_to_vector(V);
     }
   }
   return res;
 }
+
+
 /**
 The size of the vectors returned by `ssm_smooth_eps`
 
@@ -1195,7 +1209,7 @@ Extract $\hat{\vec{\varepsilon}}_t$ from vectors returned by `ssm_smooth_eps`
 */
 vector ssm_smooth_eps_get_mean(vector x, int p) {
   vector[p] eps;
-  eps = x[1:p];
+  eps = x[ :p];
   return eps;
 }
 
@@ -1209,7 +1223,7 @@ Extract $\Var(\varepsilon_t|\vec{y}_{1:n})$ from vectors returned by `ssm_smooth
 */
 matrix ssm_smooth_eps_get_var(vector x, int p) {
   matrix[p, p] eps_var;
-  eps_var = vector_to_symmat(x[(p + 1):(p + symmat_size(p))], p);
+  eps_var = vector_to_symmat(x[(p + 1): ], p);
   return eps_var;
 }
 
@@ -1280,6 +1294,8 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       T_t = T[1];
     }
     // initialize smoother
+    // r and N go from n, n - 1, ..., 1, 0.
+    // r_n and N_n
     r = rep_vector(0.0, m);
     N = rep_matrix(0.0, m, m);
     for (i in 1:n) {
@@ -1302,13 +1318,15 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       // updating
       L = ssm_filter_update_L(Z_t, T_t, K);
+      // r_{t - 1} and N_{t - 1}
       r = ssm_smooth_update_r(r, Z_t, v, Finv, L);
       N = ssm_smooth_update_N(N, Z_t, Finv, L);
+      // eps_t and V(eps_t|y)
       eps = H_t * (Finv * v - K ' * r);
       var_eps = to_symmetric_matrix(H_t - H_t * (Finv + quad_form(N, K)) * H_t);
       // saving
-      res[t, 1:p] = eps;
-      res[t, (p + 1):(p + symmat_size(p))] = symmat_to_vector(var_eps);
+      res[t, :p] = eps;
+      res[t, (p + 1): ] = symmat_to_vector(var_eps);
     }
   }
   return res;
@@ -1323,7 +1341,7 @@ The size of the vectors returned by `ssm_smooth_eta`
 */
 int ssm_smooth_eta_size(int q) {
   int sz;
-  sz = q + q * q;
+  sz = q + symmat_size(q);
   return sz;
 }
 
@@ -1336,7 +1354,7 @@ Extract $\hat{\vec{\varepsilon}}_t$ from vectors returned by `ssm_smooth_eta`
 */
 vector ssm_smooth_eta_get_mean(vector x, int q) {
   vector[q] eta;
-  eta = x[1:q];
+  eta = x[ :q];
   return eta;
 }
 
@@ -1350,7 +1368,7 @@ Extract $\Var(\eta_t|\vec{y}_{1:n})$ from vectors returned by `ssm_smooth_eta`
 */
 matrix ssm_smooth_eta_get_var(vector x, int q) {
   matrix[q, q] eta_var;
-  eta_var = to_matrix_colwise(x[(q + 1):(q + q * q)], q, q);
+  eta_var = vector_to_symmat(x[(q + 1): ], q);
   return eta_var;
 }
 
@@ -1430,10 +1448,10 @@ vector[] ssm_smooth_eta(vector[] filter,
     // initialize smoother
     r = rep_vector(0.0, m);
     N = rep_matrix(0.0, m, m);
-    for (i in 1:n) {
+    for (i in 0:(n - 1)) {
       int t;
       // move backwards in time
-      t = n - i + 1;
+      t = n - i;
       // update time-varying system matrices
       if (size(Z) > 1) {
         Z_t = Z[t];
@@ -1458,8 +1476,8 @@ vector[] ssm_smooth_eta(vector[] filter,
       eta = Q_t * R_t ' * r;
       var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form(N, R_t) * Q_t);
       // saving
-      res[t, 1:q] = eta;
-      res[t, (q + 1):(q + q * q)] = to_vector(var_eta);
+      res[t, :q] = eta;
+      res[t, (q + 1): ] = symmat_to_vector(var_eta);
     }
   }
   return res;
@@ -1757,4 +1775,460 @@ matrix arima_stationary_cov(matrix T, matrix R) {
   TT = kronecker_prod(T, T);
   Q0 = to_matrix_colwise((diag_matrix(rep_vector(1.0, m2)) - TT) \ RR, m, m);
   return Q0;
+}
+
+///
+/// # Simulation Smoothers
+///
+
+/**
+Observation disturbance simulation smoother
+
+Draw samples from the posterior distribution of the observation disturbances,
+$\tilde{\vec{\varepsilon}}_{1:n} \sim p(\vec{\varepsilon}_{1:n} | \vec{y}_{1:n})$.
+
+@param vector[] eps Values returned by `sim_smooth_eps`
+@param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
+@param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
+@param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
+@param vector[] c State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
+@param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
+@param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
+@param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
+@param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
+@param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
+@return vector[] Array of size $n$ of $p \times 1$ vectors containing a single draw from $(\vec{\varepsilon}_{1:n} | \vec{y}_{1:n})$.
+
+For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
+not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
+if it is time varying.
+
+This draws samples using mean-correction simulation smoother of [@DurbinKoopman2002].
+See [@DurbinKoopman2012, Sec 4.9].
+
+*/
+vector[] ssm_simsmo_eps_rng(vector[] eps,
+                      vector[] d, matrix[] Z, matrix[] H,
+                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                      vector a1, matrix P1) {
+    vector[dims(Z)[2]] draws[size(eps)];
+    int n;
+    int p;
+    int m;
+    int q;
+    n = size(eps);
+    p = dims(Z)[2];
+    m = dims(Z)[3];
+    q = dims(Q)[2];
+    {
+      vector[ssm_filter_size(m, p)] filter[n];
+      vector[p] y[n];
+      vector[ssm_sim_size(m, p, q)] sims[n];
+      vector[ssm_smooth_eta_size(p)] epshat_plus[n];
+      // simulate unconditional disturbances and observations
+      sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
+      for (i in 1:n) {
+        y[i] = ssm_sim_get_y(sims[i], m, p, q);
+      }
+      // filter simulated y's
+      filter = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      // mean correct epsilon samples
+      epshat_plus = ssm_smooth_eps(filter, Z, H, T);
+      for (i in 1:n) {
+        draws[i] = (ssm_sim_get_eps(sims[i], m, p, q)
+                    - ssm_smooth_eps_get_mean(epshat_plus[i], p)
+                    + ssm_smooth_eps_get_mean(eps[i], p));
+      }
+    }
+    return draws;
+}
+/**
+State simulation smoother
+
+Draw samples from the posterior distribution of the states,
+$\tilde{\vec{\alpha}}_{1:n} \sim p(\vec{\alpha}_{1:n} | \vec{y}_{1:n})$.
+
+@param vector[] alpha An of size $n$ of $m \times 1$ vectors containing the smoothed expected values of the states, $\E(\vec{alpha}_{1:n} | \vec{y}_{1:n})$.
+  These are returned by `sim_smooth_faststates`. If `sim_smooth_state` was used, then the expected values need to first be
+  extracted using `sim_smooth_state_get_mean`.
+@param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
+@param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
+@param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
+@param vector[] c State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
+@param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
+@param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
+@param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
+@param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
+@param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
+@return vector[] Array of size $n$ of $m \times 1$ vectors containing a single draw from $(\vec{\alpha}_{1:n} | \vec{y}_{1:n})$.
+
+For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
+not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
+if it is time varying.
+
+This draws samples using mean-correction simulation smoother of [@DurbinKoopman2002].
+See [@DurbinKoopman2012, Sec 4.9].
+
+*/
+vector[] ssm_simsmo_states_rng(vector[] alpha,
+                      vector[] d, matrix[] Z, matrix[] H,
+                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                      vector a1, matrix P1) {
+    vector[dims(Z)[2]] draws[size(alpha)];
+    int n;
+    int p;
+    int m;
+    int q;
+    n = size(alpha);
+    p = dims(Z)[2];
+    m = dims(Z)[3];
+    q = dims(Q)[2];
+    {
+      vector[ssm_filter_size(m, p)] filter[n];
+      vector[ssm_sim_size(m, p, q)] sims[n];
+      vector[p] y[n];
+      vector[m] alpha_hat_plus[n];
+      // simulate unconditional disturbances and observations
+      sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
+      for (i in 1:n) {
+        y[i] = ssm_sim_get_y(sims[i], m, p, q);
+      }
+      // filter with simulated y's
+      filter = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      // mean correct epsilon samples
+      alpha_hat_plus = ssm_smooth_faststate(filter, c, Z, T, R, Q);
+      for (i in 1:n) {
+        draws[i] = (ssm_sim_get_a(sims[i], m, p, q)
+                    - alpha_hat_plus[i]
+                    + alpha[i]);
+      }
+    }
+    return draws;
+}
+/**
+State disturbance simulation smoother
+
+Draw samples from the posterior distribution of the observation disturbances,
+$\tilde{\vec{\eta}}_{1:n} \sim p(\vec{\eta}_{1:n} | \vec{y}_{1:n})$.
+
+@param vector[] eta Values returned by `sim_smooth_eta`
+@param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
+@param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
+@param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
+@param vector[] c State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
+@param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
+@param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
+@param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
+@param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
+@param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
+@return vector[] Array of size $n$ of $q \times 1$ vectors containing a single draw from $(\vec{\eta}_{1:n} | \vec{y}_{1:n})$.
+
+For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
+not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
+if it is time varying.
+
+This draws samples using mean-correction simulation smoother of [@DurbinKoopman2002].
+See [@DurbinKoopman2012, Sec 4.9].
+
+*/
+vector[] ssm_simsmo_eta_rng(vector[] eta,
+                            vector[] d, matrix[] Z, matrix[] H,
+                            vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                            vector a1, matrix P1) {
+    vector[dims(Q)[2]] draws[size(eta)];
+    int n;
+    int p;
+    int m;
+    int q;
+    n = size(eta);
+    p = dims(Z)[2];
+    m = dims(Z)[3];
+    q = dims(Q)[2];
+    {
+      vector[ssm_filter_size(m, p)] filter[n];
+      vector[p] y[n];
+      vector[ssm_sim_size(m, p, q)] sims[n];
+      vector[ssm_smooth_eta_size(q)] etahat_plus[n];
+      // simulate unconditional disturbances and observations
+      sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
+      for (i in 1:n) {
+        y[i] = ssm_sim_get_y(sims[i], m, p, q);
+      }
+      // filter simulated y's
+      filter = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      // mean correct eta samples
+      etahat_plus = ssm_smooth_eta(filter, Z, T, R, Q);
+      for (i in 1:n) {
+        draws[i] = (ssm_sim_get_eta(sims[i], m, p, q)
+                                    - ssm_smooth_eta_get_mean(etahat_plus[i], q)
+                                    + ssm_smooth_eta_get_mean(eta[i], q));
+      }
+    }
+    return draws;
+}
+///
+/// # Simulators and Smoothing Simulators
+///
+
+/**
+Indexes of each component of `ssm_sim_rng` results.
+
+@param int m The number of states
+@param int p The length of the observation vector
+@param int q The number of state disturbances
+@return A 4 x 3 array of integers with the (length, start location, and end location)
+  of $y_t$, $\alpha_t$, $\varepsilon_t$, and $\eta_t$ in the results of `ssm_sim_rng`.
+
+element         length         start         end
+--------------- -------------- ------------- -----------
+$y_t$           $p$            $1$           $p$
+$\alpha$_t      $m$            $p + 1$       $p + m$
+$\varepsilon_t$ $p$            $p + m + 1$   $2 p + m$
+$\eta_t$        $q$            $2 p + m + 1$ $2 p + m + q$
+
+It is preferrable to use `ssm_sim_get_y`, `ssm_sim_get_a`, `ssm_sim_get_eps`,
+and `ssm_sim_get_eta` to extract values from these vectors.
+
+*/
+int[,] ssm_sim_idx(int m, int p, int q) {
+  int sz[4, 3];
+  // y
+  sz[1, 1] = p;
+  // a
+  sz[2, 1] = m;
+  // eps
+  sz[3, 1] = p;
+  // eta
+  sz[4, 1] = q;
+  // Fill in start and stop points
+  sz[1, 2] = 1;
+  sz[1, 3] = sz[1, 2] + sz[1, 1] - 1;
+  for (i in 2:4) {
+    sz[i, 2] = sz[i - 1, 3] + 1;
+    sz[i, 3] = sz[i, 2] + sz[i, 1] - 1;
+  }
+  return sz;
+}
+
+/**
+The number of elements in vectors returned by `ssm_sim_rng` results.
+
+@param int m The number of states
+@param int p The length of the observation vector
+@param int q The number of state disturbances
+@return int The number of elements
+
+*/
+int ssm_sim_size(int m, int p, int q) {
+  int sz;
+  sz = ssm_sim_idx(m, p, q)[4, 3];
+  return sz;
+}
+
+/**
+Extract $\vec{y}_t$ from vectors returne by `ssm_sim_rng`.
+
+@param int m The number of states
+@param int p The length of the observation vector
+@param int q The number of state disturbances
+@return vector vector A $p \times 1$ vector with $\vec{y}_t$.
+
+*/
+vector ssm_sim_get_y(vector x, int m, int p, int q) {
+  vector[m] y;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  y = x[idx[1, 2]:idx[1, 3]];
+  return y;
+}
+
+/**
+Extract $\vec{\alpha}_t$ from vectors returne by `ssm_sim_rng`.
+
+@param int m The number of states
+@param int p The length of the observation vector
+@param int q The number of state disturbances
+@return vector A $m \times 1$ vector with $\vec{\alpha}_t$.
+
+*/
+vector ssm_sim_get_a(vector x, int m, int p, int q) {
+  vector[m] a;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  a = x[idx[2, 2]:idx[2, 3]];
+  return a;
+}
+
+/**
+Extract $\vec{\varepsilon}_t$ from vectors returne by `ssm_sim_rng`.
+
+@param int m The number of states
+@param int p The length of the observation vector
+@param int q The number of state disturbances
+@return vector vector A $p \times 1$ vector with $\vec{\varepsilon}_t$.
+
+
+*/
+vector ssm_sim_get_eps(vector x, int m, int p, int q) {
+  vector[m] eps;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  eps = x[idx[3, 2]:idx[3, 3]];
+  return eps;
+}
+
+/**
+Extract $\vec{\eta}_t$ from vectors returne by `ssm_sim_rng`.
+
+@param int m The number of states
+@param int p The length of the observation vector
+@param int q The number of state disturbances
+@return vector vector A $q \times 1$ vector with $\vec{\eta}_t$.
+
+*/
+vector ssm_sim_get_eta(vector x, int m, int p, int q) {
+  vector[m] eta;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  eta = x[idx[4, 2]:idx[4, 3]];
+  return eta;
+}
+
+/**
+Simulate from a Linear Gaussian State Space model.
+
+@param vector[] y Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
+@param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
+@param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
+@param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
+@param vector[] c State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
+@param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
+@param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
+@param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
+@param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
+@param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
+@return Array of size $n$ of vectors with Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}}_t$. See the description.
+
+For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
+not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
+if it is time varying.
+
+Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}}_t$ from
+the state space model,
+$$
+\begin{aligned}[t]
+\vec{y}_t &= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}_t,  &
+\vec{\varepsilon}_t & \sim N(0, \mat{H}_t), \\
+\vec{\alpha}_{t + 1} &= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}_t,  &
+\vec{\eta}_t & \sim N(0, \mat{Q}_t), \\
+&& \vec{\alpha}_1 &\sim N(\vec{a}_1, \mat{P}_1) .
+\end{aligned}
+$$
+
+The returned vectors are of length $2 p + m + q$, in the format,
+$$
+(\vec{y}_t', \vec{\alpha}_t', \vec{\varepsilon}_t', \vec{\eta}_t') .
+$$
+Note that $\eta_n = \vec{0}_q$.
+Use the functions `ssm_sim_get_y`, `ssm_sim_get_a`, `ssm_sim_get_eps`, and
+`ssm_sim_get_eta` to extract values from the vector.
+
+
+*/
+vector[] ssm_sim_rng(int n,
+                    vector[] d, matrix[] Z, matrix[] H,
+                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                    vector a1, matrix P1) {
+  vector[ssm_sim_size(dims(Z)[3], dims(Z)[2], dims(Q)[2])] ret[n];
+  int p;
+  int m;
+  int q;
+  p = dims(Z)[2];
+  m = dims(Z)[3];
+  q = dims(Q)[2];
+  {
+    // system matrices for current iteration
+    vector[p] d_t;
+    matrix[p, m] Z_t;
+    matrix[p, p] H_t;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    // outputs
+    vector[p] y;
+    vector[p] eps;
+    vector[m] a;
+    vector[q] eta;
+    // constants
+    vector[p] zero_p;
+    vector[q] zero_q;
+    vector[m] zero_m;
+    int idx[4, 3];
+
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+
+    idx = ssm_sim_idx(m, p, q);
+    zero_p = rep_vector(0.0, p);
+    zero_q = rep_vector(0.0, q);
+    zero_m = rep_vector(0.0, m);
+    a = multi_normal_rng(a1, P1);
+    for (t in 1:n) {
+      // set system matrices
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        // system matrices are n - 1 length
+        if (t < n) {
+          if (size(c) > 1) {
+            c_t = c[t];
+          }
+          if (size(T) > 1) {
+            T_t = T[t];
+          }
+          if (size(R) > 1) {
+            R_t = R[t];
+          }
+          if (size(Q) > 1) {
+            Q_t = Q[t];
+          }
+        }
+      }
+      // draw forecast error
+      eps = multi_normal_rng(zero_p, H_t);
+      // draw observed value
+      y = d_t + Z_t * a + eps;
+      // since eta_t is for alpha_{t + 1}, we don't
+      // draw it for t == n
+      if (t == n) {
+        eta = zero_q;
+      } else {
+        eta = multi_normal_rng(zero_q, Q_t);
+      }
+      // save
+      ret[t, idx[1, 2]:idx[1, 3]] = y;
+      ret[t, idx[2, 2]:idx[2, 3]] = a;
+      ret[t, idx[3, 2]:idx[3, 3]] = eps;
+      ret[t, idx[4, 2]:idx[4, 3]] = eta;
+      // a_{t + 1}
+      if (t < n) {
+        a = c_t + T_t * a + R_t * eta;
+      }
+    }
+  }
+  return ret;
 }

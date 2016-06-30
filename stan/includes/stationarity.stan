@@ -129,6 +129,7 @@ matrix kronecker_prod(matrix A, matrix B) {
   }
   return C;
 }
+re
 
 /**
 Find the covariance of the stationary distribution of an ARMA model

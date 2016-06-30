@@ -1,9 +1,22 @@
+/**
+The size of the vectors returned by `ssm_smooth_eps`
+
+@param int p The length of the observation vectors, $\vec{y}_t$.
+@return int The size of the vectors is $p + p ^ 2$.
+
+*/
 int ssm_smooth_eps_size(int p) {
   int sz;
   sz = p + p * p;
   return sz;
 }
 
+/**
+Extract $\hat{\vec{\varepsilon}}_t$ from vectors returned by `ssm_smooth_eps`
+
+@param int p The length of the observation vectors, $\vec{y}_t$.
+@return int The size of the vectors is $p + p ^ 2$.
+*/
 vector ssm_smooth_eps_get_mean(vector x, int p) {
   vector[p] eps;
   eps = x[1:p];
@@ -11,6 +24,11 @@ vector ssm_smooth_eps_get_mean(vector x, int p) {
 }
 
 /**
+Extract $\Var(\varepsilon_t|\vec{y}_{1:n})$ from vectors returned by `ssm_smooth_eps`
+
+@param vector x A vector returned by `ssm_smooth_eps`
+@param int p The length of the observation vectors, $\vec{y}_t$.
+@return V
 
 */
 matrix ssm_smooth_eps_get_var(vector x, int p) {
@@ -20,8 +38,27 @@ matrix ssm_smooth_eps_get_var(vector x, int p) {
 }
 
 /**
+The observation disturbance smoother
 
-Observation disturbance smoother
+This calculates the mean and variance of the observation distrurbances, $\vec{\varepsilon}_t$,
+given the entire sequence, $\vec{y}_{1:n}$.
+
+
+@param vector[] filter Results of `ssm_filter`
+@param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
+@param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
+@param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
+@return vector[] An array of vectors constaining $\hat{\vec{varepsilon}}_t$ and $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$
+  in the format described below.
+
+
+For Z`, `H`, T`, the array can have a size of 1, if it is not time-varying, or a size of $n$ (for `Z`, `H`) or $n - 1$ (for `T`),
+if it is time varying.
+
+The vectors returned by this function have $p + p ^ 2$ elements in this format,
+$$
+$$
+
 See [@DurbinKoopman2012, Sec 4.5.3 (eq 4.69)]
 
 */

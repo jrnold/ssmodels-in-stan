@@ -11,13 +11,6 @@ Indexes of the return values of the Kalman filter functions:
 @param int p The size of the observation vector $\vec{y}_t$.
 @return int[,] A $6 \times 3$ integer array containing the indexes of the return values of the Kalman filter.
 
-The results of Kalman filter for a given are returned as a vector:
-$$
-(L_t, \vec{v}_t, \mat{F}^{-1}_t, \mat{K}_t, \mat{a}_t, \mat{P}_t.
-$$
-This vector has $2 + p + p ^ 2 + mp + m ^ 2$ elements.
-The
-
 `ssm_filter_idx` returns a $6 \times 3$ integer array with the
 (length, start index, stop index) of ($L$, $\vec{v}$, $\vec{F}^-1$, $\mat{K}$, $\vec{a}$, $\mat{P}$).
 
@@ -99,7 +92,7 @@ vector ssm_filter_get_v(vector x, int m, int p) {
   vector[p] y;
   int idx[6, 3];
   idx = ssm_filter_idx(m, p);
-  y = segment(x, idx[2, 2], idx[2:3]);
+  y = segment(x, idx[2, 2], idx[2, 3]);
   return y;
 }
 
@@ -114,7 +107,9 @@ Get the forecast precision from the results of `ssm_filter`.
 */
 matrix ssm_filter_get_Finv(vector x, int m, int p) {
   matrix[p, p] y;
-  y = to_matrix_colwise(segment(x, 2 + p, p * p), p, p);
+  int idx[6, 3];
+  idx = ssm_filter_idx(m, p);
+  y = to_matrix_colwise(segment(x, idx[3, 2], idx[3, 3]), p, p);
   return y;
 }
 
@@ -129,7 +124,9 @@ Get the Kalman gain from the results of `ssm_filter`.
 */
 matrix ssm_filter_get_K(vector x, int m, int p) {
   matrix[m, p] y;
-  y = to_matrix_colwise(segment(x, 2 + p + p * p, m * p), m, p);
+  int idx[6, 3];
+  idx = ssm_filter_idx(m, p);
+  y = to_matrix_colwise(segment(x, idx[4, 2], idx[4, 3]), m, p);
   return y;
 }
 
@@ -144,7 +141,9 @@ Get the expected value of the predicted state from the results of `ssm_filter`.
 */
 vector ssm_filter_get_a(vector x, int m, int p) {
   vector[m] y;
-  y = segment(x, 2 + p + p * p + m * p, m);
+  int idx[6, 3];
+  idx = ssm_filter_idx(m, p);
+  y = segment(x, idx[5, 2], idx[5, 3]);
   return y;
 }
 
@@ -154,18 +153,51 @@ Get the variance of the predicted state from the results of `ssm_filter`.
 @param vector A vector with results from `ssm_filter`.
 @param int m The number of states
 @param int p The size of the observation vector $\vec{y}_t$.
-@return matrix An $m \times m$ matrix with the variance of the predicted state, $\E(\vec{alpha}_t | \vec{y}_{1:(t-1)} = a_t$.
+@return matrix An $m \times m$ matrix with the variance of the predicted state, $\Var(\vec{alpha}_t | \vec{y}_{1:(t-1)} = P_t$.
 
 */
 matrix ssm_filter_get_P(vector x, int m, int p) {
   matrix[m, m] y;
-  y = to_matrix_colwise(segment(x,  2 + p + p * p + m * p + m, m * m), m, m);
+  int idx[6, 3];
+  idx = ssm_filter_idx(m, p);
+  y = to_matrix_colwise(segment(x, idx[6, 2], idx[6, 3]), m, m);
   return y;
 }
 
+/**
+Kalman filter
 
+@param vector[] y Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
+@param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
+@param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
+@param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
+@param vector[] c State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
+@param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
+@param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
+@param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
+@param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
+@param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
+@return vector[] Array of size $n$ of $(1 + p + p^2 + mp + m + m^2) \times 1$ vectors in the format described in `ssm_filter_idx`.
 
+For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
+not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
+if it is time varying.
 
+`ssm_filter` runs a forward filter on the state space model and calculates,
+
+- log-likelihood ($\ell_t$) for each observation
+- Forecast error, $\vec{v}_t = \vec{y}_t - \E(\vec{y}_t | \vec{y}_{1:(t -1)})$.
+- Forecast precision, $\mat{F}^{-1}_t$.
+- Kalman gain, $\mat{K}_t$.
+- Predicted states, $a_t = \E(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$.
+- Variance of the predicted states, $P_t = \Var(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$.
+
+The results of Kalman filter for a given are returned as a $1 + p + p ^ 2 + mp + m ^ 2$ vector for each time period, where
+$$
+(\ell_t, \vec{v}_t', \VEC\mat{F}^{-1}_t', \VEC\mat{K}_t', \vec{a}_t', \VEC\mat{P}_t' )''.
+$$
+
+*/
 vector[] ssm_filter(vector[] y,
                     vector[] d, matrix[] Z, matrix[] H,
                     vector[] c, matrix[] T, matrix[] R, matrix[] Q,

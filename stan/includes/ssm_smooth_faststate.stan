@@ -1,4 +1,5 @@
-/** Fast state smoother
+/**
+The fast state smoother
 
 The fast state smoother calculates $\hat{\vec{alpha}}_t = \E(\vec{alpha}_t | \vec{y}_{1:n})$.
 $$
@@ -8,6 +9,18 @@ where $r_t$ is calcualted from the state disturbance smoother.
 The smoother is initialized at $t = 1$ with $\hat{\vec{\alpha}}_t = \vec{a}_1 + \mat{P}_1 \vec{r}_0$.
 
 Unlike the normal state smoother, it does not calculate the variances of the smoothed state.
+
+@param vector[] filter The results of `ssm_filter`
+@param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
+@param vector[] c State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
+@param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
+@param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
+@param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
+@return vector[] An array of size $n$ of $m \times 1$ vectors containing $\hat{\vec{\alph}}_t$.
+
+For  `Z`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
+not time-varying, or a size of $n$ (for `Z`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
+if it is time varying.
 
 See [@DurbinKoopmans2012, Sec 4.5.3 (eq 4.69)]
 

@@ -7,16 +7,16 @@ the Nile River at Aswan between 1871 and 1970. This series is described in
 @DurbinKoopman2012 and had been analyzed by @Cobb1978 and @Balke1993. It is
 included with R as the dataset `Nile`.
 
-```{r Nile} 
-data("Nile", package = "datasets") 
+```{r Nile}
+data("Nile", package = "datasets")
 Nile_ <- data_frame(year = year(ts_to_date(time(Nile))),
                     flow = as.numeric(Nile))
 ```
 
-```{r Nile_plot} 
-ggplot(Nile_, aes(x = year, y = flow)) + 
-  geom_point() + 
-  geom_line() + 
+```{r Nile_plot}
+ggplot(Nile_, aes(x = year, y = flow)) +
+  geom_point() +
+  geom_line() +
   ylab("Annual Flow") + xlab("")
 ```
 
@@ -24,18 +24,18 @@ ggplot(Nile_, aes(x = year, y = flow)) +
 
 The Nile data can be modeled as a local level model,
 $$
-\begin{aligned}[t] 
-y_t &= \mu_t + \varepsilon_t & \varepsilon_t & \sim N(0, \sigma_{\varepsilon}^2) \\ 
-\mu_{t + 1} &= \mu_t + \eta_t & 
-\eta_t & \sim N(0, \sigma^2_{\eta}) 
-\end{aligned} 
-$$ 
+\begin{aligned}[t]
+y_t &= \mu_t + \varepsilon_t & \varepsilon_t & \sim N(0, \sigma_{\varepsilon}^2) \\
+\mu_{t + 1} &= \mu_t + \eta_t &
+\eta_t & \sim N(0, \sigma^2_{\eta})
+\end{aligned}
+$$
 This is a time-invariant SSM with $m = 1$ states, $p = 1$
-observations at each time period, and $r = 1$ system disturbances, 
-$$ 
-\begin{aligned}[t] 
-\mat{T} = \mat{Z} = \mat{R} &= \begin{bmatrix} 1 \end{bmatrix} \\ 
-\mat{c} = \mat{Q} &= \begin{bmatrix} 0 \end{bmatrix} \\ 
+observations at each time period, and $r = 1$ system disturbances,
+$$
+\begin{aligned}[t]
+\mat{T} = \mat{Z} = \mat{R} &= \begin{bmatrix} 1 \end{bmatrix} \\
+\mat{c} = \mat{Q} &= \begin{bmatrix} 0 \end{bmatrix} \\
 \mat{H} &= \begin{bmatrix} \sigma_{\varepsilon}^2 \end{bmatrix} \\
 \mat{Q} &= \begin{bmatrix} \sigma_{\eta}^2 \end{bmatrix}
 \end{aligned}
@@ -65,18 +65,18 @@ nile_data <- within(list(), {
 nile_init <- list(list(sigma_epsilon = array(sqrt(var(nile_data$y)), 1),
                        sigma_eta = array(sqrt(var(nile_data$y)), 1)))
 nile_ll_sample <- sampling(local_level_mod,
-                         chains = 1,
-                         iter = 2000,
-                         init = 0,
-                         data = nile_data)
+                          chains = 1,
+                          iter = 2000,
+                          init = 0,
+                          data = nile_data)
 summary(nile_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 
 ```
 
 ```{r Nile-predicted-states}
-nile_params <- 
+nile_params <-
   extract_param_from_ssm_filter(rstan::extract(nile_ll_sample, "filter_res")[[1]],
-                                1, 1) 
+                                1, 1)
 
 nile_states <- nile_params[["a"]] %>%
   apply(2:3, mean)
@@ -108,33 +108,33 @@ Monthly totals of international airline passengers, 1949 to 1960, used in the
 Box-Jenkins textbook [@BoxJenkinsReinsel1994]. This data is included with R as
 the dataset `AirPassengers`.
 
-```{r AirPassengers} 
-data("AirPassengers", package = "datasets") 
+```{r AirPassengers}
+data("AirPassengers", package = "datasets")
 AirPassengers_ <- tbl_df(as.data.frame(AirPassengers)) %>%
   mutate(date = ts_to_date(time(AirPassengers))) %>%
-  select(date, everything()) %>% 
+  select(date, everything()) %>%
   mutate(x = as.numeric(x)) %>%
   rename(passengers = x) %>%
   mutate(log_passengers = log10(passengers))
 ```
 
-```{r AirPassengers-plot} 
-ggplot(AirPassengers_, aes(x = date, y = passengers)) + 
-  geom_point() + 
-  geom_line() + 
+```{r AirPassengers-plot}
+ggplot(AirPassengers_, aes(x = date, y = passengers)) +
+  geom_point() +
+  geom_line() +
   scale_y_continuous("Number") + xlab("")
 ```
 
 See help for `AirPassengers` in R for example models. SARIMA (0, 1, 1) (0, 1, 1)
-as in Box-Jenkins 
-```{r AirPassengers-arima} 
-arima(log10(AirPassengers), c(0, 1, 1), 
-      seasonal = list(order = c(0, 1, 1), period = 12)) 
+as in Box-Jenkins
+```{r AirPassengers-arima}
+arima(log10(AirPassengers), c(0, 1, 1),
+      seasonal = list(order = c(0, 1, 1), period = 12))
 ```
 
 ## Structural Time Series Model
 
-```{r AirPassengers-StructTS} 
+```{r AirPassengers-StructTS}
 StructTS(log10(AirPassengers), type = "BSM")
 ```
 
@@ -179,10 +179,10 @@ summary(airlines_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 ```
 
 ```{r Airlines-predicted-states}
-airlines_params <- 
+airlines_params <-
   extract_param_from_ssm_filter(rstan::extract(airlines_ll_sample, "filter_res")[[1]],
                                 m = 13, p = 1)
-                                
+
 
 airlines_states <- airlines_params[["a"]] %>%
   apply(2:3, mean) %>%
@@ -190,12 +190,12 @@ airlines_states <- airlines_params[["a"]] %>%
 
 ggplot(dplyr::filter(airlines_states, state <= 3),
        aes(x = obs, y = value)) +
-  geom_line() + 
+  geom_line() +
   facet_wrap(~state, ncol = 1)
 ```
 
 ```{r Airlines-predicted-states}
-airlines_optim <- 
+airlines_optim <-
   rstan::optimizing(var_only_mod,
                    init = airlines_init,
                    data = airlines_data,
@@ -215,15 +215,15 @@ and used as an example in @DurbinKoopman2012, @Harvey1993a, and
 
 This data is included in R with the dataset `Seatbelts`.
 
-```{r Seatbelts} 
+```{r Seatbelts}
 data("Seatbelts", package = "datasets")
-Seatbelts_ <- tbl_df(as.data.frame(Seatbelts)) %>% 
+Seatbelts_ <- tbl_df(as.data.frame(Seatbelts)) %>%
   mutate(date = ts_to_date(time(Seatbelts))) %>%
   select(date, everything())
 ```
 
-```{r Seatbelts-plot} 
-ggplot(Seatbelts_, aes(x = date, y = drivers)) + 
+```{r Seatbelts-plot}
+ggplot(Seatbelts_, aes(x = date, y = drivers)) +
   geom_point() +
   geom_line() +
   scale_y_log10() +
@@ -235,9 +235,9 @@ ggplot(Seatbelts_, aes(x = date, y = drivers)) +
 ## Local Level Model
 
 
-StructTS Models of Seatbelts 
-```{r Seatbelts-StructTS-level} 
-StructTS(log10(Seatbelts[ , "drivers"]), type = "level") 
+StructTS Models of Seatbelts
+```{r Seatbelts-StructTS-level}
+StructTS(log10(Seatbelts[ , "drivers"]), type = "level")
 ```
 
 ```{r Seatbelts-Stan-LocalLevel}
@@ -266,9 +266,9 @@ summary(seatbelts_local_lvl_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 ```
 
 ```{r Seatbelts-Stan-Local-Level-plot}
-seatbelt_params <- 
+seatbelt_params <-
   extract_param_from_ssm_filter(rstan::extract(seatbelts_local_lvl_sample, "filter_res")[[1]],
-                                1, 1) 
+                                1, 1)
 
 seatbelt_states <- seatbelt_params[["a"]] %>%
   apply(2:3, mean) %>%
@@ -276,15 +276,15 @@ seatbelt_states <- seatbelt_params[["a"]] %>%
 
 ggplot(dplyr::filter(seatbelt_states, state <= 3),
        aes(x = obs, y = value)) +
-  geom_line() + 
+  geom_line() +
   facet_wrap(~state, ncol = 1)
 ```
 
 
 ## Basic Structural Model (Trend, Seasonal)
 
-```{r Seatbelts-StructTS-BSM} 
-StructTS(log10(Seatbelts[ , "drivers"]), type = "BSM") 
+```{r Seatbelts-StructTS-BSM}
+StructTS(log10(Seatbelts[ , "drivers"]), type = "BSM")
 ```
 
 ```{r Seatbelts-Stan-BSM}
@@ -322,22 +322,22 @@ summary(seatbelts_bsm_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 
 
 ```{r Seatbelts-Stan-bsm-plot}
-seatbelt_bsm_params <- 
+seatbelt_bsm_params <-
   extract_param_from_ssm_filter(rstan::extract(seatbelts_bsm_sample, "filter_res")[[1]], 13, 1)
-                                
+
 seatbelt_bsm_states <- seatbelt_bsm_params[["a"]] %>%
   apply(2:3, mean) %>%
   reshape2::melt(varnames = c("obs", "state"))
 
 ggplot(dplyr::filter(seatbelts_states, state <= 3),
        aes(x = obs, y = value)) +
-  geom_line() + 
+  geom_line() +
   facet_wrap(~state, ncol = 1)
 ```
 
 
 ```{r Seatbelts-Stan-bsm-optimize}
-seatbelts_optim <- 
+seatbelts_optim <-
   rstan::optimizing(var_only_mod,
                    init = seatbelts_init,
                    data = seatbelts_data,
@@ -349,7 +349,7 @@ seatbelts_optim$par[c("sigma_eta", "sigma_epsilon")]
 
 ## UK Quarterly Gas Consumption
 
-Quarterly UK gas consumption from 1960 to 1986 in millions of therms. 
+Quarterly UK gas consumption from 1960 to 1986 in millions of therms.
 These data are used as an example in @DurbinKoopman2012,
 and included in R as a dataset `UKgas`.
 
@@ -399,17 +399,17 @@ summary(ukgas_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
 ```
 
 ```{r UKgas-predicted-states}
-ukgas_params <- 
+ukgas_params <-
   extract_param_from_ssm_filter(rstan::extract(ukgas_sample, "filter_res")[[1]],
                                 ukgas_data$m, ukgas_data$p)
-                                
+
 ukgas_states <- ukgas_params[["a"]] %>%
   apply(2:3, mean) %>%
   reshape2::melt(varnames = c("obs", "state"))
 
 ggplot(dplyr::filter(ukgas_states, state <= 3),
        aes(x = obs, y = value)) +
-  geom_line() + 
+  geom_line() +
   facet_wrap(~state, ncol = 1)
 ```
 
@@ -436,9 +436,9 @@ The coincident index is created by considering the comovements in four macroecon
 
 **TODO** Get data from Fred
 
-## Stata 
+## Stata
 
-Stata state space model examples from [State Time SEries Refence3 Manual, Release 14](http://www.stata.com/manuals14/ts.pdf) functions `sspace`, `arima`, `dfactor`, and `ucm`. 
+Stata state space model examples from [State Time SEries Refence3 Manual, Release 14](http://www.stata.com/manuals14/ts.pdf) functions `sspace`, `arima`, `dfactor`, and `ucm`.
 
 These examples are also used in the Python StatsModels module [statsmodels.tsa.statespace](http://www.statsmodels.org/dev/statespace.html).
 
@@ -496,4 +496,3 @@ $$
 where there state vector is $\vec{\alpha}_t = (y_t, \theta \varepsilon_t)$
 
 This also uses the `manufac` dataset, and variable `lncaputil`.
-

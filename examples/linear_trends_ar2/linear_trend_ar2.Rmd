@@ -14,7 +14,7 @@ fit.stan2 <- stan(model_code = model_code$model_code,
                   data = list(n = length(training_data),
                               y = matrix(training_data),
                               a1 = rep(0, 4),
-                              P1 = diagonal(1e6, 4)),
+                              P1 = diag(1e6, 4)),
                    chains = 4,
                    iter = 2000,
                    warmup = 1000, thin = 1)

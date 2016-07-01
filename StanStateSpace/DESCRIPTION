@@ -1,4 +1,4 @@
-Package: SSModelsStan
+Package: StanStateSpace
 Type: Package
 Title: State Space Models in Stan
 Version: 0.1.0

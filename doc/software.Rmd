@@ -1,4 +1,7 @@
-# Software
+# Other Software
+
+This a brief summary of other available software to estimate state space models
+with a focus on R and python.
 
 ## R packages
 
@@ -38,7 +41,7 @@ Stata's [timeseries](http://www.stata.com/manuals14/ts.pdf) capabilities include
 
 ### Python
 
-The [statsmodels] module [statsmodels.tsa] contains functions and classes for time series analysis including autoregressive (AR), vector autoregressive (VAR), autoregressive moving avergage models (ARMA), and functions fo Kalman filtering. Currently the 
+The [statsmodels] module [statsmodels.tsa] contains functions and classes for time series analysis including autoregressive (AR), vector autoregressive (VAR), autoregressive moving avergage models (ARMA), and functions fo Kalman filtering. Currently the
 Kalman filter only handles the special univariate case for ARIMA.
 
 The **statsmodels** module [statsmodels.tsa.statespace](http://www.statsmodels.org/dev/statespace.html#) contains more general state space code. The examples are very good.

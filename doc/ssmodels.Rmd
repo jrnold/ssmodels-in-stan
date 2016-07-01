@@ -25,7 +25,7 @@ The matrices are vectors, $\mat{Z}_t$,$\mat{T}_t$, $\mat{R}_t$, $\mat{H}_t$, $\m
 The system matrices are considered fixed and known in the filtering and smoothing equations below, but can be parameters themselves.
 The $p \times m$ matrix $\mat{Z}_t$ links the observation vector $\vec{y}_t$ with the state vector $\vec{\alpha}_t$.
 The $m \times m$ transition matrix $\mat{T}_t$ determines the evolution of the state vector, $\vec{\alpha}_t$.
-The $r \times 1$ vector $\vec{\eta}_t$ is called the *state disturbance vector*,
+The $q \times 1$ vector $\vec{\eta}_t$ is called the *state disturbance vector*,
 and the $p \times 1$ vector $\vec{\varepsilon}_t$ is called the *observation disturbance vector*.
 An assumption is that the state and observation disturbance vectors are uncorrelated, $\Cov(\vec{\varepsilon}_t, \vec{\eta}_t) = 0$.
 
@@ -34,7 +34,7 @@ and $\vec{\eta}$ are dropped.
 
 In many cases $\mat{R}_t$ is the identity matrix.
 It is possible to define $\eta^*_t = \mat{R}_t \vec{\eta}_t$, and $\mat{Q}^* = \mat{R}_t \mat{Q}_t' \mat{R}'_t$.
-However, if $\mat{R}_t$ is $m \times r$ and $r < m$, and $\mat{Q}_t$ is nonsingular, then it is useful to work with the nonsingular $\vec{\eta}_t$ rather than a singular $\vec{\eta}_t^*$.
+However, if $\mat{R}_t$ is $m \times q$ and $q < m$, and $\mat{Q}_t$ is nonsingular, then it is useful to work with the nonsingular $\vec{\eta}_t$ rather than a singular $\vec{\eta}_t^*$.
 
 The initial state vector $\vec{\alpha}_1$ is assume to be generated as,
 $$
@@ -47,21 +47,21 @@ This is called *initialization*.
 
 [^dlm]: This is also called a dynamic linear model (DLM).
 
-matrix/vector         dimension
---------------------- --------------
-$\vec{y}_t$           $p \times 1$
-$\vec{\alpha}_t$      $m \times 1$
-$\vec{\varepsilon}_t$ $m \times 1$
-$\vec{\eta}_t$        $r \times 1$
-$\vec{a}_1$           $m \times 1$
-$\vec{c}_t$           $m \times 1$
-$\vec{d}_t$           $p \times 1$
-$\mat{Z}_t$           $p \times m$
-$\mat{T}_t$           $m \times m$
-$\mat{H}_t$           $p \times p$
-$\mat{R}_t$           $m \times r$
-$\mat{Q}_t$           $r \times r$
-$\mat{P}_1$           $m \times m$
---------------------- --------------
+matrix/vector         dimension      name
+--------------------- -------------- ----------------------------------
+$\vec{y}_t$           $p \times 1$   observation vector
+$\vec{\alpha}_t$      $m \times 1$   (unobserved) state vector
+$\vec{\varepsilon}_t$ $m \times 1$   observation disturbance (error)
+$\vec{\eta}_t$        $q \times 1$   state disturbance (error)
+$\vec{a}_1$           $m \times 1$   initial state mean
+$\vec{c}_t$           $m \times 1$   state intercept
+$\vec{d}_t$           $p \times 1$   observation intercept
+$\mat{Z}_t$           $p \times m$   design matrix
+$\mat{T}_t$           $m \times m$   transition matrix
+$\mat{H}_t$           $p \times p$   observation covariance matrix
+$\mat{R}_t$           $m \times q$   state covariance selection matrix
+$\mat{Q}_t$           $q \times q$   state covariance matrix
+$\mat{P}_1$           $m \times m$   initial state covariance matrix
+--------------------- -------------- ----------------------------------
 
 Table: Dimensions of matrices and vectors in the SSM

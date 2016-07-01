@@ -1372,7 +1372,7 @@ matrix ssm_smooth_eta_get_var(vector x, int q) {
   return eta_var;
 }
 
-/**π
+/**
 The state disturbance smoother
 
 This calculates the mean and variance of the observation disturbances, $\vec{\eta}_t$,
@@ -1563,6 +1563,7 @@ vector[] ssm_smooth_faststate(vector[] filter,
     // I reimplement the state distrurbance smoother here
     // removing extraneous parts.
     // r goes from t = n, ..., 1, 0.
+    // r_n
     r[n + 1] = rep_vector(0.0, m);
     for (i in 0:(n - 1)) {
       int t;
@@ -1581,12 +1582,15 @@ vector[] ssm_smooth_faststate(vector[] filter,
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       // updating smoother
       L = ssm_filter_update_L(Z_t, T_t, K);
+      // r_{t - 1}
       r[t] = ssm_smooth_update_r(r[t + 1], Z_t, v, Finv, L);
     }
     // calculate smoothed states
     a1 = ssm_filter_get_a(filter[1], m, p);
     P1 = ssm_filter_get_P(filter[1], m, p);
+    // r[1] = r_0
     alpha[1] = a1 + P1 * r[1];
+    // 1:(n - 1) -> \alpha_{2}:\alpha_{n}
     for (t in 1:(n - 1)) {
       if (size(c) > 1) {
         c_t = c[t];
@@ -1603,7 +1607,9 @@ vector[] ssm_smooth_faststate(vector[] filter,
       if (size(Q) > 1 || size(R) > 1) {
         RQR = quad_form(Q_t, R_t');
       }
-      alpha[t + 1] = c_t + T_t * alpha[t] + RQR * r[t];
+      // `r[t + 1]` = $r_{t}$
+      // alpha_{t + 1} = c_t + T_t * \alpha_t + R_t Q_t R'_t r_t
+      alpha[t + 1] = c_t + T_t * alpha[t] + RQR * r[t + 1];
     }
   }
   return alpha;
@@ -1617,8 +1623,8 @@ vector[] ssm_smooth_faststate(vector[] filter,
 /**
 Partial Autocorrelations to Autocorrelations
 
-@param vector of coefficients of a partial autocorrelation function
-@return vector of coefficients of an Autocorrelation function
+@param vector x A vector of coefficients of a partial autocorrelation function
+@return vector A vector of coefficients of an Autocorrelation function
 
 */
 vector pacf_to_acf(vector x) {
@@ -1640,7 +1646,7 @@ vector pacf_to_acf(vector x) {
 Constrain vector of coefficients to the stationary and intertible region for AR or MA functions.
 
 @param vector x An unconstrained vector in (-Inf, Inf)
-@return vector y A vector of coefficients for a stationary AR or inverible MA process.
+@return vector A vector of coefficients for a stationary AR or inverible MA process.
 
 */
 vector constrain_stationary(vector x) {
@@ -1659,7 +1665,7 @@ vector constrain_stationary(vector x) {
 Convert coefficients of an autocorrelation function to partial autocorrelations.
 
 @param vector x Coeffcients of an autocorrelation function.
-@return vector y Coefficients of the corresponding partial autocorrelation function.
+@return vector A vector of coefficients of the corresponding partial autocorrelation function.
 
 */
 vector acf_to_pacf(vector x) {
@@ -1684,7 +1690,7 @@ vector acf_to_pacf(vector x) {
 Transform from stationary and invertible space to (-Inf, Inf)
 
 @param vector x Coeffcients of an autocorrelation function.
-@return vector y Coefficients of the corresponding partial autocorrelation function.
+@return vector Coefficients of the corresponding partial autocorrelation function.
 
 */
 vector unconstrain_stationary(vector x) {
@@ -1717,7 +1723,7 @@ $$
 
 @param matrix A An $m \times n$ matrix
 @param matrix B A $p \times q$ matrix
-@return A $mp \times nq$ matrix.
+@return matrix An $mp \times nq$ matrix.
 
 */
 matrix kronecker_prod(matrix A, matrix B) {
@@ -1751,7 +1757,7 @@ Find the covariance of the stationary distribution of an ARMA model
 
 @param matrix T The $m \times m$ transition matrix
 @param matrix R The $m \times q$ system disturbance selection matrix
-@param A $m \times m$ matrix with the stationary covariance matrix.
+@param matrix An $m \times m$ matrix with the stationary covariance matrix.
 
 The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0),
 where $Q_0$ is the solution to
@@ -1788,10 +1794,10 @@ Indexes of each component of `ssm_sim_rng` results.
 @param int m The number of states
 @param int p The length of the observation vector
 @param int q The number of state disturbances
-@return A 4 x 3 array of integers with the (length, start location, and end location)
-  of $y_t$, $\alpha_t$, $\varepsilon_t$, and $\eta_t$ in the results of `ssm_sim_rng`.
+@return int[,] A 4 x 3 array of integers
 
-
+The returned array has columns (length, start location, and end location)
+for rews: $y_t$, $\alpha_t$, $\varepsilon_t$, and $\eta_t$ in the results of `ssm_sim_rng`.
 
 */
 int[,] ssm_sim_idx(int m, int p, int q) {

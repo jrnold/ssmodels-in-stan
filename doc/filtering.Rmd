@@ -4,14 +4,6 @@
 
 From [@DurbinKoopman2012, Sec 4.3]
 
-
-$$
-\begin{aligned}[t]
-
- .
-\end{aligned}
-$$
-
 Let $\vec{a}_t = \E(\vec{\alpha}_t | y_{1, \dots, t - 1})$ be the expected value
 $\vec{P}_t = \Var(\vec{\alpha}_t | y_{1, \dots, t - 1})$ be the variance
 of the state in $t + 1$ given data up to time $t$.
@@ -98,7 +90,7 @@ Alternative methods **TODO**
 
 ## Smoothing
 
-While filtering calculates the conditional densities the states and disturbances given data prior to or up to the current time, 
+While filtering calculates the conditional densities the states and disturbances given data prior to or up to the current time,
 smoothing calculates the conditional densities states and disturbances given the entire series of observations, $\vec{y}_{1:n}$.
 
 *State smoothing* calculates the conditional mean, $\hat{\vec{\alpha}}_t = \E(\vec{\alpha}_t | \vec{y}_{1:n})$, and variance, $\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_{1:n})$, of the states.
@@ -181,11 +173,10 @@ Unlike the state smoother, the disturbance smoothers do not require either the m
 
 ### Fast state smoothing
 
-[@DurbinKoopman2012, Sec 4.6.2]
 
-If the variances of the states do not need to be calculated, then a faster smoothing algorithm
-can be used (Koopman 1993).
-The fast state smoother is defiend as,
+
+If the variances of the states do not need to be calculated, then a faster smoothing algorithm can be used (Koopman 1993).
+The fast state smoother is defined as [@DurbinKoopman2012, Sec 4.6.2],
 $$
 \begin{aligned}[t]
 \hat{\vec{\alpha}}_t &= \mat{T}_t \hat{\vec{\alpha}}_t + \mat{R}_t \mat{Q}_t \mat{R}_t\T \vec{r}_t , && t = 2, \dots, n \\
@@ -198,54 +189,89 @@ The values of $\vec{r}_t$ come from the recursions in the disturbance smoother.
 
 ## Simulation smoothers
 
-Simulation smoothing draws samples of the states, $p(\vec{\alpha}_1, \dots, \vec{\alpha}_n | \vec{y}_{1:n})$, or disturbances, $p(\vec{\varepsilon}_1, \dots, \vec{\varepsilon}_n | \vec{y}_{1:n})$ and $p(\vec{\eta}_1, \dots, \vec{\eta}_n | \vec{y}_{1:n})$.
+Simulation smoothing draws samples of the states, $p(\vec{\alpha}_1, \dots, \vec{\alpha}_n | \vec{y}_{1:n})$, or disturbances, $p(\vec{\varepsilon}_1, \dots, \vec{\varepsilon}_n | \vec{y}_{1:n})$ and $p(\vec{\eta}_1, \dots, \vec{\eta}_n | \vec{y}_{1:n})$.[^simsmo]
 
-### Mean corrections
+[simsmo]: See @McCauslandMillerPelletier2011a for a comparison of the computational efficiency of various approaches.
 
-[@DurbinKoopman2012, Sec 4.9]
+### Mean correction simulation smoother
 
-### Disturbances
+The mean-correction simulation smoother was introduced in @DurbinKoopman2002 . See @DurbinKoopman2012 (Sec 4.9) for an exposition of it. It requires only the previously described filters and smoothers, and generating samples from multivariate distributions.
 
-Let $\vec{w} = (\vec{\varepsilon}_1', \var{\eta}_1', \dots, \vec{\varepsilon}_n', \vec{\eta}_n')$ and let $\hat{\vec{w}} = \E(\vec{w} | \vec{y}_{1:n})$.
-We want to sample from $p(\vec{w} | \vec{y}_{1:n})$.
+#### Disturbances
 
-1. Run filter and smoother to calculate $\hat{\vec{w}}$ which consists of the smoothed observation disturbances $\E(\vec{\varepsilon}_{1:n})$ and state disturbances $\E(\vec{\eta}_{1:n})$.
-2. Draw samples from the unconditional disturbances of $\vec{w}$,
+1. Run a filter and disturbance smoother to calculate $\hat{\vec{\varepsilon}}_{1:n}$ and $\hat{\vec{\eta}}_{1:(n - 1)}$
+2. Draw samples from the unconditional distribution of the disturbances,
     $$
     \begin{aligned}[t]
-    \vec{w} &\sim N(0, \Phi) &\Phi &= \ndiag(H_1, Q_1, \dots, H_n, Q_n) .
+    \vec{\eta}^+_t &\sim N(0, \mat{H}_t) && t = 1, \dots, n - 1 \\
+    \vec{\varepsilon}^+_t &\sim N(0, \mat{Q}_t) && t = 1, \dots, n
     \end{aligned}
     $$
-3. Simulate from the state space system using $\vec{w}$ to simulate observations $\vec{y}^+$.
-4. Run a filter and smoother on $\vec{y}^+$ to calculate $\E(\vec{varepsilon}_{1:n} | \vec{y}^+_{1:n})$ and $\E(\vec{eta}_{1:n} | \vec{y}^+_{1:n})$, and call the vector of these expected disturbances $\hat{\vec{w}}^+{1:n}$.
-5. A sample from $p(\vec{w} | \vec{y}_{1:n})$ is
+3. Simulate observations from the system using the simulated disturbances,
     $$
-    \tilde{\vec{w}} = \vec{w}^+ - \hat{\vec{w}}^+ + \hat{\vec{w}} .
+    \begin{aligned}[t]
+    \vec{y}^+_t &= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}^+_t, \\
+    \vec{\alpha}_{t + 1} &= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}^+_t, \\
+    \end{aligned}
+    $$
+    where $\vec{\alpha}_1 \sim N(\vec{a}_1, \mat{P}_1)$.
+4. Run a filter and disturbance smoother on the simulated observations $\vec{y}^+$ to calculate $\hat{\vec{\varepsilon}}_t^+ = \E(\vec{\varepsilon}_t | \vec{y}^+_{1:n})$ and $\hat{\vec{\eta}}_t^+ = \E(\vec{\eta}_t | \vec{y}^+_{1:n})$.
+5. A sample from $p(\hat{\vec{\eta}}_{1:(n - 1)}, \hat{\vec{\varepsilon}}_{1:n} | \vec{y}_{1:n})$ is
+    $$
+    \begin{aligned}[t]
+    \tilde{\vec{\eta}}_t &= \vec{\eta}^+_t - \hat{\vec{\eta}}^+_t + \hat{\vec{\eta}}_t , \\
+    \tilde{\vec{\varepsilon}}_t &= \vec{\varepsilon}^+_t - \hat{\vec{\varepsilon}}^+_t + \hat{\vec{\varepsilon}}_t .
+    \end{aligned}
     $$
 
 
-### States
+#### States
 
-**TODO**
+1. Run a filter and disturbance smoother to calculate the mean of the states conditional on the full series of observations, $\hat{\vec{\alpha}}_{1:n} = \E(\vec{\alpha}_{1:n} | \vec{y}_{1:n})$.
+2. Draw samples from the unconditional distribution of the disturbances,
+    $$
+    \begin{aligned}[t]
+    \vec{\eta}^+_t &\sim N(0, \mat{H}_t) && t = 1, \dots, n - 1 \\
+    \vec{\varepsilon}^+_t &\sim N(0, \mat{Q}_t) && t = 1, \dots, n
+    \end{aligned}
+    $$
+3. Simulate states and observations from the system using the simulated disturbances,
+    $$
+    \begin{aligned}[t]
+    \vec{y}^+_t &= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}^+_t, \\
+    \vec{\alpha}^+_{t + 1} &= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}^+_t, \\
+    \end{aligned}
+    $$
+    where $\vec{\alpha}^+_1 \sim N(\vec{a}_1, \mat{P}_1)$.
+4. Run a filter and smoother on the simulated observations $\vec{y}^+$ to calculate $\hat{\vec{\alpha}}_t^+ = \E(\vec{\alpha}_t | \vec{y}^+_{1:n})$.
+5. A sample from $p(\hat{\vec{\alpha}}_{1:n} | \vec{y}_{1:n})$ is
+    $$
+    \begin{aligned}[t]
+    \tilde{\vec{\alpha}}_t &= \vec{\alpha}^+_t - \hat{\vec{\alpha}}^+_t + \hat{\vec{\alpha}}_t .
+    \end{aligned}
+    $$
+
+One convenient feature of this method is that since only the conditional means of the states are required, the fast state smoother can be used, since the variances of the states are not required.
 
 ### de Jong-Shephard method
 
 
-While the mean-corrections method usually works, it may fail in some cases due
-to imposed ill-defined variance matrices (see Jungbacker and Koopman 2007, sec 1).
-These recursions were developed in de Jong and Shephard (1995),
+These recursions were developed in @DeJongShephard1995 .
+Although the the mean-correction simulation smoother will work in most cases, there are a few in which it will not work.
 
 **TODO**
 
-### Forward-Filter Backwards smoother
+### Forward-filter backwards-smoother (FFBS)
+
+This was the simulation method developed in @CarterKohn1994 and @Fruehwirth-Schnatter1994 .
 
 **TODO**
 
 ## Missing observations
 
-[@DurbinKoopman2012, Sec 4.10]
 
-When all observations at time $t$ are missing, the filtering recursions become,
+
+When all observations at time $t$ are missing, the filtering recursions become [@DurbinKoopman2012, Sec 4.10],
 $$
 \begin{aligned}[t]
 \vec{a}_{t|t} &= \vec{a}_t , \\
@@ -263,7 +289,7 @@ $$
 \end{aligned}
 $$
 
-When some, but not all observations are missing, then replace the observation equation by,
+When some, but not all observations are missing, replace the observation equation by,
 $$
 \begin{aligned}[t]
 \vec{y}^*_t &= \mat{Z}^*_t \vec{\alpha}_t + \vec{\varepsilon}_t^*, & \vec{\varepsilon}_t^* &\sim N(\vec{0}, \mat{H}_t^*),
@@ -282,11 +308,17 @@ and $\mat{W}_t$ is a selection matrix to select non-missing values.
 In smoothing the missing elements are estimated by the appropriate elements of $\mat{Z}_t \hat{\vec{alpha}}_t$, where $\hat{\vec{\alpha}}_t$ is the smoothed state.
 
 
+**Note** If $y_{t,j}$ is missing, then setting the relevant entries in the forecast precision matrix, $F^{-1}_{t,j,.} = \vec{0}$ and $F^{-1}_{t,.,j} = \vec{0}$, and Kalman gain matrix, $K_{t,.,j} = \vec{0}$, will handle missing values in the smoothers without having to pass that information to the smoother.
+However, it may be computationally more efficient if the values of the locations of the missing observations are known.
+
+**Note** For the disturbance and state simulation smoothers, I think the missing
+observations need to be indicated and used when doing the simulations on the
+state smoother.
+
+
 ## Forecasting matrices
 
-[@DurbinKoopman2012, Sec 4.11]
-
-Forecasting future observations are the same as treating the future observations as missing,
+Forecasting future observations are the same as treating the future observations as missing [@DurbinKoopman2012, Sec 4.11],
 $$
 \begin{aligned}[t]
 \bar{\vec{y}}_{n + j} &= \mat{Z}_{n + j} \bar{\vec{a}}_{n + j} \\

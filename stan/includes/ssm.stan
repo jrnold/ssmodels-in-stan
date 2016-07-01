@@ -1648,6 +1648,10 @@ Constrain vector of coefficients to the stationary and intertible region for AR 
 @param vector x An unconstrained vector in (-Inf, Inf)
 @return vector A vector of coefficients for a stationary AR or inverible MA process.
 
+See @Jones1980a, @Jones1987a, @Monahan1984a, @AnsleyKohn1986a, and the functions
+`tools.constrain_stationary_univariate` and `tools.unconstraine_stationary_univariate` in
+[statsmodels.tsa.statespace](http://www.statsmodels.org/dev/statespace.html#statespace-tools).
+
 */
 vector constrain_stationary(vector x) {
   vector[num_elements(x)] r;

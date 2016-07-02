@@ -1,3 +1,8 @@
+#' @importFrom purrr map array_tree
+#' @import stats
+#' @import lubridate
+NULL
+
 #' Upper and lower unit triangle matrices
 #'
 #' Some useful functions for generating matrices commonly encountered
@@ -49,48 +54,32 @@ eye <- function(n, j = 1) {
   x
 }
 
-# setClass("SSM",
-#          representation(m = "integer", p = "integer", r = "integer"))
-#
-# ssm_poly <- function(order = 1, H, R, Q, a1, P1) {
-#   m <- order
-#   p <- 1
-#   r <- ncol(R)
-#   ret <- list()
-#   ret[["Z"]] <- diag(1, p, m)
-#   ret[["H"]] <- H
-#   ret[["T"]] <- unit_upper_tri(m, m)
-#   ret[["R"]] <- R
-#   ret[["Q"]] <- Q
-#   ret[["a1"]] <- a1
-#   ret[["P1"]] <- P1
-#   ret[["c"]] <- rep(0, m)
-#   ret[["d"]] <- rep(0, p)
-#   ret[["m"]] <- m
-#   ret[["p"]] <- p
-#   ret[["r"]] <- r
-#   class(ret) <- c("ssm_constant", "ssm")
-# }
-#
-# ssm_seasonal <- function(frequency, sigma_eta, R, Q, a1, P1) {
-#   m <- frequency - 1L
-#   p <- 1
-#   r <- ncol(R)
-#   ret <- list()
-#   ret[["Z"]] <- diag(1, p, m)
-#   ret[["H"]] <- H
-#   TT <- matrix(0, m, m)
-#   TT[1, ] <- -1
-#   for (i in 2:m) {
-#     TT[i, i - 1] <- 1
-#   }
-#   ret[["R"]] <- diag(1, m, 1)
-#   ret[["Q"]] <- matrix(sigma_eta^2, 1, 1)
-#   ret[["a1"]] <- a1
-#   ret[["P1"]] <- P1
-#   ret[["m"]] <- m
-#   ret[["p"]] <- p
-#   ret[["r"]] <- 1
-#   class(ret) <- c("ssm_constant", "ssm")
-# }
-#
+#' Convert
+#'
+#' This function assumes that the data in the \code{ts} object are
+#' sampled daily. There case when \code{frequency = 12} is treated as
+#' monthly frequency, and \code{frequency = 4} is treated as
+#' quarterly frequency.
+#'
+#' @param x A \code{ts} object. The \code{tsp} attribute is assumed to have
+#'   be sampled at the daily frequency with integer parts representing years.
+#' @param ... Not used
+#' @return A \code{Date} vector
+#'
+#' @export
+as.Date.ts <- function(x, ...) {
+  f <- frequency(x)
+  tx <- as.numeric(time(x))
+  yr <- ymd(paste(floor(tx), "01", "01"))
+  if (f == 12) {
+    dates <- yr %m+% months(round((tx %% 1) * 12))
+  } else if (f == 4) {
+    dates <- yr %m+% months(round((tx %% 1) * 4 * 3))
+  } else if (f == 1) {
+    dates <- yr
+  } else {
+    daze <- tx %% 1 * (365 + leap_year(yr))
+    dates <- yr + days(daze)
+  }
+  dates
+}

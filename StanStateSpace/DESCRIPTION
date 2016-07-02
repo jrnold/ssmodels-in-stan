@@ -8,5 +8,9 @@ Description: Functions and data for State Space Models in Stan.
 License: MIT + file LICENSE
 LazyData: TRUE
 Imports:
-  purrr
+  purrr,
+  rstan,
+  lubridate
+Suggests:
+  KFAS
 RoxygenNote: 5.0.1

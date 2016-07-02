@@ -1,6 +1,3 @@
-#' @importFrom purrr map array_tree
-NULL
-
 gen_ssm_extractor <- function(...) {
   params <- list(...)
   ret <- list()
@@ -29,10 +26,8 @@ gen_ssm_filter_extractor <- function(m, p) {
 
 #' Extract parameters from Stan State Space results
 #'
-#'
 #' Extract results from the output of the \code{ssm_filter} function
 #' in stan.
-#'
 #'
 #' @param x Array containing results from \code{ssm_filter} Stan function. This
 #'   is usually extracted from a \code{stanfit} object.
@@ -43,7 +38,7 @@ gen_ssm_filter_extractor <- function(m, p) {
 #'   If \code{NULL}, all values are extracted.
 #' @return A named \code{list} of \code{array} objects, one for each parameter.
 #' @export
-extract_param_from_ssm_filter <- function(x, m, p, params = NULL) {
+extract_from_ssm_filter <- function(x, m, p, params = NULL) {
   f <- function(el, x) {
     d <- dim(x)[1:2]
     aperm(array(aperm(x[ , , el[["start"]]:el[["end"]], drop = FALSE]),
@@ -56,17 +51,4 @@ extract_param_from_ssm_filter <- function(x, m, p, params = NULL) {
   map(extractor, ~ f(.x, x))
 }
 
-# extract_param_from_ssm_filter <- function(x, m, p, params = NULL) {
-#   f <- function(x, extractor) {
-#     g <- function(x, el) {
-#       .n <- nrow(x)
-#       array(t(x[ , el[["start"]]:el[["end"]]]), c(el[["dim"]], .n))
-#     }
-#     map(extractor, ~ g(x, .x))
-#   }
-#   extractor <- gen_ssm_filter_extractor(m, p)
-#   if (!is.null(params)) {
-#     extractor <- extractor[params]
-#   }
-#   map(array_tree(x, 1), ~ f(.x, extractor))
-# }
+

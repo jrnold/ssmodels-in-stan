@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-07-01">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="stationary.html">
+<link rel="next" href="simulation-smoothers-1.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\VEC}{vec}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#filtering"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#smoothing"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.2</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Fast state smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#simulation-smoothers"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#mean-correction-simulation-smoother"><i class="fa fa-check"></i><b>3.3.1</b> Mean correction simulation smoother</a></li>
+<li class="chapter" data-level="3.3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forward-filter-backwards-smoother-ffbs"><i class="fa fa-check"></i><b>3.3.3</b> Forward-filter backwards-smoother (FFBS)</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#missing-observations"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forecasting-matrices"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>4</b> Software</a><ul>
+<li class="chapter" data-level="4.1" data-path="software.html"><a href="software.html#r-packages"><i class="fa fa-check"></i><b>4.1</b> R packages</a></li>
+<li class="chapter" data-level="4.2" data-path="software.html"><a href="software.html#other"><i class="fa fa-check"></i><b>4.2</b> Other</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="software.html"><a href="software.html#stata"><i class="fa fa-check"></i><b>4.2.1</b> Stata</a></li>
+<li class="chapter" data-level="4.2.2" data-path="software.html"><a href="software.html#python"><i class="fa fa-check"></i><b>4.2.2</b> Python</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="stan-function.html"><a href="stan-function.html"><i class="fa fa-check"></i><b>5</b> Stan Function</a><ul>
+<li class="chapter" data-level="5.1" data-path="stan-function.html"><a href="stan-function.html#utility-functions"><i class="fa fa-check"></i><b>5.1</b> Utility Functions</a><ul>
+<li class="chapter" data-level="5.1.1" data-path="stan-function.html"><a href="stan-function.html#to_symmetric_matrix"><i class="fa fa-check"></i><b>5.1.1</b> to_symmetric_matrix</a></li>
+<li class="chapter" data-level="5.1.2" data-path="stan-function.html"><a href="stan-function.html#to_matrix_colwise"><i class="fa fa-check"></i><b>5.1.2</b> to_matrix_colwise</a></li>
+<li class="chapter" data-level="5.1.3" data-path="stan-function.html"><a href="stan-function.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>5.1.3</b> to_matrix_rowwise</a></li>
+<li class="chapter" data-level="5.1.4" data-path="stan-function.html"><a href="stan-function.html#to_vector_colwise"><i class="fa fa-check"></i><b>5.1.4</b> to_vector_colwise</a></li>
+<li class="chapter" data-level="5.1.5" data-path="stan-function.html"><a href="stan-function.html#to_vector_rowwise"><i class="fa fa-check"></i><b>5.1.5</b> to_vector_rowwise</a></li>
+<li class="chapter" data-level="5.1.6" data-path="stan-function.html"><a href="stan-function.html#symmat_size"><i class="fa fa-check"></i><b>5.1.6</b> symmat_size</a></li>
+<li class="chapter" data-level="5.1.7" data-path="stan-function.html"><a href="stan-function.html#find_symmat_dim"><i class="fa fa-check"></i><b>5.1.7</b> find_symmat_dim</a></li>
+<li class="chapter" data-level="5.1.8" data-path="stan-function.html"><a href="stan-function.html#vector_to_symmat"><i class="fa fa-check"></i><b>5.1.8</b> vector_to_symmat</a></li>
+<li class="chapter" data-level="5.1.9" data-path="stan-function.html"><a href="stan-function.html#symmat_to_vector"><i class="fa fa-check"></i><b>5.1.9</b> symmat_to_vector</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="stan-function.html"><a href="stan-function.html#filtering-utility-functions"><i class="fa fa-check"></i><b>5.2</b> Filtering Utility Functions</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_a"><i class="fa fa-check"></i><b>5.2.1</b> ssm_filter_update_a</a></li>
+<li class="chapter" data-level="5.2.2" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_p"><i class="fa fa-check"></i><b>5.2.2</b> ssm_filter_update_P</a></li>
+<li class="chapter" data-level="5.2.3" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_v"><i class="fa fa-check"></i><b>5.2.3</b> ssm_filter_update_v</a></li>
+<li class="chapter" data-level="5.2.4" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_f"><i class="fa fa-check"></i><b>5.2.4</b> ssm_filter_update_F</a></li>
+<li class="chapter" data-level="5.2.5" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_finv"><i class="fa fa-check"></i><b>5.2.5</b> ssm_filter_update_Finv</a></li>
+<li class="chapter" data-level="5.2.6" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_k"><i class="fa fa-check"></i><b>5.2.6</b> ssm_filter_update_K</a></li>
+<li class="chapter" data-level="5.2.7" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_l"><i class="fa fa-check"></i><b>5.2.7</b> ssm_filter_update_L</a></li>
+<li class="chapter" data-level="5.2.8" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_update_ll"><i class="fa fa-check"></i><b>5.2.8</b> ssm_filter_update_ll</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="stan-function.html"><a href="stan-function.html#filtering-1"><i class="fa fa-check"></i><b>5.3</b> Filtering</a><ul>
+<li class="chapter" data-level="5.3.1" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_idx"><i class="fa fa-check"></i><b>5.3.1</b> ssm_filter_idx</a></li>
+<li class="chapter" data-level="5.3.2" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_size"><i class="fa fa-check"></i><b>5.3.2</b> ssm_filter_size</a></li>
+<li class="chapter" data-level="5.3.3" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_get_loglik"><i class="fa fa-check"></i><b>5.3.3</b> ssm_filter_get_loglik</a></li>
+<li class="chapter" data-level="5.3.4" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_get_v"><i class="fa fa-check"></i><b>5.3.4</b> ssm_filter_get_v</a></li>
+<li class="chapter" data-level="5.3.5" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_get_finv"><i class="fa fa-check"></i><b>5.3.5</b> ssm_filter_get_Finv</a></li>
+<li class="chapter" data-level="5.3.6" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_get_k"><i class="fa fa-check"></i><b>5.3.6</b> ssm_filter_get_K</a></li>
+<li class="chapter" data-level="5.3.7" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_get_a"><i class="fa fa-check"></i><b>5.3.7</b> ssm_filter_get_a</a></li>
+<li class="chapter" data-level="5.3.8" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_get_p"><i class="fa fa-check"></i><b>5.3.8</b> ssm_filter_get_P</a></li>
+<li class="chapter" data-level="5.3.9" data-path="stan-function.html"><a href="stan-function.html#ssm_filter"><i class="fa fa-check"></i><b>5.3.9</b> ssm_filter</a></li>
+<li class="chapter" data-level="5.3.10" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_states"><i class="fa fa-check"></i><b>5.3.10</b> ssm_filter_states</a></li>
+<li class="chapter" data-level="5.3.11" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_states_get_a"><i class="fa fa-check"></i><b>5.3.11</b> ssm_filter_states_get_a</a></li>
+<li class="chapter" data-level="5.3.12" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_states_get_p"><i class="fa fa-check"></i><b>5.3.12</b> ssm_filter_states_get_P</a></li>
+<li class="chapter" data-level="5.3.13" data-path="stan-function.html"><a href="stan-function.html#ssm_filter_states-1"><i class="fa fa-check"></i><b>5.3.13</b> ssm_filter_states</a></li>
+</ul></li>
+<li class="chapter" data-level="5.4" data-path="stan-function.html"><a href="stan-function.html#linear-gaussian-state-space-model-log-likelihood"><i class="fa fa-check"></i><b>5.4</b> Linear Gaussian State Space Model Log-likelihood</a><ul>
+<li class="chapter" data-level="5.4.1" data-path="stan-function.html"><a href="stan-function.html#ssm_lpdf"><i class="fa fa-check"></i><b>5.4.1</b> ssm_lpdf</a></li>
+</ul></li>
+<li class="chapter" data-level="5.5" data-path="stan-function.html"><a href="stan-function.html#time-invariant-kalman-filter"><i class="fa fa-check"></i><b>5.5</b> Time-Invariant Kalman Filter</a><ul>
+<li class="chapter" data-level="5.5.1" data-path="stan-function.html"><a href="stan-function.html#ssm_check_matrix_equal"><i class="fa fa-check"></i><b>5.5.1</b> ssm_check_matrix_equal</a></li>
+<li class="chapter" data-level="5.5.2" data-path="stan-function.html"><a href="stan-function.html#ssm_constant_lpdf"><i class="fa fa-check"></i><b>5.5.2</b> ssm_constant_lpdf</a></li>
+</ul></li>
+<li class="chapter" data-level="5.6" data-path="stan-function.html"><a href="stan-function.html#common-smoother-functions"><i class="fa fa-check"></i><b>5.6</b> Common Smoother Functions</a><ul>
+<li class="chapter" data-level="5.6.1" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_update_r"><i class="fa fa-check"></i><b>5.6.1</b> ssm_smooth_update_r</a></li>
+<li class="chapter" data-level="5.6.2" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_update_n"><i class="fa fa-check"></i><b>5.6.2</b> ssm_smooth_update_N</a></li>
+<li class="chapter" data-level="5.6.3" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_state_size"><i class="fa fa-check"></i><b>5.6.3</b> ssm_smooth_state_size</a></li>
+<li class="chapter" data-level="5.6.4" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_state_get_mean"><i class="fa fa-check"></i><b>5.6.4</b> ssm_smooth_state_get_mean</a></li>
+<li class="chapter" data-level="5.6.5" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_state_get_var"><i class="fa fa-check"></i><b>5.6.5</b> ssm_smooth_state_get_var</a></li>
+<li class="chapter" data-level="5.6.6" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_state"><i class="fa fa-check"></i><b>5.6.6</b> ssm_smooth_state</a></li>
+<li class="chapter" data-level="5.6.7" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eps_size"><i class="fa fa-check"></i><b>5.6.7</b> ssm_smooth_eps_size</a></li>
+<li class="chapter" data-level="5.6.8" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eps_get_mean"><i class="fa fa-check"></i><b>5.6.8</b> ssm_smooth_eps_get_mean</a></li>
+<li class="chapter" data-level="5.6.9" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eps_get_var"><i class="fa fa-check"></i><b>5.6.9</b> ssm_smooth_eps_get_var</a></li>
+<li class="chapter" data-level="5.6.10" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eps"><i class="fa fa-check"></i><b>5.6.10</b> ssm_smooth_eps</a></li>
+<li class="chapter" data-level="5.6.11" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eta"><i class="fa fa-check"></i><b>5.6.11</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="5.6.12" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eta_get_mean"><i class="fa fa-check"></i><b>5.6.12</b> ssm_smooth_eta_get_mean</a></li>
+<li class="chapter" data-level="5.6.13" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eta_get_var"><i class="fa fa-check"></i><b>5.6.13</b> ssm_smooth_eta_get_var</a></li>
+<li class="chapter" data-level="5.6.14" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_eta-1"><i class="fa fa-check"></i><b>5.6.14</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="5.6.15" data-path="stan-function.html"><a href="stan-function.html#ssm_smooth_faststate"><i class="fa fa-check"></i><b>5.6.15</b> ssm_smooth_faststate</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="stationary.html"><a href="stationary.html"><i class="fa fa-check"></i><b>6</b> Stationary</a><ul>
+<li class="chapter" data-level="6.0.1" data-path="stationary.html"><a href="stationary.html#pacf_to_acf"><i class="fa fa-check"></i><b>6.0.1</b> pacf_to_acf</a></li>
+<li class="chapter" data-level="6.0.2" data-path="stationary.html"><a href="stationary.html#constrain_stationary"><i class="fa fa-check"></i><b>6.0.2</b> constrain_stationary</a></li>
+<li class="chapter" data-level="6.0.3" data-path="stationary.html"><a href="stationary.html#acf_to_pacf"><i class="fa fa-check"></i><b>6.0.3</b> acf_to_pacf</a></li>
+<li class="chapter" data-level="6.0.4" data-path="stationary.html"><a href="stationary.html#unconstrain_stationary"><i class="fa fa-check"></i><b>6.0.4</b> unconstrain_stationary</a></li>
+<li class="chapter" data-level="6.0.5" data-path="stationary.html"><a href="stationary.html#kronecker_prod"><i class="fa fa-check"></i><b>6.0.5</b> kronecker_prod</a></li>
+<li class="chapter" data-level="6.0.6" data-path="stationary.html"><a href="stationary.html#arima_stationary_cov"><i class="fa fa-check"></i><b>6.0.6</b> arima_stationary_cov</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html"><i class="fa fa-check"></i><b>7</b> Simulators and Smoothing Simulators</a><ul>
+<li class="chapter" data-level="7.0.1" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_idx"><i class="fa fa-check"></i><b>7.0.1</b> ssm_sim_idx</a></li>
+<li class="chapter" data-level="7.0.2" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_size"><i class="fa fa-check"></i><b>7.0.2</b> ssm_sim_size</a></li>
+<li class="chapter" data-level="7.0.3" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_y"><i class="fa fa-check"></i><b>7.0.3</b> ssm_sim_get_y</a></li>
+<li class="chapter" data-level="7.0.4" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_a"><i class="fa fa-check"></i><b>7.0.4</b> ssm_sim_get_a</a></li>
+<li class="chapter" data-level="7.0.5" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_eps"><i class="fa fa-check"></i><b>7.0.5</b> ssm_sim_get_eps</a></li>
+<li class="chapter" data-level="7.0.6" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_eta"><i class="fa fa-check"></i><b>7.0.6</b> ssm_sim_get_eta</a></li>
+<li class="chapter" data-level="7.0.7" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_rng"><i class="fa fa-check"></i><b>7.0.7</b> ssm_sim_rng</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html"><i class="fa fa-check"></i><b>8</b> Simulation Smoothers</a><ul>
+<li class="chapter" data-level="8.0.1" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#ssm_simsmo_state_rng"><i class="fa fa-check"></i><b>8.0.1</b> ssm_simsmo_state_rng</a></li>
+<li class="chapter" data-level="8.0.2" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#ssm_simsmo_eta_rng"><i class="fa fa-check"></i><b>8.0.2</b> ssm_simsmo_eta_rng</a></li>
+<li class="chapter" data-level="8.0.3" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#ssm_simsmo_eps_rng"><i class="fa fa-check"></i><b>8.0.3</b> ssm_simsmo_eps_rng</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="simulators-and-smoothing-simulators" class="section level1">
+<h1><span class="header-section-number">Chapter 7</span> Simulators and Smoothing Simulators</h1>
+<div id="ssm_sim_idx" class="section level3">
+<h3><span class="header-section-number">7.0.1</span> ssm_sim_idx</h3>
+<ul>
+<li><code>int</code> <strong>m</strong> The number of states</li>
+<li><code>int</code> <strong>p</strong> The length of the observation vector</li>
+<li><code>int</code> <strong>q</strong> The number of state disturbances</li>
+</ul>
+<p><strong>return:</strong> <code>int[,]</code> A 4 x 3 array of integers</p>
+<p>Indexes of each component of <code>ssm_sim_rng</code> results.</p>
+<p>The returned array has columns (length, start location, and end location) for rews: <span class="math inline">\(y_t\)</span>, <span class="math inline">\(\alpha_t\)</span>, <span class="math inline">\(\varepsilon_t\)</span>, and <span class="math inline">\(\eta_t\)</span> in the results of <code>ssm_sim_rng</code>.</p>
+<pre class="stan"><code>int[,] ssm_sim_idx(int m, int p, int q) {
+  int sz[4, 3];
+  // y
+  sz[1, 1] = p;
+  // a
+  sz[2, 1] = m;
+  // eps
+  sz[3, 1] = p;
+  // eta
+  sz[4, 1] = q;
+  // Fill in start and stop points
+  sz[1, 2] = 1;
+  sz[1, 3] = sz[1, 2] + sz[1, 1] - 1;
+  for (i in 2:4) {
+    sz[i, 2] = sz[i - 1, 3] + 1;
+    sz[i, 3] = sz[i, 2] + sz[i, 1] - 1;
+  }
+  return sz;
+}
+</code></pre>
+</div>
+<div id="ssm_sim_size" class="section level3">
+<h3><span class="header-section-number">7.0.2</span> ssm_sim_size</h3>
+<ul>
+<li><code>int</code> <strong>m</strong> The number of states</li>
+<li><code>int</code> <strong>p</strong> The length of the observation vector</li>
+<li><code>int</code> <strong>q</strong> The number of state disturbances</li>
+</ul>
+<p><strong>return:</strong> <code>int</code> The number of elements</p>
+<p>The number of elements in vectors returned by <code>ssm_sim_rng</code> results.</p>
+<pre class="stan"><code>int ssm_sim_size(int m, int p, int q) {
+  int sz;
+  sz = ssm_sim_idx(m, p, q)[4, 3];
+  return sz;
+}
+</code></pre>
+</div>
+<div id="ssm_sim_get_y" class="section level3">
+<h3><span class="header-section-number">7.0.3</span> ssm_sim_get_y</h3>
+<ul>
+<li><code>int</code> <strong>m</strong> The number of states</li>
+<li><code>int</code> <strong>p</strong> The length of the observation vector</li>
+<li><code>int</code> <strong>q</strong> The number of state disturbances</li>
+</ul>
+<p><strong>return:</strong> <code>vector</code> vector A <span class="math inline">\(p \times 1\)</span> vector with <span class="math inline">\(\vec{y}_t\)</span>.</p>
+<p>Extract <span class="math inline">\(\vec{y}_t\)</span> from vectors returne by <code>ssm_sim_rng</code>.</p>
+<pre class="stan"><code>vector ssm_sim_get_y(vector x, int m, int p, int q) {
+  vector[m] y;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  y = x[idx[1, 2]:idx[1, 3]];
+  return y;
+}
+</code></pre>
+</div>
+<div id="ssm_sim_get_a" class="section level3">
+<h3><span class="header-section-number">7.0.4</span> ssm_sim_get_a</h3>
+<ul>
+<li><code>int</code> <strong>m</strong> The number of states</li>
+<li><code>int</code> <strong>p</strong> The length of the observation vector</li>
+<li><code>int</code> <strong>q</strong> The number of state disturbances</li>
+</ul>
+<p><strong>return:</strong> <code>vector</code> A <span class="math inline">\(m \times 1\)</span> vector with <span class="math inline">\(\vec{\alpha}_t\)</span>.</p>
+<p>Extract <span class="math inline">\(\vec{\alpha}_t\)</span> from vectors returne by <code>ssm_sim_rng</code>.</p>
+<pre class="stan"><code>vector ssm_sim_get_a(vector x, int m, int p, int q) {
+  vector[m] a;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  a = x[idx[2, 2]:idx[2, 3]];
+  return a;
+}
+</code></pre>
+</div>
+<div id="ssm_sim_get_eps" class="section level3">
+<h3><span class="header-section-number">7.0.5</span> ssm_sim_get_eps</h3>
+<ul>
+<li><code>int</code> <strong>m</strong> The number of states</li>
+<li><code>int</code> <strong>p</strong> The length of the observation vector</li>
+<li><code>int</code> <strong>q</strong> The number of state disturbances</li>
+</ul>
+<p><strong>return:</strong> <code>vector</code> vector A <span class="math inline">\(p \times 1\)</span> vector with <span class="math inline">\(\vec{\varepsilon}_t\)</span>.</p>
+<p>Extract <span class="math inline">\(\vec{\varepsilon}_t\)</span> from vectors returne by <code>ssm_sim_rng</code>.</p>
+<pre class="stan"><code>vector ssm_sim_get_eps(vector x, int m, int p, int q) {
+  vector[m] eps;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  eps = x[idx[3, 2]:idx[3, 3]];
+  return eps;
+}
+</code></pre>
+</div>
+<div id="ssm_sim_get_eta" class="section level3">
+<h3><span class="header-section-number">7.0.6</span> ssm_sim_get_eta</h3>
+<ul>
+<li><code>int</code> <strong>m</strong> The number of states</li>
+<li><code>int</code> <strong>p</strong> The length of the observation vector</li>
+<li><code>int</code> <strong>q</strong> The number of state disturbances</li>
+</ul>
+<p><strong>return:</strong> <code>vector</code> vector A <span class="math inline">\(q \times 1\)</span> vector with <span class="math inline">\(\vec{\eta}_t\)</span>.</p>
+<p>Extract <span class="math inline">\(\vec{\eta}_t\)</span> from vectors returne by <code>ssm_sim_rng</code>.</p>
+<pre class="stan"><code>vector ssm_sim_get_eta(vector x, int m, int p, int q) {
+  vector[m] eta;
+  int idx[4, 3];
+  idx = ssm_sim_idx(m, p, q);
+  eta = x[idx[4, 2]:idx[4, 3]];
+  return eta;
+}
+</code></pre>
+</div>
+<div id="ssm_sim_rng" class="section level3">
+<h3><span class="header-section-number">7.0.7</span> ssm_sim_rng</h3>
+<ul>
+<li><code>vector[]</code> <strong>y</strong> Observations, <span class="math inline">\(\vec{y}_t\)</span>. An array of size <span class="math inline">\(n\)</span> of <span class="math inline">\(p \times 1\)</span> vectors.</li>
+<li><code>vector[]</code> <strong>d</strong> Observation intercept, <span class="math inline">\(\vec{d}_t\)</span>. An array of <span class="math inline">\(p \times 1\)</span> vectors.</li>
+<li><code>matrix[]</code> <strong>Z</strong> Design matrix, <span class="math inline">\(\mat{Z}_t\)</span>. An array of <span class="math inline">\(p \times m\)</span> matrices.</li>
+<li><code>matrix[]</code> <strong>H</strong> Observation covariance matrix, <span class="math inline">\(\mat{H}_t\)</span>. An array of <span class="math inline">\(p \times p\)</span> matrices.</li>
+<li><code>vector[]</code> <strong>c</strong> State intercept, <span class="math inline">\(\vec{c}_t\)</span>. An array of <span class="math inline">\(m \times 1\)</span> vectors.</li>
+<li><code>matrix[]</code> <strong>T</strong> Transition matrix, <span class="math inline">\(\mat{T}_t\)</span>. An array of <span class="math inline">\(m \times m\)</span> matrices.</li>
+<li><code>matrix[]</code> <strong>R</strong> State covariance selection matrix, <span class="math inline">\(\mat{R} _t\)</span>. An array of <span class="math inline">\(p \times q\)</span> matrices.</li>
+<li><code>matrix[]</code> <strong>Q</strong> State covariance matrix, <span class="math inline">\(\mat{Q}_t\)</span>. An array of <span class="math inline">\(q \times q\)</span> matrices.</li>
+<li><code>vector</code> <strong>a1</strong> Expected value of the intial state, <span class="math inline">\(a_1 = \E(\alpha_1)\)</span>. An <span class="math inline">\(m \times 1\)</span> matrix.</li>
+<li><code>matrix</code> <strong>P1</strong> Variance of the initial state, <span class="math inline">\(P_1 = \Var(\alpha_1)\)</span>. An <span class="math inline">\(m \times m\)</span> matrix.</li>
+</ul>
+<p><strong>return:</strong> <code>Array</code> of size <span class="math inline">\(n\)</span> of vectors with Draw <span class="math inline">\(\vec{y}_t\)</span>, <span class="math inline">\(\vec{\alpha}_t\)</span>, <span class="math inline">\(\vec{\eta}_t\)</span> and <span class="math inline">\(\vec{\varepsilon}}_t\)</span>. See the description.</p>
+<p>Simulate from a Linear Gaussian State Space model.</p>
+<p>For <code>d</code>, <code>Z</code>, <code>H</code>, <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code> the array can have a size of 1, if it is not time-varying, or a size of <span class="math inline">\(n\)</span> (for <code>d</code>, <code>Z</code>, <code>H</code>) or <span class="math inline">\(n - 1\)</span> (for <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code>) if it is time varying.</p>
+<p>Draw <span class="math inline">\(\vec{y}_t\)</span>, <span class="math inline">\(\vec{\alpha}_t\)</span>, <span class="math inline">\(\vec{\eta}_t\)</span> and <span class="math inline">\(\vec{\varepsilon}}_t\)</span> from the state space model, <span class="math display">\[
+\begin{aligned}[t]
+\vec{y}_t &amp;= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}_t,  &amp;
+\vec{\varepsilon}_t &amp; \sim N(0, \mat{H}_t), \\
+\vec{\alpha}_{t + 1} &amp;= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}_t,  &amp;
+\vec{\eta}_t &amp; \sim N(0, \mat{Q}_t), \\
+&amp;&amp; \vec{\alpha}_1 &amp;\sim N(\vec{a}_1, \mat{P}_1) .
+\end{aligned}
+\]</span></p>
+<p>The returned vectors are of length <span class="math inline">\(2 p + m + q\)</span>, in the format, <span class="math display">\[
+(\vec{y}_t&#39;, \vec{\alpha}_t&#39;, \vec{\varepsilon}_t&#39;, \vec{\eta}_t&#39;) .
+\]</span> Note that <span class="math inline">\(\eta_n = \vec{0}_q\)</span>. Use the functions <code>ssm_sim_get_y</code>, <code>ssm_sim_get_a</code>, <code>ssm_sim_get_eps</code>, and <code>ssm_sim_get_eta</code> to extract values from the vector.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">element</th>
+<th align="left">length</th>
+<th align="left">start</th>
+<th align="left">end</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><span class="math inline">\(y_t\)</span></td>
+<td align="left"><span class="math inline">\(p\)</span></td>
+<td align="left"><span class="math inline">\(1\)</span></td>
+<td align="left"><span class="math inline">\(p\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\alpha\)</span>_t</td>
+<td align="left"><span class="math inline">\(m\)</span></td>
+<td align="left"><span class="math inline">\(p + 1\)</span></td>
+<td align="left"><span class="math inline">\(p + m\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\varepsilon_t\)</span></td>
+<td align="left"><span class="math inline">\(p\)</span></td>
+<td align="left"><span class="math inline">\(p + m + 1\)</span></td>
+<td align="left"><span class="math inline">\(2 p + m\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\eta_t\)</span></td>
+<td align="left"><span class="math inline">\(q\)</span></td>
+<td align="left"><span class="math inline">\(2 p + m + 1\)</span></td>
+<td align="left"><span class="math inline">\(2 p + m + q\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>It is preferrable to use <code>ssm_sim_get_y</code>, <code>ssm_sim_get_a</code>, <code>ssm_sim_get_eps</code>, and <code>ssm_sim_get_eta</code> to extract values from these vectors.</p>
+<pre class="stan"><code>vector[] ssm_sim_rng(int n,
+                    vector[] d, matrix[] Z, matrix[] H,
+                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                    vector a1, matrix P1) {
+  vector[ssm_sim_size(dims(Z)[3], dims(Z)[2], dims(Q)[2])] ret[n];
+  int p;
+  int m;
+  int q;
+  p = dims(Z)[2];
+  m = dims(Z)[3];
+  q = dims(Q)[2];
+  {
+    // system matrices for current iteration
+    vector[p] d_t;
+    matrix[p, m] Z_t;
+    matrix[p, p] H_t;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    // outputs
+    vector[p] y;
+    vector[p] eps;
+    vector[m] a;
+    vector[q] eta;
+    // constants
+    vector[p] zero_p;
+    vector[q] zero_q;
+    vector[m] zero_m;
+    int idx[4, 3];
+
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+
+    idx = ssm_sim_idx(m, p, q);
+    zero_p = rep_vector(0.0, p);
+    zero_q = rep_vector(0.0, q);
+    zero_m = rep_vector(0.0, m);
+    a = multi_normal_rng(a1, P1);
+    for (t in 1:n) {
+      // set system matrices
+      if (t &gt; 1) {
+        if (size(d) &gt; 1) {
+          d_t = d[t];
+        }
+        if (size(Z) &gt; 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) &gt; 1) {
+          H_t = H[t];
+        }
+        // system matrices are n - 1 length
+        if (t &lt; n) {
+          if (size(c) &gt; 1) {
+            c_t = c[t];
+          }
+          if (size(T) &gt; 1) {
+            T_t = T[t];
+          }
+          if (size(R) &gt; 1) {
+            R_t = R[t];
+          }
+          if (size(Q) &gt; 1) {
+            Q_t = Q[t];
+          }
+        }
+      }
+      // draw forecast error
+      eps = multi_normal_rng(zero_p, H_t);
+      // draw observed value
+      y = d_t + Z_t * a + eps;
+      // since eta_t is for alpha_{t + 1}, we don&#39;t
+      // draw it for t == n
+      if (t == n) {
+        eta = zero_q;
+      } else {
+        eta = multi_normal_rng(zero_q, Q_t);
+      }
+      // save
+      ret[t, idx[1, 2]:idx[1, 3]] = y;
+      ret[t, idx[2, 2]:idx[2, 3]] = a;
+      ret[t, idx[3, 2]:idx[3, 3]] = eps;
+      ret[t, idx[4, 2]:idx[4, 3]] = eta;
+      // a_{t + 1}
+      if (t &lt; n) {
+        a = c_t + T_t * a + R_t * eta;
+      }
+    }
+  }
+  return ret;
+}
+</code></pre>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="stationary.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="simulation-smoothers-1.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/functions.Rmd",
+"text": "Edit"
+},
+"download": ["ssmodels-in-stan.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

@@ -2255,7 +2255,7 @@ Find the covariance of the stationary distribution of an ARMA model
 @param matrix R The $m \times q$ system disturbance selection matrix
 @return matrix An $m \times m$ matrix with the stationary covariance matrix.
 
-The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0),
+The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0)$,
 where $Q_0$ is the solution to
 $$
 (T \otimes T) \VEC(Q_0) = \VEC(R R')

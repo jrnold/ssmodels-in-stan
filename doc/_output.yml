@@ -25,5 +25,5 @@ bookdown::pdf_book:
     after_body:  after_body.tex
   keep_tex: true
   latex_engine: xelatex
-  citation_package: natbib
+  citation_package: biblatex
 bookdown::epub_book: default

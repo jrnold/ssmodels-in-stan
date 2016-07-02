@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-06-30">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="smoothing.html">
+<link rel="next" href="missing-observations.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\VEC}{vec}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="3.1" data-path="filtering.html"><a href="filtering.html"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="smoothing.html"><a href="smoothing.html"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="smoothing.html"><a href="smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="smoothing.html"><a href="smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.2</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.3" data-path="smoothing.html"><a href="smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Fast state smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#mean-correction-simulation-smoother"><i class="fa fa-check"></i><b>3.3.1</b> Mean correction simulation smoother</a></li>
+<li class="chapter" data-level="3.3.2" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#forward-filter-backwards-smoother-ffbs"><i class="fa fa-check"></i><b>3.3.3</b> Forward-filter backwards-smoother (FFBS)</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="missing-observations.html"><a href="missing-observations.html"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="forecasting-matrices.html"><a href="forecasting-matrices.html"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>4</b> Software</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="simulation-smoothers" class="section level2">
+<h2><span class="header-section-number">3.3</span> Simulation smoothers</h2>
+<p>Simulation smoothing draws samples of the states, <span class="math inline">\(p(\vec{\alpha}_1, \dots, \vec{\alpha}_n | \vec{y}_{1:n})\)</span>, or disturbances, <span class="math inline">\(p(\vec{\varepsilon}_1, \dots, \vec{\varepsilon}_n | \vec{y}_{1:n})\)</span> and <span class="math inline">\(p(\vec{\eta}_1, \dots, \vec{\eta}_n | \vec{y}_{1:n})\)</span>.[^simsmo]</p>
+<div id="mean-correction-simulation-smoother" class="section level3">
+<h3><span class="header-section-number">3.3.1</span> Mean correction simulation smoother</h3>
+<p>The mean-correction simulation smoother was introduced in <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2002">2002</a>)</span> . See <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span> (Sec 4.9) for an exposition of it. It requires only the previously described filters and smoothers, and generating samples from multivariate distributions.</p>
+<div id="disturbances" class="section level4">
+<h4><span class="header-section-number">3.3.1.1</span> Disturbances</h4>
+<ol style="list-style-type: decimal">
+<li>Run a filter and disturbance smoother to calculate <span class="math inline">\(\hat{\vec{\varepsilon}}_{1:n}\)</span> and <span class="math inline">\(\hat{\vec{\eta}}_{1:(n - 1)}\)</span></li>
+<li>Draw samples from the unconditional distribution of the disturbances, <span class="math display">\[
+\begin{aligned}[t]
+\vec{\eta}^+_t &amp;\sim N(0, \mat{H}_t) &amp;&amp; t = 1, \dots, n - 1 \\
+\vec{\varepsilon}^+_t &amp;\sim N(0, \mat{Q}_t) &amp;&amp; t = 1, \dots, n
+\end{aligned}
+\]</span></li>
+<li>Simulate observations from the system using the simulated disturbances, <span class="math display">\[
+\begin{aligned}[t]
+\vec{y}^+_t &amp;= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}^+_t, \\
+\vec{\alpha}_{t + 1} &amp;= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}^+_t, \\
+\end{aligned}
+\]</span> where <span class="math inline">\(\vec{\alpha}_1 \sim N(\vec{a}_1, \mat{P}_1)\)</span>.</li>
+<li>Run a filter and disturbance smoother on the simulated observations <span class="math inline">\(\vec{y}^+\)</span> to calculate <span class="math inline">\(\hat{\vec{\varepsilon}}_t^+ = \E(\vec{\varepsilon}_t | \vec{y}^+_{1:n})\)</span> and <span class="math inline">\(\hat{\vec{\eta}}_t^+ = \E(\vec{\eta}_t | \vec{y}^+_{1:n})\)</span>.</li>
+<li>A sample from <span class="math inline">\(p(\hat{\vec{\eta}}_{1:(n - 1)}, \hat{\vec{\varepsilon}}_{1:n} | \vec{y}_{1:n})\)</span> is <span class="math display">\[
+\begin{aligned}[t]
+\tilde{\vec{\eta}}_t &amp;= \vec{\eta}^+_t - \hat{\vec{\eta}}^+_t + \hat{\vec{\eta}}_t , \\
+\tilde{\vec{\varepsilon}}_t &amp;= \vec{\varepsilon}^+_t - \hat{\vec{\varepsilon}}^+_t + \hat{\vec{\varepsilon}}_t .
+\end{aligned}
+\]</span></li>
+</ol>
+</div>
+<div id="states" class="section level4">
+<h4><span class="header-section-number">3.3.1.2</span> States</h4>
+<ol style="list-style-type: decimal">
+<li>Run a filter and disturbance smoother to calculate the mean of the states conditional on the full series of observations, <span class="math inline">\(\hat{\vec{\alpha}}_{1:n} = \E(\vec{\alpha}_{1:n} | \vec{y}_{1:n})\)</span>.</li>
+<li>Draw samples from the unconditional distribution of the disturbances, <span class="math display">\[
+\begin{aligned}[t]
+\vec{\eta}^+_t &amp;\sim N(0, \mat{H}_t) &amp;&amp; t = 1, \dots, n - 1 \\
+\vec{\varepsilon}^+_t &amp;\sim N(0, \mat{Q}_t) &amp;&amp; t = 1, \dots, n
+\end{aligned}
+\]</span></li>
+<li>Simulate states and observations from the system using the simulated disturbances, <span class="math display">\[
+\begin{aligned}[t]
+\vec{y}^+_t &amp;= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}^+_t, \\
+\vec{\alpha}^+_{t + 1} &amp;= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}^+_t, \\
+\end{aligned}
+\]</span> where <span class="math inline">\(\vec{\alpha}^+_1 \sim N(\vec{a}_1, \mat{P}_1)\)</span>.</li>
+<li>Run a filter and smoother on the simulated observations <span class="math inline">\(\vec{y}^+\)</span> to calculate <span class="math inline">\(\hat{\vec{\alpha}}_t^+ = \E(\vec{\alpha}_t | \vec{y}^+_{1:n})\)</span>.</li>
+<li>A sample from <span class="math inline">\(p(\hat{\vec{\alpha}}_{1:n} | \vec{y}_{1:n})\)</span> is <span class="math display">\[
+\begin{aligned}[t]
+\tilde{\vec{\alpha}}_t &amp;= \vec{\alpha}^+_t - \hat{\vec{\alpha}}^+_t + \hat{\vec{\alpha}}_t .
+\end{aligned}
+\]</span></li>
+</ol>
+<p>One convenient feature of this method is that since only the conditional means of the states are required, the fast state smoother can be used, since the variances of the states are not required.</p>
+</div>
+</div>
+<div id="de-jong-shephard-method" class="section level3">
+<h3><span class="header-section-number">3.3.2</span> de Jong-Shephard method</h3>
+<p>These recursions were developed in <span class="citation">De Jong and Shephard (<a href="#ref-DeJongShephard1995">1995</a>)</span> . Although the the mean-correction simulation smoother will work in most cases, there are a few in which it will not work.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div id="forward-filter-backwards-smoother-ffbs" class="section level3">
+<h3><span class="header-section-number">3.3.3</span> Forward-filter backwards-smoother (FFBS)</h3>
+<p>This was the simulation method developed in <span class="citation">Carter (<a href="#ref-CarterKohn1994">1994</a>)</span> and <span class="citation">Frühwirth-Schnatter (<a href="#ref-Fruehwirth-Schnatter1994">1994</a>)</span> .</p>
+<p><strong>TODO</strong></p>
+</div>
+</div>
+<h3> Software</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2002">
+<p>Durbin, J., and S. J. Koopman. 2002. “A Simple and Efficient Simulation Smoother for State Space Time Series Analysis.” <em>Biometrika</em> 89 (3). Biometrika Trust: 603–15. <a href="http://www.jstor.org/stable/4140605" class="uri">http://www.jstor.org/stable/4140605</a>.</p>
+</div>
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+<div id="ref-DeJongShephard1995">
+<p>De Jong, Piet, and Neil Shephard. 1995. “The Simulation Smoother for Time Series Models.” <em>Biometrika</em> 82 (2): 339–50. doi:<a href="https://doi.org/10.1093/biomet/82.2.339">10.1093/biomet/82.2.339</a>.</p>
+</div>
+<div id="ref-CarterKohn1994">
+<p>Carter, R., C. K. And Kohn. 1994. “On Gibbs Sampling for State Space Models.” <em>Biometrika</em> 81 (3): 541–53. doi:<a href="https://doi.org/10.1093/biomet/81.3.541">10.1093/biomet/81.3.541</a>.</p>
+</div>
+<div id="ref-Fruehwirth-Schnatter1994">
+<p>Frühwirth-Schnatter, Sylvia. 1994. “Data Augmentation and Dynamic Linear Models.” <em>Journal of Time Series Analysis</em> 15 (2). Blackwell Publishing Ltd: 183–202. doi:<a href="https://doi.org/10.1111/j.1467-9892.1994.tb00184.x">10.1111/j.1467-9892.1994.tb00184.x</a>.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="smoothing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="missing-observations.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/filtering.Rmd",
+"text": "Edit"
+},
+"download": ["ssmodels-in-stan.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

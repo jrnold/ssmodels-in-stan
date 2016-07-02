@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-07-01">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="linear-gaussian-state-space-model-log-likelihood.html">
+<link rel="next" href="common-smoother-functions.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\VEC}{vec}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#filtering"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#smoothing"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.2</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Fast state smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#simulation-smoothers"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#mean-correction-simulation-smoother"><i class="fa fa-check"></i><b>3.3.1</b> Mean correction simulation smoother</a></li>
+<li class="chapter" data-level="3.3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forward-filter-backwards-smoother-ffbs"><i class="fa fa-check"></i><b>3.3.3</b> Forward-filter backwards-smoother (FFBS)</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#missing-observations"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forecasting-matrices"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>4</b> Software</a><ul>
+<li class="chapter" data-level="4.1" data-path="software.html"><a href="software.html#r-packages"><i class="fa fa-check"></i><b>4.1</b> R packages</a></li>
+<li class="chapter" data-level="4.2" data-path="software.html"><a href="software.html#other"><i class="fa fa-check"></i><b>4.2</b> Other</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="software.html"><a href="software.html#stata"><i class="fa fa-check"></i><b>4.2.1</b> Stata</a></li>
+<li class="chapter" data-level="4.2.2" data-path="software.html"><a href="software.html#python"><i class="fa fa-check"></i><b>4.2.2</b> Python</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="software.html"><a href="software.html#to_symmetric_matrix"><i class="fa fa-check"></i><b>4.3</b> to_symmetric_matrix</a></li>
+<li class="chapter" data-level="4.4" data-path="software.html"><a href="software.html#to_matrix_colwise"><i class="fa fa-check"></i><b>4.4</b> to_matrix_colwise</a></li>
+<li class="chapter" data-level="4.5" data-path="software.html"><a href="software.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>4.5</b> to_matrix_rowwise</a></li>
+<li class="chapter" data-level="4.6" data-path="software.html"><a href="software.html#to_vector_colwise"><i class="fa fa-check"></i><b>4.6</b> to_vector_colwise</a></li>
+<li class="chapter" data-level="4.7" data-path="software.html"><a href="software.html#to_vector_rowwise"><i class="fa fa-check"></i><b>4.7</b> to_vector_rowwise</a></li>
+<li class="chapter" data-level="4.8" data-path="software.html"><a href="software.html#symmat_size"><i class="fa fa-check"></i><b>4.8</b> symmat_size</a></li>
+<li class="chapter" data-level="4.9" data-path="software.html"><a href="software.html#find_symmat_dim"><i class="fa fa-check"></i><b>4.9</b> find_symmat_dim</a></li>
+<li class="chapter" data-level="4.10" data-path="software.html"><a href="software.html#vector_to_symmat"><i class="fa fa-check"></i><b>4.10</b> vector_to_symmat</a></li>
+<li class="chapter" data-level="4.11" data-path="software.html"><a href="software.html#symmat_to_vector"><i class="fa fa-check"></i><b>4.11</b> symmat_to_vector</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html"><i class="fa fa-check"></i><b>5</b> Filtering Utility Functions</a><ul>
+<li class="chapter" data-level="5.1" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_a"><i class="fa fa-check"></i><b>5.1</b> ssm_filter_update_a</a></li>
+<li class="chapter" data-level="5.2" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_p"><i class="fa fa-check"></i><b>5.2</b> ssm_filter_update_P</a></li>
+<li class="chapter" data-level="5.3" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_v"><i class="fa fa-check"></i><b>5.3</b> ssm_filter_update_v</a></li>
+<li class="chapter" data-level="5.4" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_f"><i class="fa fa-check"></i><b>5.4</b> ssm_filter_update_F</a></li>
+<li class="chapter" data-level="5.5" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_finv"><i class="fa fa-check"></i><b>5.5</b> ssm_filter_update_Finv</a></li>
+<li class="chapter" data-level="5.6" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_k"><i class="fa fa-check"></i><b>5.6</b> ssm_filter_update_K</a></li>
+<li class="chapter" data-level="5.7" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_l"><i class="fa fa-check"></i><b>5.7</b> ssm_filter_update_L</a></li>
+<li class="chapter" data-level="5.8" data-path="filtering-utility-functions.html"><a href="filtering-utility-functions.html#ssm_filter_update_ll"><i class="fa fa-check"></i><b>5.8</b> ssm_filter_update_ll</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="filtering-1.html"><a href="filtering-1.html"><i class="fa fa-check"></i><b>6</b> Filtering</a><ul>
+<li class="chapter" data-level="6.1" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_idx"><i class="fa fa-check"></i><b>6.1</b> ssm_filter_idx</a></li>
+<li class="chapter" data-level="6.2" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_size"><i class="fa fa-check"></i><b>6.2</b> ssm_filter_size</a></li>
+<li class="chapter" data-level="6.3" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_get_loglik"><i class="fa fa-check"></i><b>6.3</b> ssm_filter_get_loglik</a></li>
+<li class="chapter" data-level="6.4" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_get_v"><i class="fa fa-check"></i><b>6.4</b> ssm_filter_get_v</a></li>
+<li class="chapter" data-level="6.5" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_get_finv"><i class="fa fa-check"></i><b>6.5</b> ssm_filter_get_Finv</a></li>
+<li class="chapter" data-level="6.6" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_get_k"><i class="fa fa-check"></i><b>6.6</b> ssm_filter_get_K</a></li>
+<li class="chapter" data-level="6.7" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_get_a"><i class="fa fa-check"></i><b>6.7</b> ssm_filter_get_a</a></li>
+<li class="chapter" data-level="6.8" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_get_p"><i class="fa fa-check"></i><b>6.8</b> ssm_filter_get_P</a></li>
+<li class="chapter" data-level="6.9" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter"><i class="fa fa-check"></i><b>6.9</b> ssm_filter</a></li>
+<li class="chapter" data-level="6.10" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_states"><i class="fa fa-check"></i><b>6.10</b> ssm_filter_states</a></li>
+<li class="chapter" data-level="6.11" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_states_get_a"><i class="fa fa-check"></i><b>6.11</b> ssm_filter_states_get_a</a></li>
+<li class="chapter" data-level="6.12" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_states_get_p"><i class="fa fa-check"></i><b>6.12</b> ssm_filter_states_get_P</a></li>
+<li class="chapter" data-level="6.13" data-path="filtering-1.html"><a href="filtering-1.html#ssm_filter_states-1"><i class="fa fa-check"></i><b>6.13</b> ssm_filter_states</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="linear-gaussian-state-space-model-log-likelihood.html"><a href="linear-gaussian-state-space-model-log-likelihood.html"><i class="fa fa-check"></i><b>7</b> Linear Gaussian State Space Model Log-likelihood</a><ul>
+<li class="chapter" data-level="7.1" data-path="linear-gaussian-state-space-model-log-likelihood.html"><a href="linear-gaussian-state-space-model-log-likelihood.html#ssm_lpdf"><i class="fa fa-check"></i><b>7.1</b> ssm_lpdf</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="time-invariant-kalman-filter.html"><a href="time-invariant-kalman-filter.html"><i class="fa fa-check"></i><b>8</b> Time-Invariant Kalman Filter</a><ul>
+<li class="chapter" data-level="8.1" data-path="time-invariant-kalman-filter.html"><a href="time-invariant-kalman-filter.html#ssm_check_matrix_equal"><i class="fa fa-check"></i><b>8.1</b> ssm_check_matrix_equal</a></li>
+<li class="chapter" data-level="8.2" data-path="time-invariant-kalman-filter.html"><a href="time-invariant-kalman-filter.html#ssm_constant_lpdf"><i class="fa fa-check"></i><b>8.2</b> ssm_constant_lpdf</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html"><i class="fa fa-check"></i><b>9</b> Common Smoother Functions</a><ul>
+<li class="chapter" data-level="9.1" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_update_r"><i class="fa fa-check"></i><b>9.1</b> ssm_smooth_update_r</a></li>
+<li class="chapter" data-level="9.2" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_update_n"><i class="fa fa-check"></i><b>9.2</b> ssm_smooth_update_N</a></li>
+<li class="chapter" data-level="9.3" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_state_size"><i class="fa fa-check"></i><b>9.3</b> ssm_smooth_state_size</a></li>
+<li class="chapter" data-level="9.4" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_state_get_mean"><i class="fa fa-check"></i><b>9.4</b> ssm_smooth_state_get_mean</a></li>
+<li class="chapter" data-level="9.5" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_state_get_var"><i class="fa fa-check"></i><b>9.5</b> ssm_smooth_state_get_var</a></li>
+<li class="chapter" data-level="9.6" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_state"><i class="fa fa-check"></i><b>9.6</b> ssm_smooth_state</a></li>
+<li class="chapter" data-level="9.7" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eps_size"><i class="fa fa-check"></i><b>9.7</b> ssm_smooth_eps_size</a></li>
+<li class="chapter" data-level="9.8" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eps_get_mean"><i class="fa fa-check"></i><b>9.8</b> ssm_smooth_eps_get_mean</a></li>
+<li class="chapter" data-level="9.9" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eps_get_var"><i class="fa fa-check"></i><b>9.9</b> ssm_smooth_eps_get_var</a></li>
+<li class="chapter" data-level="9.10" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eps"><i class="fa fa-check"></i><b>9.10</b> ssm_smooth_eps</a></li>
+<li class="chapter" data-level="9.11" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eta"><i class="fa fa-check"></i><b>9.11</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="9.12" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eta_get_mean"><i class="fa fa-check"></i><b>9.12</b> ssm_smooth_eta_get_mean</a></li>
+<li class="chapter" data-level="9.13" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eta_get_var"><i class="fa fa-check"></i><b>9.13</b> ssm_smooth_eta_get_var</a></li>
+<li class="chapter" data-level="9.14" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_eta-1"><i class="fa fa-check"></i><b>9.14</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="9.15" data-path="common-smoother-functions.html"><a href="common-smoother-functions.html#ssm_smooth_faststate"><i class="fa fa-check"></i><b>9.15</b> ssm_smooth_faststate</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="stationary.html"><a href="stationary.html"><i class="fa fa-check"></i><b>10</b> Stationary</a><ul>
+<li class="chapter" data-level="10.1" data-path="stationary.html"><a href="stationary.html#pacf_to_acf"><i class="fa fa-check"></i><b>10.1</b> pacf_to_acf</a></li>
+<li class="chapter" data-level="10.2" data-path="stationary.html"><a href="stationary.html#constrain_stationary"><i class="fa fa-check"></i><b>10.2</b> constrain_stationary</a></li>
+<li class="chapter" data-level="10.3" data-path="stationary.html"><a href="stationary.html#acf_to_pacf"><i class="fa fa-check"></i><b>10.3</b> acf_to_pacf</a></li>
+<li class="chapter" data-level="10.4" data-path="stationary.html"><a href="stationary.html#unconstrain_stationary"><i class="fa fa-check"></i><b>10.4</b> unconstrain_stationary</a></li>
+<li class="chapter" data-level="10.5" data-path="stationary.html"><a href="stationary.html#kronecker_prod"><i class="fa fa-check"></i><b>10.5</b> kronecker_prod</a></li>
+<li class="chapter" data-level="10.6" data-path="stationary.html"><a href="stationary.html#arima_stationary_cov"><i class="fa fa-check"></i><b>10.6</b> arima_stationary_cov</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html"><i class="fa fa-check"></i><b>11</b> Simulators and Smoothing Simulators</a><ul>
+<li class="chapter" data-level="11.1" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_idx"><i class="fa fa-check"></i><b>11.1</b> ssm_sim_idx</a></li>
+<li class="chapter" data-level="11.2" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_size"><i class="fa fa-check"></i><b>11.2</b> ssm_sim_size</a></li>
+<li class="chapter" data-level="11.3" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_y"><i class="fa fa-check"></i><b>11.3</b> ssm_sim_get_y</a></li>
+<li class="chapter" data-level="11.4" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_a"><i class="fa fa-check"></i><b>11.4</b> ssm_sim_get_a</a></li>
+<li class="chapter" data-level="11.5" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_eps"><i class="fa fa-check"></i><b>11.5</b> ssm_sim_get_eps</a></li>
+<li class="chapter" data-level="11.6" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_get_eta"><i class="fa fa-check"></i><b>11.6</b> ssm_sim_get_eta</a></li>
+<li class="chapter" data-level="11.7" data-path="simulators-and-smoothing-simulators.html"><a href="simulators-and-smoothing-simulators.html#ssm_sim_rng"><i class="fa fa-check"></i><b>11.7</b> ssm_sim_rng</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html"><i class="fa fa-check"></i><b>12</b> Simulation Smoothers</a><ul>
+<li class="chapter" data-level="12.1" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#ssm_simsmo_state_rng"><i class="fa fa-check"></i><b>12.1</b> ssm_simsmo_state_rng</a></li>
+<li class="chapter" data-level="12.2" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#ssm_simsmo_eta_rng"><i class="fa fa-check"></i><b>12.2</b> ssm_simsmo_eta_rng</a></li>
+<li class="chapter" data-level="12.3" data-path="simulation-smoothers-1.html"><a href="simulation-smoothers-1.html#ssm_simsmo_eps_rng"><i class="fa fa-check"></i><b>12.3</b> ssm_simsmo_eps_rng</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="time-invariant-kalman-filter" class="section level1">
+<h1><span class="header-section-number">Chapter 8</span> Time-Invariant Kalman Filter</h1>
+<p><span class="citation">(<span class="citeproc-not-found" data-reference-id="section"><strong>???</strong></span>)</span> Time-Invariant Kalman Filter</p>
+<pre class="stan"><code></code></pre>
+<div id="ssm_check_matrix_equal" class="section level2">
+<h2><span class="header-section-number">8.1</span> ssm_check_matrix_equal</h2>
+<ul>
+<li><code>matrix</code> <strong>A</strong> An <span class="math inline">\(m \times n\)</span> matrix.</li>
+<li><code>matrix</code> <strong>B</strong> An <span class="math inline">\(m \times n\)</span> matrix.</li>
+<li><code>real</code> <strong>The</strong> relative tolerance for convergence.</li>
+</ul>
+<p><strong>return:</strong> <code>int</code> If converged, then 1, else 0.</p>
+<p>Check if two matrices are approximately equal</p>
+<p>The matrices <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are considered approximately equal if <span class="math display">\[
+\max(A - B) / \max(A) &lt; \epsilon,
+\]</span> where <span class="math inline">\(\epsilon\)</span> is the tolerance.</p>
+<pre class="stan"><code>int ssm_check_matrix_equal(matrix A, matrix B, real tol) {
+  real eps;
+  eps = max(to_vector(A - B)) / max(to_vector(A));
+  if (eps &lt; tol) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+</code></pre>
+</div>
+<div id="ssm_constant_lpdf" class="section level2">
+<h2><span class="header-section-number">8.2</span> ssm_constant_lpdf</h2>
+<ul>
+<li><code>vector[]</code> <strong>y</strong> Observations, <span class="math inline">\(\vec{y}_t\)</span>. An array of size <span class="math inline">\(n\)</span> of <span class="math inline">\(p \times 1\)</span> vectors.</li>
+<li><code>vector</code> <strong>d</strong> Observation intercept, <span class="math inline">\(\vec{d}_t\)</span>. An array of <span class="math inline">\(p \times 1\)</span> vectors.</li>
+<li><code>matrix</code> <strong>Z</strong> Design matrix, <span class="math inline">\(\mat{Z}_t\)</span>. An array of <span class="math inline">\(p \times m\)</span> matrices.</li>
+<li><code>matrix</code> <strong>H</strong> Observation covariance matrix, <span class="math inline">\(\mat{H}_t\)</span>. An array of <span class="math inline">\(p \times p\)</span> matrices.</li>
+<li><code>vector</code> <strong>c</strong> State intercept, <span class="math inline">\(\vec{c}_t\)</span>. An array of <span class="math inline">\(m \times 1\)</span> vectors.</li>
+<li><code>matrix</code> <strong>T</strong> Transition matrix, <span class="math inline">\(\mat{T}_t\)</span>. An array of <span class="math inline">\(m \times m\)</span> matrices.</li>
+<li><code>matrix</code> <strong>R</strong> State covariance selection matrix, <span class="math inline">\(\mat{R} _t\)</span>. An array of <span class="math inline">\(p \times q\)</span> matrices.</li>
+<li><code>matrix</code> <strong>Q</strong> State covariance matrix, <span class="math inline">\(\mat{Q}_t\)</span>. An array of <span class="math inline">\(q \times q\)</span> matrices.</li>
+<li><code>vector</code> <strong>a1</strong> Expected value of the intial state, <span class="math inline">\(a_1 = \E(\alpha_1)\)</span>. An <span class="math inline">\(m \times 1\)</span> matrix.</li>
+<li><code>matrix</code> <strong>P1</strong> Variance of the initial state, <span class="math inline">\(P_1 = \Var(\alpha_1)\)</span>. An <span class="math inline">\(m \times m\)</span> matrix.</li>
+</ul>
+<p><strong>return:</strong> <code>real</code> The log-likelihood, <span class="math inline">\(p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})\)</span>, marginalized over the latent states.</p>
+<p>Log-likelihood of a Time-Invariant Linear Gaussian State Space Model</p>
+<p>Unlike <code>ssm_filter</code>, this function requires the system matrices (<code>d</code>, <code>Z</code>, <code>H</code>, <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code>) to all be time invariant (constant). When the state space model is time-invariant, then the Kalman recursion for <span class="math inline">\(\mat{P}_t\)</span> converges. This function takes advantage of this feature and stops updating <span class="math inline">\(\mat{P}_t\)</span> after it converges to a steady state.</p>
+<pre class="stan"><code>real ssm_constant_lpdf(vector[] y,
+                      vector d, matrix Z, matrix H,
+                      vector c, matrix T, matrix R, matrix Q,
+                      vector a1, matrix P1) {
+  real ll;
+  int n;
+  int m;
+  int p;
+
+  n = size(y); // number of obs
+  m = cols(Z);
+  p = rows(Z);
+  {
+    vector[n] ll_obs;
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    matrix[p, p] Finv;
+    matrix[m, p] K;
+    matrix[m, m] RQR;
+    // indicator for if the filter has converged
+    // This only works for time-invariant state space models
+    int converged;
+    matrix[m, m] P_old;
+    real tol;
+    converged = 0;
+    tol = 1e-7;
+
+    RQR = quad_form(Q, R);
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      v = ssm_filter_update_v(y[t], a, d, Z);
+      if (converged &lt; 1) {
+        Finv = ssm_filter_update_Finv(P, Z, H);
+        K = ssm_filter_update_K(P, Z, T, Finv);
+      }
+      ll_obs[t] = ssm_filter_update_ll(v, Finv);
+      // don&#39;t save a, P for last iteration
+      if (t &lt; n) {
+        a = ssm_filter_update_a(a, c, T, v, K);
+        // check for convergence
+        // should only check for convergence if there are no missing values
+        if (converged &lt; 1) {
+          P_old = P;
+          P = ssm_filter_update_P(P, Z, T, RQR, K);
+          converged = ssm_check_matrix_equal(P, P_old, tol);
+        }
+      }
+    }
+    ll = sum(ll_obs);
+  }
+  return ll;
+}
+
+
+</code></pre>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="linear-gaussian-state-space-model-log-likelihood.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="common-smoother-functions.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/functions.Rmd",
+"text": "Edit"
+},
+"download": ["ssmodels-in-stan.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

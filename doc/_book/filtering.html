@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-06-30">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="filtering-and-smoothing.html">
+<link rel="next" href="smoothing.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\VEC}{vec}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="3.1" data-path="filtering.html"><a href="filtering.html"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="smoothing.html"><a href="smoothing.html"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="smoothing.html"><a href="smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="smoothing.html"><a href="smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.2</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.3" data-path="smoothing.html"><a href="smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Fast state smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#mean-correction-simulation-smoother"><i class="fa fa-check"></i><b>3.3.1</b> Mean correction simulation smoother</a></li>
+<li class="chapter" data-level="3.3.2" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#forward-filter-backwards-smoother-ffbs"><i class="fa fa-check"></i><b>3.3.3</b> Forward-filter backwards-smoother (FFBS)</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="missing-observations.html"><a href="missing-observations.html"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="forecasting-matrices.html"><a href="forecasting-matrices.html"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>4</b> Software</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="filtering" class="section level2">
+<h2><span class="header-section-number">3.1</span> Filtering</h2>
+<p>From <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3)</span></p>
+$$
+\begin{aligned}[t]
+
+ .
+\end{aligned}
+<p>$$</p>
+<p>Let <span class="math inline">\(\vec{a}_t = \E(\vec{\alpha}_t | y_{1, \dots, t - 1})\)</span> be the expected value <span class="math inline">\(\vec{P}_t = \Var(\vec{\alpha}_t | y_{1, \dots, t - 1})\)</span> be the variance of the state in <span class="math inline">\(t + 1\)</span> given data up to time <span class="math inline">\(t\)</span>. To calculate <span class="math inline">\(\vec{\alpha}_{t + 1}\)</span> and <span class="math inline">\(\mat{P}_{t + 1}\)</span> given the arrival of new data at time <span class="math inline">\(t\)</span>, <span class="math display">\[
+\begin{aligned}[t]
+\vec{v}_t &amp;= \vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t, \\
+\mat{F}_t &amp;= \mat{Z}_t \mat{P}_t \mat{Z}_t\T + \mat{H}_t, \\
+\mat{K}_t &amp;= \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} \\
+\vec{a}_{t + 1} &amp;= \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t + \vec{c}_t \\
+\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t (\mat{T}_t - \mat{K}_t \mat{Z}_t)\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T .
+\end{aligned}
+\]</span> The vector <span class="math inline">\(\vec{v}_t\)</span> are the <em>one-step ahead forecast errors$, and the matrix <span class="math inline">\(\mat{K}_t\)</span> is called the </em>Kalman gain*.</p>
+<p>The filter can also be written to estimate the <em>filtered states</em>, where <span class="math inline">\(\vec{a}_{t|t} = \E(\vec{\alpha}_t | y_{1, \dots, t})\)</span> is the expected value and <span class="math inline">\(\vec{P}_{t|t} = \Var(\vec{\alpha}_t | y_{1, \dots, t})\)</span> is the variance of the state <span class="math inline">\(\vec{\alpha}_t\)</span> given information up to <em>and including</em> <span class="math inline">\(\vec{y}_t\)</span>. The filter written this way is, <span class="math display">\[
+\begin{aligned}[t]
+\vec{v}_t &amp;= \vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t, \\
+\mat{F}_t &amp;= \mat{Z}_t \mat{P}_t \mat{Z}_t\T + \mat{H}_t, \\
+\vec{a}_{t|t} &amp;= \vec{a}_t + \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} v_t , \\
+\mat{P}_{t|t} &amp;= \mat{P}_t - \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} \mat{Z}_t \mat{P}_t , \\
+\vec{a}_{t + 1} &amp;= \mat{T}_{t} \vec{a}_{t|t} + \vec{c}_t, \\
+\mat{P}_{t + 1} &amp; = \mat{T}_t \mat{P}_{t|t} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T .
+\end{aligned}
+\]</span></p>
+<table>
+<caption>Dimensions of matrices and vectors in the SSM</caption>
+<thead>
+<tr class="header">
+<th align="left">matrix/vector</th>
+<th align="left">dimension</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{v}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\vec{a}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\vec{a}_{t|t}\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{F}_t\)</span></td>
+<td align="left"><span class="math inline">\(p \times p\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{K}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times p\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\mat{P}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{P}_{t|T}\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><span class="math inline">\(\vec{x}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times 1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"><span class="math inline">\(\mat{L}_t\)</span></td>
+<td align="left"><span class="math inline">\(m \times m\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3.4)</span>: For a time-invariant state space model, the Kalman recursion for <span class="math inline">\(\mat{P}_{t + 1}\)</span> converges to a constant matrix <span class="math inline">\(\bar{\mat{P}}\)</span>, <span class="math display">\[
+\bar{\mat{P}} = \mat{T} \bar{\mat{P}} \mat{T}\T - \mat{T} \bar{\mat{P}} \mat{Z}\T \bar{\mat{F}}^{-1} \mat{Z} \bar{\mat{P}} \mat{T}\T + \mat{R} \mat{Q} \mat{R}\T ,
+\]</span> where <span class="math inline">\(\bar{\mat{F}} = \mat{Z} \bar{\mat{P}} \mat{Z}\T + \mat{H}\)</span>.</p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.3.5)</span>: The <em>state estimation error</em> is, <span class="math display">\[
+\vec{x}_t = \vec{\alpha}_t - \vec{a}_t,
+\]</span> where <span class="math inline">\(\Var(\vec{x}_t) = \mat{P}_t\)</span>. The <span class="math inline">\(v_t\)</span> are sometimes called <em>innovations</em>, since they are the part of <span class="math inline">\(\vec{y}_t\)</span> not predicted from the past. The innovation analog of the state space model is <span class="math display">\[
+\begin{aligned}[t]
+\vec{v}_t &amp;= \mat{Z}_t \vec{x}_t + \vec{\varepsilon}_t ,  \\
+\vec{x}_{t + 1} &amp;= \mat{L} \vec{x}_{t} + \mat{R}_t \vec{\eta}_t - \mat{K}_t \vec{\varepsilon}_t , \\
+\mat{K}_t &amp;= \mat{T}_t \mat{P}_t \mat{Z}_t\T \mat{F}_t^{-1} , \\
+\mat{L}_t &amp;= \mat{T}_t - \mat{K}_t \mat{Z}_t ,
+\mat{P}_{t + 1} &amp;= \mat{T}_t \mat{P}_t \mat{L}_t\T +  \mat{R}_t \mat{Q}_t \mat{R}_T\T  .
+\end{aligned}
+\]</span> These recursions allow for a simpler derivation of <span class="math inline">\(\mat{P}_{t + 1}\)</span>, and are useful for the smoothing recursions. Moreover, the one-step ahead forecast errors are indendendent, which allows for a simple derivation of the log-likelihood.</p>
+<p>Alternative methods <strong>TODO</strong></p>
+<ul>
+<li>square-root filtering</li>
+<li>precision filters</li>
+<li>sequential filtering</li>
+</ul>
+</div>
+<h3> Software</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="filtering-and-smoothing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="smoothing.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/filtering.Rmd",
+"text": "Edit"
+},
+"download": ["ssmodels-in-stan.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

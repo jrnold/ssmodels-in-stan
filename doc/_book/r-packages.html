@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>State Space Models in Stan</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="Documentation for State Space Models in Stan.">
+  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+
+  <meta property="og:title" content="State Space Models in Stan" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Documentation for State Space Models in Stan." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="State Space Models in Stan" />
+  
+  <meta name="twitter:description" content="Documentation for State Space Models in Stan." />
+  
+
+<meta name="author" content="Jeffrey B. Arnold">
+
+<meta name="date" content="2016-06-30">
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="software.html">
+<link rel="next" href="other.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+$$
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\mean}{mean}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Cor}{Cor}
+\DeclareMathOperator{\Bias}{Bias}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\sd}{sd}
+\DeclareMathOperator{\se}{se}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\diag}{diag}
+
+\newcommand{\mat}[1]{\boldsymbol{#1}}
+\newcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\T}{'}
+
+\newcommand{\distr}[1]{\mathcal{#1}}
+\newcommand{\dnorm}{\distr{N}}
+\newcommand{\dmvnorm}[1]{\distr{N}_{#1}}
+\newcommand{\dt}[1]{\distr{T}_{#1}}
+
+\newcommand{\cia}{\perp\!\!\!\perp}
+\DeclareMathOperator*{\plim}{plim}
+$$
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">State Space Models in Stan</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
+<li class="chapter" data-level="3.1" data-path="filtering.html"><a href="filtering.html"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="smoothing.html"><a href="smoothing.html"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="smoothing.html"><a href="smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="smoothing.html"><a href="smoothing.html#updating-smoothed-states"><i class="fa fa-check"></i><b>3.2.2</b> Updating Smoothed States</a></li>
+<li class="chapter" data-level="3.2.3" data-path="smoothing.html"><a href="smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.4" data-path="smoothing.html"><a href="smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.4</b> Fast state smoothing</a></li>
+<li class="chapter" data-level="3.2.5" data-path="smoothing.html"><a href="smoothing.html#classical-state-smoothing"><i class="fa fa-check"></i><b>3.2.5</b> Classical state smoothing</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#mean-corrections"><i class="fa fa-check"></i><b>3.3.1</b> Mean corrections</a></li>
+<li class="chapter" data-level="3.3.2" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#disturbances"><i class="fa fa-check"></i><b>3.3.2</b> Disturbances</a></li>
+<li class="chapter" data-level="3.3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#states"><i class="fa fa-check"></i><b>3.3.3</b> States</a></li>
+<li class="chapter" data-level="3.3.4" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.4</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.5" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#forward-filter-backwards-smoother"><i class="fa fa-check"></i><b>3.3.5</b> Forward-Filter Backwards smoother</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="missing-observations.html"><a href="missing-observations.html"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="forecasting-matrices.html"><a href="forecasting-matrices.html"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>4</b> Software</a><ul>
+<li class="chapter" data-level="4.1" data-path="r-packages.html"><a href="r-packages.html"><i class="fa fa-check"></i><b>4.1</b> R packages</a></li>
+<li class="chapter" data-level="4.2" data-path="other.html"><a href="other.html"><i class="fa fa-check"></i><b>4.2</b> Other</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="other.html"><a href="other.html#stata"><i class="fa fa-check"></i><b>4.2.1</b> Stata</a></li>
+<li class="chapter" data-level="4.2.2" data-path="other.html"><a href="other.html#python"><i class="fa fa-check"></i><b>4.2.2</b> Python</a></li>
+</ul></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">State Space Models in Stan</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="r-packages" class="section level2">
+<h2><span class="header-section-number">4.1</span> R packages</h2>
+<p><span class="citation">Tusell (<a href="#ref-Tusell2011">2011</a>)</span> reviews R packages for state space models (as of 2011). <span class="citation">Helske (<a href="#ref-Helske2012">2012</a>)</span> includes an more recent review of R packages implementing state space models.</p>
+<ul>
+<li>The <strong>stats</strong> package includes functions for univariate Kalman filtering and smoothing (<code>KalmanLike</code>, <code>KalmanRun</code>, <code>KalmanSmooth</code>, <code>KalmanForecast</code>) which are used by <code>StructTS</code> and <code>arima</code>.</li>
+<li>dse</li>
+<li>sspir</li>
+<li>dlm</li>
+<li><p>KFAS</p></li>
+<li>dlmodeler - provides a unified interface to multiple packages</li>
+<li>rucm: structural time series</li>
+<li><p>MARSS - maximum likelihood estimation of a large glass of Guassian state space models with an EM-algorithm</p></li>
+</ul>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-Tusell2011">
+<p>Tusell, Fernando. 2011. “Kalman Filtering in R.” <em>Journal of Statistical Software</em> 39 (2): 1–27. <a href="http://www.jstatsoft.org/v39/i02" class="uri">http://www.jstatsoft.org/v39/i02</a>.</p>
+</div>
+<div id="ref-Helske2012">
+<p>Helske, Jouni. 2012. “KFAS: Kalman Filter and Smoother for Exponential Family State Space Models.” <a href="http://CRAN.R-project.org/package=KFAS" class="uri">http://CRAN.R-project.org/package=KFAS</a>.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="software.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="other.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/software.Rmd",
+"text": "Edit"
+},
+"download": ["ssmodels-in-stan.pdf"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    if (location.protocol !== "file:" && /^https?:/.test(script.src))
+      script.src  = script.src.replace(/^https?:/, '');
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
   library("lubridate")
   library("rprojroot")
 })
-devtools::install("SSModelsStan")
+devtools::install("StanStateSpace")
 
 # Convert ts object to dates assuming that it has start and end years
 ts_to_date <- function(x) {

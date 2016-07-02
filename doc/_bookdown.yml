@@ -6,5 +6,5 @@ rmd_files:
   - "filtering.Rmd"
   #- "estimation.Rmd"
   #- "models.Rmd"
-  - functions.Rmd
+  - stanfunctions.Rmd
   - "software.Rmd"

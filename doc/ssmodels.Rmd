@@ -6,14 +6,14 @@ title: State Space Model Notes
 
 [@DurbinKoopman2012, Sec 3.1]
 
-The linear Gaussian state space model (SSM)[^dlm] the the $n$-dimensional observation sequence $\vec{y}_1, \dots, \vec_
+The linear Gaussian state space model (SSM)[^dlm] the the $n$-dimensional observation sequence $\vec{y}_1, \dots, \vec{y}_n$,
 $$
 \begin{aligned}[t]
 \vec{y}_t &= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}_t,  &
 \vec{\varepsilon}_t & \sim N(0, \mat{H}_t), \\
 \vec{\alpha}_{t + 1} &= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}_t,  &
 \vec{\eta}_t & \sim N(0, \mat{Q}_t), \\
-&& \vec{\alpha}_1 &\sim N(\vec{a}_1, \mat{P}_1)
+&& \vec{\alpha}_1 &\sim N(\vec{a}_1, \mat{P}_1) .
 \end{aligned}
 $$
 for $t = 1, \dots, n$.

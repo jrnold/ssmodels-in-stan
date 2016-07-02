@@ -26,7 +26,7 @@ stan(model_code = model$model_code)
 Ensure a matrix is symmetrix.
 
 @param x An $n \times n$ matrix.
-@return An $n times n$ symmetric matrix: $0.5 (x + x')$.
+@return An $n \times n$ symmetric matrix: $0.5 (x + x')$.
 
 */
 matrix to_symmetric_matrix(matrix x) {
@@ -145,7 +145,7 @@ return $m$.
 
 */
 int find_symmat_dim(int n) {
-  // This could be solved by finding the positive root of m = m (m + 1)/2 but
+  // This could be solved by finding the positive root of $m = m (m + 1)/2 but
   // Stan doesn't support all the functions necessary to do this.
   int i;
   int remainder;
@@ -205,23 +205,23 @@ vector symmat_to_vector(matrix x) {
 }
 /**
 
-@section Filtering Utility Functions
+@section Filtering
 
 Functions used in filtering and log-likelihood calculations.
 */
 /** ssm_filter_update_a
-Update the expected value of the predicted state, $a_{t + 1} = \E(\alpha_{t + 1} | \vec{y}_{1:t}$,
+Update the expected value of the predicted state, $\vec{a}_{t + 1} = \E(\vec{\alpha}_{t + 1} | \vec{y}_{1:t})$,
 
-@param vector a An $m \times 1$ vector with the prected state, $a_t$.
-@param vector c An $m \times 1$ vector with the system intercept, $c_t$
-@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
-@param vector v A $p \times 1$ vector with the forecast error, $v_t$.
-@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
-@return vector A $m \times 1$ vector with the predicted state at $t + 1$, $a_{t + 1}$.
+@param vector a An $m \times 1$ vector with the prected state, $\vec{a}_t$.
+@param vector c An $m \times 1$ vector with the system intercept, $\vec{c}_t$
+@param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
+@param vector v A $p \times 1$ vector with the forecast error, $\vec{v}_t$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
+@return vector A $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
 
-The predicted state $a_{t + 1}$ is,
+The predicted state $\vec{a}_{t + 1}$ is,
 $$
-a_{t + 1} = T_t a_t + K_t v_t + c_t .
+\vec{a}_{t + 1} = \mat{T}_t \vec{a}_t + \mat{K}_t \vec{v}_t + \vec{c}_t .
 $$
 
 */
@@ -232,18 +232,18 @@ vector ssm_filter_update_a(vector a, vector c, matrix T, vector v, matrix K) {
 }
 
 /** ssm_filter_update_P
-Update the expected value of the predicted state, $P_{t + 1} = \Var(\alpha_{t + 1} | \vec{y}_{1:t}$,
+Update the expected value of the predicted state, $\mat{P}_{t + 1} = \Var(\alpha_{t + 1} | \vec{y}_{1:t})$,
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
-@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
-@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
-@param matrix RQR A $m \times m$ matrix with the system covariance matrix, $R_t Q_t R_t'$.
-@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
-@return matrix An $m \times 1$ vector with the predicted state at $t + 1$, $a_{t + 1}$.
+@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
+@param matrix RQR A $m \times m$ matrix with the system covariance matrix, $\mat{R}_t \mat{Q}_t \mat{R}_t'$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
+@return matrix An $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
 
-The predicted state variance $P_{t + 1}$ is,
+The predicted state variance $\mat{P}_{t + 1}$ is,
 $$
-P_{t + 1} = T_t P_t (T_t - K_t Z_t)' + R_t Q_t R_t' .
+\mat{P}_{t + 1} = \mat{T}_t \mat{P}_t (\mat{T}_t - \mat{K}_t \mat{Z}_t)' + \mat{R}_t \mat{Q}_t \mat{R}_t' .
 $$
 
 */
@@ -257,14 +257,14 @@ matrix ssm_filter_update_P(matrix P, matrix Z, matrix T,
 /** ssm_filter_update_v
 Update the forcast error, $\vec{v}_t = \vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}})$
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
-@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
-@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
-@param matrix RQR An $m \times m$ matrix with the system covariance matrix, $R_t Q_t R_t'$.
-@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
-@return vector An $m \times 1$ vector with the predicted state at $t + 1$, $a_{t + 1}$.
+@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
+@param matrix RQR An $m \times m$ matrix with the system covariance matrix, $\mat{R}_t \mat{Q}_t \mat{R}_t'$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
+@return vector An $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
 
-The forecast error $v_t$ is
+The forecast error $\vec{v}_t$ is
 $$
 \vec{v}_t =\vec{y}_t - \mat{Z}_t \vec{a}_t - \vec{d}_t .
 $$
@@ -279,9 +279,9 @@ vector ssm_filter_update_v(vector y, vector a, vector d, matrix Z) {
 /** ssm_filter_update_F
 Update the variance of the forcast error, $\mat{F}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))$
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
-@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
-@param matrix H A $p \times p$ matrix with the observation covariance matrix, $H_t$.
+@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param matrix H A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
 @return matrix A $p \times p$ vector with $\mat{F}_t$.
 
 The variance of the forecast error $\mat{F}_t$ is
@@ -299,9 +299,9 @@ matrix ssm_filter_update_F(matrix P, matrix Z, matrix H) {
 /** ssm_filter_update_Finv
 Update the precision of the forcast error, $\mat{F}^{-1}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))^{-1}$
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
-@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
-@param matrix H A $p \times p$ matrix with the observation covariance matrix, $H_t$.
+@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param matrix H A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
 @return matrix A $p \times p$ vector with $\mat{F}^{-1}_t$.
 
 This is the inverse of $\mat{F}_t$.
@@ -317,14 +317,14 @@ matrix ssm_filter_update_Finv(matrix P, matrix Z, matrix H) {
 Update the Kalman gain, $\mat{K}_t$.
 
 @param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
-@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$.
-@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
 @param matrix Finv A $p \times p$ matrix
-@return matrix An $m \times p$ matrix with the Kalman gain, $K_t$.
+@return matrix An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
 
 The Kalman gain is
 $$
-\mat{K}_t = \mat{T}_t \mat{P}_t \mat{Z}_t' F^{-1}_t .
+\mat{K}_t = \mat{T}_t \mat{P}_t \mat{Z}_t' \mat{F}^{-1}_t .
 $$
 
 */
@@ -337,10 +337,10 @@ matrix ssm_filter_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
 /** ssm_filter_update_L
 Update $L_t$
 
-@param matrix Z A $p \times m$ matrix with the design matrix, $Z_t$
-@param matrix T An $m \times m$ matrix with the transition matrix, $T_t$.
-@param matrix K An $m \times p$ matrix with the Kalman gain, $K_t$.
-@return matrix An $m \times m$ matrix, $L_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$
+@param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
+@param matrix K An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
+@return matrix An $m \times m$ matrix, $\mat{L}_t$.
 
 $$
 \mat{L}_t = \mat{T}_t - \mat{K}_t \mat{Z}_t .
@@ -356,8 +356,8 @@ matrix ssm_filter_update_L(matrix Z, matrix T, matrix K) {
 /** ssm_filter_update_ll
 Calculate the log-likelihood for a period
 
-@param vector v A $p \times 1$ matrix with the forecast error, $v_t$.
-@param matrix Finv A $p \times p$ matrix with variance of the forecast error, $F^{-1}_t$.
+@param vector v A $p \times 1$ matrix with the forecast error, $\vec{v}_t$.
+@param matrix Finv A $p \times p$ matrix with variance of the forecast error, $\mat{F}^{-1}_t$.
 @return real An $m \times m$ matrix, $L_t$.
 
 The log-likehood of a single observation in a state-space model is
@@ -391,16 +391,16 @@ Indexes of the return values of the Kalman filter functions:
 @return int[,] A $6 \times 3$ integer array containing the indexes of the return values of the Kalman filter.
 
 `ssm_filter_idx` returns a $6 \times 3$ integer array with the
-(length, start index, stop index) of ($L$, $\vec{v}$, $\vec{F}^-1$, $\mat{K}$, $\vec{a}$, $\mat{P}$).
+(length, start index, stop index) of ($\ell_t$, $\vec{v}$, $\vec{F}^-1$, $\mat{K}$, $\vec{a}$, $\mat{P}$).
 
-value      length                 start                               stop
---------   ---------------------- ----------------------------------- ----------------------------------------------
-$\ell$     $1$                    $1$                                 $1$
-$v$        $p$                    $2$                                 $1 + p$
-$F^{-1}$   $p (p + 1) / 2$        $2 + p$                             $1 + p + p * (p + 1) / 2$
-$K$        $mp$                   $2 + p + p (p + 1) / 2$             $1 + p + p (p + 1) / 2 + mp$
-$a_t$      $m$                    $2 + p + p (p + 1) / 2 + mp$        $1 + p + p (p + 1) / 2 + mp + m$
-$P^t$      $m (m + 1) / 2$        $2 + p + p (p + 1) / 2 + mp + m$    $1 + p + p (p + 1) / 2 + mp + m * (m + 1) / 2$
+value            length                 start                               stop
+---------------- ---------------------- ----------------------------------- ----------------------------------------------
+$\ell_t$         $1$                    $1$                                 $1$
+$\vec{v}$        $p$                    $2$                                 $1 + p$
+$\mat{F}^{-1}$   $p (p + 1) / 2$        $2 + p$                             $1 + p + p * (p + 1) / 2$
+$\mat{K}$        $mp$                   $2 + p + p (p + 1) / 2$             $1 + p + p (p + 1) / 2 + mp$
+$\vec{a}_t$      $m$                    $2 + p + p (p + 1) / 2 + mp$        $1 + p + p (p + 1) / 2 + mp + m$
+$\mat{P}^t$      $m (m + 1) / 2$        $2 + p + p (p + 1) / 2 + mp + m$    $1 + p + p (p + 1) / 2 + mp + m * (m + 1) / 2$
 
 
 */
@@ -450,7 +450,7 @@ Get the log-likehood from the results of `ssm_filter`.
 @param vector A vector with results from `ssm_filter`.
 @param int m The number of states
 @param int p The size of the observation vector $\vec{y}_t$.
-@return real The log-likelihood $L_t$
+@return real The log-likelihood $\ell_t$
 
 */
 real ssm_filter_get_loglik(vector x, int m, int p) {
@@ -465,7 +465,7 @@ Get the forecast error from the results of `ssm_filter`.
 @param vector A vector with results from `ssm_filter`.
 @param int m The number of states
 @param int p The size of the observation vector $\vec{y}_t$.
-@return vector A $p \times 1$ vector with the forecast error, $v_t$.
+@return vector A $p \times 1$ vector with the forecast error, $\vec{v}_t$.
 
 */
 vector ssm_filter_get_v(vector x, int m, int p) {
@@ -516,7 +516,7 @@ Get the expected value of the predicted state from the results of `ssm_filter`.
 @param vector A vector with results from `ssm_filter`.
 @param int m The number of states
 @param int p The size of the observation vector $\vec{y}_t$.
-@return vector An $m \times 1$ vector with the expected value of the predicted state, $\E(\vec{alpha}_t | \vec{y}_{1:(t-1)} = a_t$.
+@return vector An $m \times 1$ vector with the expected value of the predicted state, $\E(\vec{\alpha}_t | \vec{y}_{1:(t-1)}) = \vec{a}_t$.
 
 */
 vector ssm_filter_get_a(vector x, int m, int p) {
@@ -533,7 +533,7 @@ Get the variance of the predicted state from the results of `ssm_filter`.
 @param vector A vector with results from `ssm_filter`.
 @param int m The number of states
 @param int p The size of the observation vector $\vec{y}_t$.
-@return matrix An $m \times m$ matrix with the variance of the predicted state, $\Var(\vec{alpha}_t | \vec{y}_{1:(t-1)} = P_t$.
+@return matrix An $m \times m$ matrix with the variance of the predicted state, $\Var(\vec{\alpha}_t | \vec{y}_{1:(t-1)}) = \mat{P}_t$.
 
 */
 matrix ssm_filter_get_P(vector x, int m, int p) {
@@ -545,6 +545,7 @@ matrix ssm_filter_get_P(vector x, int m, int p) {
 }
 
 /** ssm_filter
+
 Kalman filter
 
 @param vector[] y Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
@@ -565,16 +566,16 @@ if it is time varying.
 
 `ssm_filter` runs a forward filter on the state space model and calculates,
 
-- log-likelihood ($\ell_t$) for each observation
+- log-likelihood for each observation, $\ell_t$.
 - Forecast error, $\vec{v}_t = \vec{y}_t - \E(\vec{y}_t | \vec{y}_{1:(t -1)})$.
 - Forecast precision, $\mat{F}^{-1}_t$.
 - Kalman gain, $\mat{K}_t$.
-- Predicted states, $a_t = \E(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$.
-- Variance of the predicted states, $P_t = \Var(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$.
+- Predicted states, $\vec{a}_t = \E(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$.
+- Variance of the predicted states, $\mat{P}_t = \Var(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$.
 
 The results of Kalman filter for a given are returned as a $1 + p + p * (p + 1) / 2 + m p + m * (m + 1) / 2$ vector for each time period, where
 $$
-(\ell_t, \vec{v}_t', \VEC\mat{F}^{-1}_t', \VEC\mat{K}_t', \vec{a}_t', \VEC\mat{P}_t' )''.
+(\ell_t, \vec{v}_t', \VEC(\mat{F}^{-1}_t)', \VEC(\mat{K}_t)', \vec{a}_t', \VEC(\mat{P}_t)' )'.
 $$
 
 */
@@ -695,8 +696,7 @@ Extract $a_{t|t}$ from the results of `ssm_filter_states`
 
 @param vector x A vector returned by `ssm_filter_states`
 @param int m Number of states
-@return matrix An $m \times 1$ vector with the filtered expected value of the staate,
-  $\vec{a}_{t|t} = \E(\vec{\alpha}_t | \vec{y}_{1:t})$.
+@return matrix An $m \times 1$ vector with the filtered expected value of the state, $\vec{a}_{t|t} = \E(\vec{\alpha}_t | \vec{y}_{1:t})$.
 
 */
 vector ssm_filter_states_get_a(vector x, int m) {
@@ -710,8 +710,7 @@ Extract $P_{t|t}$ from the results of `ssm_filter_states`
 
 @param vector x A vector returned by `ssm_filter_states`
 @param int m Number of states
-@return matrix An $m \times m$ matrix with the filtered variance of the staate,
-  $\mat{P}_{t|t} = \Var(\vec{\alpha}_t | \vec{y}_{1:t})$.
+@return matrix An $m \times m$ matrix with the filtered variance of the state, $\mat{P}_{t|t} = \Var(\vec{\alpha}_t | \vec{y}_{1:t})$.
 
 */
 matrix ssm_filter_states_get_P(vector x, int m) {
@@ -724,8 +723,7 @@ matrix ssm_filter_states_get_P(vector x, int m) {
 Calculate filtered expected values and variances of the states
 
 The filtering function `ssm_filter` returns the mean and variance of the predicted states,
-$\vec{a}_t = \E(\vec{alpha}_t | \vec{y}_{1:(t -1)})$ and $\mat{P}_t = \Var(\vec{alpha}_t | \vec{y}_{1:(t -1)})$.
-Using these results, this function calculates the mean and variance of the filtered states, $\vec{a}_{t|t} = \E(\vec{alpha}_t | \vec{y}_{1:t})$ and $\mat{P}_{t|t} = \Var(\vec{alpha}_t | \vec{y}_{1:t})$.
+$\vec{a}_t = \E(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$ and $\mat{P}_t = \Var(\vec{\alpha}_t | \vec{y}_{1:(t -1)})$.
 
 @param vector[] filter Results from `ssm_filter`
 @param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
@@ -733,7 +731,7 @@ Using these results, this function calculates the mean and variance of the filte
 
 The vectors returned by `ssm_filter_states` are of length $m + m ^ 2$, with
 $$
-v_t = (\vec{a}_{t|t}', \VEC\vec{P}_{t|t})'
+\vec{v}_t = (\vec{a}_{t|t}', \VEC(\vec{P}_{t|t})' )'
 $$
 Use the functions `ssm_filter_states_get_a` and `ssm_filter_states_get_P` to extract
 elements from the results.
@@ -785,7 +783,7 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
 
 /**
 
-@section Linear Gaussian State Space Model Log-likelihood
+@section Log-likelihood
 
 */
 /** ssm_lpdf
@@ -801,13 +799,13 @@ Log-likelihood of a Linear Gaussian State Space Model
 @param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
 @param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 @param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-@return real The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
+@return real The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, \mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
 
 For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
 not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
 if it is time varying.
 
-The log-likelihood of a linear gaussian state space model is,
+The log-likelihood of a linear Gaussian state space model is,
 If the the system matrices and initial conditions are known, the log likelihood is
 $$
 \begin{aligned}[t]
@@ -947,7 +945,7 @@ Log-likelihood of a Time-Invariant Linear Gaussian State Space Model
 @param matrix Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
 @param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 @param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-@return real The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
+@return real The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, \mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
 
 Unlike `ssm_filter`, this function requires the system matrices (`d`, `Z`, `H`, `c`, `T`, `R`, `Q`)
 to all be time invariant (constant).
@@ -1053,7 +1051,7 @@ Update $\mat{N}_t$ in smoothing recursions
 
 In smoothing recursions, the matrix $\vec{N}_t$ is updated with,
 $$
-\mat{N}_{t - 1} = \mat{Z})_t' \mat{F}^{-1}_t \mat{Z}_t + \mat{L}_t' \mat{N}_t \mat{L}_t .
+\mat{N}_{t - 1} = \mat{Z}_t' \mat{F}^{-1}_t \mat{Z}_t + \mat{L}_t' \mat{N}_t \mat{L}_t .
 $$
 
 See [@DurbinKoopman2012, p. 91]
@@ -1120,7 +1118,7 @@ For `Z` and `T` the array can have a size of 1, if it is not time-varying, or a 
 
 The vectors returned by this function have $m + m ^ 2$ elements in this format,
 $$
-(\hat{\vec{\alpha}}_t', \VEC\mat{V}_t' ).
+(\hat{\vec{\alpha}}_t', \VEC(\mat{V}_t)' )'.
 $$
 Use the `ssm_smooth_state_get_mean` and `ssm_smooth_state_get_var` to extract components
 from the returned vectors.
@@ -1128,7 +1126,7 @@ from the returned vectors.
 value                                        length          start                 end
 -------------------------------------------- --------------- --------------------- --------------------
 $\hat{\vec{\alpha}}_t$                       $m$             $1$                   $m$
-$\mat{V}_t                                   $m (m + 1) / 2$ $m + 1$               $m + m (m + 1) / 2$
+$\mat{V}_t$                                  $m (m + 1) / 2$ $m + 1$               $m + m (m + 1) / 2$
 
 
 See @DurbinKoopman2012, Eq 4.44 and eq 4.69.
@@ -1249,7 +1247,7 @@ matrix ssm_smooth_eps_get_var(vector x, int p) {
 
 The observation disturbance smoother
 
-This calculates the mean and variance of the observation distrurbances, $\vec{\varepsilon}_t$,
+This calculates the mean and variance of the observation disturbances, $\vec{\varepsilon}_t$,
 given the entire sequence, $\vec{y}_{1:n}$.
 
 
@@ -1257,8 +1255,7 @@ given the entire sequence, $\vec{y}_{1:n}$.
 @param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
 @param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
 @param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
-@return vector[] An array of vectors constaining $\hat{\vec{varepsilon}}_t$ and $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$
-  in the format described below.
+@return vector[] An array of vectors constaining $\hat{\vec{\varepsilon}}_t$ and $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$ in the format described below.
 
 
 For Z`, `H`, T`, the array can have a size of 1, if it is not time-varying, or a size of $n$ (for `Z`, `H`) or $n - 1$ (for `T`),
@@ -1266,7 +1263,7 @@ if it is time varying.
 
 The vectors returned by this function have $p + p (p + 1) / 2$ elements in this format,
 $$
-(hat{\vec{\varepsilon}}_t', \VEC\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})' )'
+(\hat{\vec{\varepsilon}}_t', \VEC(\Var(\vec{\varepsilon}_t | \vec{y}_{1:n}))' )'
 $$
 
 value                                        length          start                 end
@@ -1383,7 +1380,7 @@ Extract $\Var(\eta_t|\vec{y}_{1:n})$ from vectors returned by `ssm_smooth_eta`
 
 @param vector x A vector returned by `ssm_smooth_eta`
 @param int q The number of state disturbances, $\vec{\eta}_t$.
-@return matrix A $q \times q$ matrix with $\Var{\vec{\eta}_t | \vec{y}_{1:n}}$.
+@return matrix A $q \times q$ matrix with $\Var(\vec{\eta}_t | \vec{y}_{1:n})$.
 
 */
 matrix ssm_smooth_eta_get_var(vector x, int q) {
@@ -1404,13 +1401,13 @@ given the entire sequence, $\vec{y}_{1:n}$.
 @param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
 @param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
 @param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
-@return vector[] An array of vectors constaining $\hat{\vec{eta}}_t$ and $\Var(\vec{\eta}_t | \vec{y}_{1:n})$ in the format described below.
+@return vector[] An array of vectors constaining $\hat{\vec{\eta}}_t$ and $\Var(\vec{\eta}_t | \vec{y}_{1:n})$ in the format described below.
 
 For `Z`, `T`, `R`, `Q` the array can have a size of 1, if it is not time-varying, or a size of $n$ (for `Z`) or $n - 1$ (for `T`, `R`, `Q`) if it is time varying.
 
 The vectors returned by this function have $q + q (q + 1) / 2$ elements in this format,
 $$
-(\hat{\vec{eta}}_t', \VEC\Var(\vec{\eta}_t | \vec{y}_{1:n})' ).
+(\hat{\vec{\eta}}_t', \VEC(\Var(\vec{\eta}_t | \vec{y}_{1:n}))' ).
 $$
 Use the `ssm_smooth_eta_get_mean` and `ssm_smooth_eta_get_var` to extract components
 from the returned vectors.
@@ -1506,9 +1503,9 @@ vector[] ssm_smooth_eta(vector[] filter,
 
 The fast state smoother
 
-The fast state smoother calculates $\hat{\vec{alpha}}_t = \E(\vec{alpha}_t | \vec{y}_{1:n})$.
+The fast state smoother calculates $\hat{\vec{\alpha}}_t = \E(\vec{\alpha}_t | \vec{y}_{1:n})$.
 $$
-\hat{\vec{alpha}}_{t + 1} = T_t \hat{\vec{alpha}}_{t} + \mat{R}_t \mat{Q}_t \mat{R}'_t \vec{r}_t ,
+\hat{\vec{\alpha}}_{t + 1} = \mat{T}_t \hat{\vec{\alpha}}_{t} + \mat{R}_t \mat{Q}_t \mat{R}'_t \vec{r}_t ,
 $$
 where $r_t$ is calcualted from the state disturbance smoother.
 The smoother is initialized at $t = 1$ with $\hat{\vec{\alpha}}_t = \vec{a}_1 + \mat{P}_1 \vec{r}_0$.
@@ -1521,7 +1518,7 @@ Unlike the normal state smoother, it does not calculate the variances of the smo
 @param matrix[] T Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
 @param matrix[] R State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
 @param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
-@return vector[] An array of size $n$ of $m \times 1$ vectors containing $\hat{\vec{\alph}}_t$.
+@return vector[] An array of size $n$ of $m \times 1$ vectors containing $\hat{\vec{\alpha}}_t$.
 
 For  `Z`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
 not time-varying, or a size of $n$ (for `Z`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
@@ -1653,7 +1650,7 @@ Indexes of each component of `ssm_sim_rng` results.
 @return int[,] A 4 x 3 array of integers
 
 The returned array has columns (length, start location, and end location)
-for rews: $y_t$, $\alpha_t$, $\varepsilon_t$, and $\eta_t$ in the results of `ssm_sim_rng`.
+for rows: $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\varepsilon}_t$, and $\vec{\eta}_t$ in the results of `ssm_sim_rng`.
 
 */
 int[,] ssm_sim_idx(int m, int p, int q) {
@@ -1694,7 +1691,7 @@ int ssm_sim_size(int m, int p, int q) {
 
 /** ssm_sim_get_y
 
-Extract $\vec{y}_t$ from vectors returne by `ssm_sim_rng`.
+Extract $\vec{y}_t$ from vectors returned by `ssm_sim_rng`.
 
 @param int m The number of states
 @param int p The length of the observation vector
@@ -1778,13 +1775,13 @@ Simulate from a Linear Gaussian State Space model.
 @param matrix[] Q State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
 @param vector a1 Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 @param matrix P1 Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-@return Array of size $n$ of vectors with Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}}_t$. See the description.
+@return Array of size $n$ of vectors with Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}_t$. See the description.
 
 For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
 not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
 if it is time varying.
 
-Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}}_t$ from
+Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}_t$ from
 the state space model,
 $$
 \begin{aligned}[t]
@@ -2138,7 +2135,7 @@ vector pacf_to_acf(vector x) {
 /** constrain_stationary
 Constrain vector of coefficients to the stationary and intertible region for AR or MA functions.
 
-@param vector x An unconstrained vector in (-Inf, Inf)
+@param vector x An unconstrained vector in $(-\infty, \infty)$
 @return vector A vector of coefficients for a stationary AR or inverible MA process.
 
 See @Jones1980a, @Jones1987a, @Monahan1984a, @AnsleyKohn1986a, and the functions
@@ -2184,7 +2181,7 @@ vector acf_to_pacf(vector x) {
 }
 
 /** unconstrain_stationary
-Transform from stationary and invertible space to (-Inf, Inf)
+Transform from stationary and invertible space to $(-\infty, \infty)$.
 
 @param vector x Coeffcients of an autocorrelation function.
 @return vector Coefficients of the corresponding partial autocorrelation function.
@@ -2211,7 +2208,7 @@ Kronecker product
 
 The Kronecker product of a $A$ and $B$ is
 $$
-A \crossprod B =
+A \otimes B =
 \begin{bmatrix}
 a_{11} B \cdots a_{1n} B \\
 \vdots & \ddots & vdots \\
@@ -2261,9 +2258,9 @@ Find the covariance of the stationary distribution of an ARMA model
 The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0),
 where $Q_0$ is the solution to
 $$
-(T \crossprod T) vec(Q_0) = vec(R R')
+(T \otimes T) \VEC(Q_0) = \VEC(R R')
 $$
-where $vec(Q_0)$ and $vec(R R')$ are the stacked columns of $Q_0$ and $R R'$
+where $\VEC(Q_0)$ and $\VEC(R R')$ are the stacked columns of $Q_0$ and $R R'$
 
 See @DurbinKoopman2012, Sec 5.6.2.
 

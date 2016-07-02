@@ -14,9 +14,11 @@ NULL
 #' @param diag logical. Include diagonal?
 #' @param idx integer. Indexes of rows (if \code{rows = TRUE}),
 #'   or columns (if \code{rows = FALSE}) to select.
-#' @param j The index to set to one.
 #' @param rows logical. If \code{TRUE}, then the selection matrix
-#'   selects rows, if false, then it selects columns. In the
+#'   selects rows, if false, then it selects columns.
+#'
+#' @param k Index of the diagonal. 0 is the main diagonal, positive numbers for
+#'    upper diagonals, negative numbers for lower diagonals.
 #' @return For \code{unit_lower_tri} and \code{unit_upper_tri} a
 #'   matrix of dimensions \code{c(m, n)}. For \code{selection_matrix}
 #'   a matrix with dimensions \code{m, length(idx)} if \code{rows = TRUE},
@@ -48,7 +50,7 @@ selection_matrix <- function(m, idx, rows = TRUE) {
   }
   x
 }
-#' @describeIn unit_lower_tri Generate selection vector
+#' @describeIn unit_lower_tri Generate matrix with ones on the diagonal
 #' @export
 eye <- function(m, n = m, k = 0) {
   if (k == 0) {

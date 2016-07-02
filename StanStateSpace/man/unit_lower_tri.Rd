@@ -13,7 +13,7 @@ unit_upper_tri(m, n = m, diag = TRUE)
 
 selection_matrix(m, idx, rows = TRUE)
 
-eye(n, j = 1)
+eye(m, n = m, k = 0)
 }
 \arguments{
 \item{m}{integer. Number of rows in the matrix}
@@ -26,9 +26,10 @@ eye(n, j = 1)
 or columns (if \code{rows = FALSE}) to select.}
 
 \item{rows}{logical. If \code{TRUE}, then the selection matrix
-selects rows, if false, then it selects columns. In the}
+selects rows, if false, then it selects columns.}
 
-\item{j}{The index to set to one.}
+\item{k}{Index of the diagonal. 0 is the main diagonal, positive numbers for
+upper diagonals, negative numbers for lower diagonals.}
 }
 \value{
 For \code{unit_lower_tri} and \code{unit_upper_tri} a
@@ -46,6 +47,6 @@ in state space models.
 
 \item \code{selection_matrix}: Generate a selection matrix.
 
-\item \code{eye}: Generate selection vector
+\item \code{eye}: Generate matrix with ones on the diagonal
 }}
 

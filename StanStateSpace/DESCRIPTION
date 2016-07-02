@@ -12,5 +12,6 @@ Imports:
   rstan,
   lubridate
 Suggests:
-  KFAS
+  KFAS,
+    testthat
 RoxygenNote: 5.0.1

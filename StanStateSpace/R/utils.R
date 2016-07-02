@@ -24,13 +24,15 @@ NULL
 #'
 #' @export
 unit_lower_tri <- function(m, n = m, diag = TRUE) {
-  as.numeric(lower.tri(matrix(0, m, n), diag = diag))
+  matrix(as.numeric(lower.tri(matrix(0, m, n), diag = diag)),
+         m, n)
 }
 
 #' @describeIn unit_lower_tri Generate an unit upper triangular matrix.
 #' @export
 unit_upper_tri <- function(m, n = m, diag = TRUE){
-  as.numeric(upper.tri(matrix(0, m, n), diag = diag))
+  matrix(as.numeric(upper.tri(matrix(0, m, n), diag = diag)),
+         m, n)
 }
 
 #' @describeIn unit_lower_tri Generate a selection matrix.
@@ -48,10 +50,55 @@ selection_matrix <- function(m, idx, rows = TRUE) {
 }
 #' @describeIn unit_lower_tri Generate selection vector
 #' @export
-eye <- function(n, j = 1) {
-  x <- rep(0, n)
-  x[j] <- 1
+eye <- function(m, n = m, k = 0) {
+  if (k == 0) {
+    x <- diag(1, m, n)
+  } else {
+    # not identity
+    x <- matrix(0, m, n)
+    if (k < 0 && abs(m > abs(k))) {
+      for (i in 1:(m + k)) {
+        x[i - k, i] <- 1
+      }
+    } else if (k > 0 && abs(n > k)) {
+      for (i in 1:(n - k)) {
+        x[i, i + k] <- 1
+      }
+    }
+  }
   x
+}
+
+
+
+#' Vector to symmetric matrix
+#'
+#' @param x vector with n (n + 1) / 2 elements.
+#' @return A n x n symmetric matrix
+#'
+#' This fills in the matrix assuming that the elements
+#' are from the lower triangular part of the symmetric
+#' matrix, and were filled in column-wise.
+#'
+#' @export
+vector_to_symmat <- function(x) {
+  # This should be rewritten in RCpp. It is not very
+  # idiomatic at the moment.
+  num_el <- length(x)
+  mat_rows <- floor(sqrt(2 * num_el))
+  # use x[1] to ensure newmat has the same type as x
+  newmat <- matrix(x[1], mat_rows, mat_rows)
+  k <- 1
+  for (i in 1:mat_rows) {
+    for (j in 1:i) {
+      newmat[i, j] <- x[k]
+      if (i != j) {
+        newmat[j, i] <- x[k]
+      }
+      k <- k + 1
+    }
+  }
+  newmat
 }
 
 #' Convert
@@ -78,7 +125,7 @@ as.Date.ts <- function(x, ...) {
   } else if (f == 1) {
     dates <- yr
   } else {
-    daze <- tx %% 1 * (365 + leap_year(yr))
+    daze <- floor(tx %% 1 * (365 + leap_year(yr)))
     dates <- yr + days(daze)
   }
   dates

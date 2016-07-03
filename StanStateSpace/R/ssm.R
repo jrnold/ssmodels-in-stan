@@ -105,8 +105,9 @@ gen_ssm_sim_rng_extractor <- function(m, p, q) {
 }
 
 extract_ssm_param <- function(param, x) {
+  # The dimensions of the array are (iteration, time, returndim)
   if (param[["type"]] == "symmetric_matrix") {
-      x[ , , param[["start"]]:param[["end"]], drop = FALSE]
+      x[ , , param[["start"]]:param[["end"]], drop = FALSE],
   } else {
     if (length(param[["dim"]]) == 1) {
       aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE])

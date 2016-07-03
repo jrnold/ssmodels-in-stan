@@ -169,35 +169,35 @@ vector ssm_filter_get_v(vector x, int m, int p) {
   vector[p] y;
   int idx[6, 3];
   idx = ssm_filter_idx(m, p);
-  y = segment(x, idx[2, 2], idx[2, 3]);
+  y = segment(x, idx[2, 2], idx[2, 1]);
   return y;
 }
 matrix ssm_filter_get_Finv(vector x, int m, int p) {
   matrix[p, p] y;
   int idx[6, 3];
   idx = ssm_filter_idx(m, p);
-  y = vector_to_symmat(segment(x, idx[3, 2], idx[3, 3]), p);
+  y = vector_to_symmat(segment(x, idx[3, 2], idx[3, 1]), p);
   return y;
 }
 matrix ssm_filter_get_K(vector x, int m, int p) {
   matrix[m, p] y;
   int idx[6, 3];
   idx = ssm_filter_idx(m, p);
-  y = to_matrix_colwise(segment(x, idx[4, 2], idx[4, 3]), m, p);
+  y = to_matrix_colwise(segment(x, idx[4, 2], idx[4, 1]), m, p);
   return y;
 }
 vector ssm_filter_get_a(vector x, int m, int p) {
   vector[m] y;
   int idx[6, 3];
   idx = ssm_filter_idx(m, p);
-  y = segment(x, idx[5, 2], idx[5, 3]);
+  y = segment(x, idx[5, 2], idx[5, 1]);
   return y;
 }
 matrix ssm_filter_get_P(vector x, int m, int p) {
   matrix[m, m] y;
   int idx[6, 3];
   idx = ssm_filter_idx(m, p);
-  y = vector_to_symmat(segment(x, idx[6, 2], idx[6, 3]), m);
+  y = vector_to_symmat(segment(x, idx[6, 2], idx[6, 1]), m);
   return y;
 }
 vector[] ssm_filter(vector[] y,
@@ -413,14 +413,33 @@ real ssm_lpdf(vector[] y,
   }
   return ll;
 }
-int ssm_check_matrix_equal(matrix A, matrix B, real tol) {
+real matrix_diff(matrix A, matrix B) {
   real eps;
-  eps = max(to_vector(A - B)) / max(to_vector(A));
-  if (eps < tol) {
-    return 1;
-  } else {
-    return 0;
+  real norm_AB;
+  real norm_A;
+  real a;
+  real ab;
+  int m;
+  int n;
+  m = rows(A);
+  n = cols(A);
+  eps = 0.0;
+  norm_A = 0.0;
+  norm_AB = 0.0;
+  for (i in 1:m) {
+    for (j in 1:n) {
+      a = fabs(A[i, j]);
+      ab = fabs(A[i, j] - B[i, j]);
+      if (a > norm_A) {
+        norm_A = a;
+      }
+      if (ab > norm_AB) {
+        norm_AB = ab;
+      }
+    }
   }
+  eps = norm_AB / norm_A;
+  return eps;
 }
 real ssm_constant_lpdf(vector[] y,
                       vector d, matrix Z, matrix H,
@@ -444,6 +463,7 @@ real ssm_constant_lpdf(vector[] y,
     int converged;
     matrix[m, m] P_old;
     real tol;
+    real matdiff;
     converged = 0;
     tol = 1e-7;
     RQR = quad_form(Q, R);
@@ -461,7 +481,10 @@ real ssm_constant_lpdf(vector[] y,
         if (converged < 1) {
           P_old = P;
           P = ssm_filter_update_P(P, Z, T, RQR, K);
-          converged = ssm_check_matrix_equal(P, P_old, tol);
+          matdiff = matrix_diff(P, P_old);
+          if (matdiff < tol) {
+            converged = 1;
+          }
         }
       }
     }

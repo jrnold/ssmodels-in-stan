@@ -1,4 +1,5 @@
 STAN = "stan/includes/ssm.stan"
+PKGDIR =
 
 build: doc clean
 
@@ -11,3 +12,5 @@ doc/stanfunctions.Rmd: scripts/standoc.py stan/includes/ssm.stan
 
 StanStateSpace/inst/stan/ssm.stan: scripts/stanclean.py stan/includes/ssm.stan
 	python $^ $@
+
+	

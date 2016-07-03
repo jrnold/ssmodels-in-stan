@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="index.html">
-<link rel="next" href="filtering-and-smoothing.html">
+<link rel="prev" href="stan-functions.html">
+
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -266,115 +266,195 @@ $$
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="the-linear-state-space-model" class="section level1">
-<h1><span class="header-section-number">Chapter 2</span> The Linear State Space Model</h1>
-<p><span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, Sec 3.1)</span></p>
-<p>The linear Gaussian state space model (SSM)<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> the the <span class="math inline">\(n\)</span>-dimensional observation sequence <span class="math inline">\(\vec{y}_1, \dots, \vec{y}_n\)</span>, <span class="math display">\[
-\begin{aligned}[t]
-\vec{y}_t &amp;= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}_t,  &amp;
-\vec{\varepsilon}_t &amp; \sim N(0, \mat{H}_t), \\
-\vec{\alpha}_{t + 1} &amp;= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}_t,  &amp;
-\vec{\eta}_t &amp; \sim N(0, \mat{Q}_t), \\
-&amp;&amp; \vec{\alpha}_1 &amp;\sim N(\vec{a}_1, \mat{P}_1) .
-\end{aligned}
-\]</span> for <span class="math inline">\(t = 1, \dots, n\)</span>. The first equation is called the <em>observation</em> or <em>measurement equation</em>. The second equation is called the <em>state</em>, <em>transition</em>, or <em>system equation</em>. The vector <span class="math inline">\(\vec{y}_t\)</span> is a <span class="math inline">\(p \times 1\)</span> vector called the <em>observation vector</em>. The vector <span class="math inline">\(\alpha{\alpha}_t\)</span> is a <span class="math inline">\(m \times 1\)</span> vector called the <em>state vector</em>. The matrices are vectors, <span class="math inline">\(\mat{Z}_t\)</span>,<span class="math inline">\(\mat{T}_t\)</span>, <span class="math inline">\(\mat{R}_t\)</span>, <span class="math inline">\(\mat{H}_t\)</span>, <span class="math inline">\(\mat{Q}_t\)</span>, <span class="math inline">\(c_t\)</span>, and <span class="math inline">\(d_t\)</span> are called the <em>system matrices</em>. The system matrices are considered fixed and known in the filtering and smoothing equations below, but can be parameters themselves. The <span class="math inline">\(p \times m\)</span> matrix <span class="math inline">\(\mat{Z}_t\)</span> links the observation vector <span class="math inline">\(\vec{y}_t\)</span> with the state vector <span class="math inline">\(\vec{\alpha}_t\)</span>. The <span class="math inline">\(m \times m\)</span> transition matrix <span class="math inline">\(\mat{T}_t\)</span> determines the evolution of the state vector, <span class="math inline">\(\vec{\alpha}_t\)</span>. The <span class="math inline">\(q \times 1\)</span> vector <span class="math inline">\(\vec{\eta}_t\)</span> is called the <em>state disturbance vector</em>, and the <span class="math inline">\(p \times 1\)</span> vector <span class="math inline">\(\vec{\varepsilon}_t\)</span> is called the <em>observation disturbance vector</em>. An assumption is that the state and observation disturbance vectors are uncorrelated, <span class="math inline">\(\Cov(\vec{\varepsilon}_t, \vec{\eta}_t) = 0\)</span>.</p>
-<p>In a general state space model, the normality assumptions of the densities of <span class="math inline">\(\vec{\varepsilon}\)</span> and <span class="math inline">\(\vec{\eta}\)</span> are dropped.</p>
-<p>In many cases <span class="math inline">\(\mat{R}_t\)</span> is the identity matrix. It is possible to define <span class="math inline">\(\eta^*_t = \mat{R}_t \vec{\eta}_t\)</span>, and <span class="math inline">\(\mat{Q}^* = \mat{R}_t \mat{Q}_t&#39; \mat{R}&#39;_t\)</span>. However, if <span class="math inline">\(\mat{R}_t\)</span> is <span class="math inline">\(m \times q\)</span> and <span class="math inline">\(q &lt; m\)</span>, and <span class="math inline">\(\mat{Q}_t\)</span> is nonsingular, then it is useful to work with the nonsingular <span class="math inline">\(\vec{\eta}_t\)</span> rather than a singular <span class="math inline">\(\vec{\eta}_t^*\)</span>.</p>
-<p>The initial state vector <span class="math inline">\(\vec{\alpha}_1\)</span> is assume to be generated as, <span class="math display">\[
-\alpha_1 \sim N(\vec{a}_1, \mat{P}_1)
-\]</span> independently of the observation and state disturbances <span class="math inline">\(\vec{\varepsilon}\)</span> and <span class="math inline">\(\vec{\eta}\)</span>. The values of <span class="math inline">\(\vec{a}_1\)</span> and <span class="math inline">\(\mat{P}_1\)</span> can be considered as given and known in most stationary processes. When the process is nonstationary, the elements of <span class="math inline">\(\vec{a}_1\)</span> need to be treated as unknown and estimated. This is called <em>initialization</em>.</p>
-<table>
-<caption>Dimensions of matrices and vectors in the SSM</caption>
-<thead>
-<tr class="header">
-<th align="left">matrix/vector</th>
-<th align="left">dimension</th>
-<th align="left">name</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{y}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times 1\)</span></td>
-<td align="left">observation vector</td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\vec{\alpha}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-<td align="left">(unobserved) state vector</td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{\varepsilon}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-<td align="left">observation disturbance (error)</td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\vec{\eta}_t\)</span></td>
-<td align="left"><span class="math inline">\(q \times 1\)</span></td>
-<td align="left">state disturbance (error)</td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{a}_1\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-<td align="left">initial state mean</td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\vec{c}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times 1\)</span></td>
-<td align="left">state intercept</td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\vec{d}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times 1\)</span></td>
-<td align="left">observation intercept</td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\mat{Z}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times m\)</span></td>
-<td align="left">design matrix</td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\mat{T}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times m\)</span></td>
-<td align="left">transition matrix</td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\mat{H}_t\)</span></td>
-<td align="left"><span class="math inline">\(p \times p\)</span></td>
-<td align="left">observation covariance matrix</td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\mat{R}_t\)</span></td>
-<td align="left"><span class="math inline">\(m \times q\)</span></td>
-<td align="left">state covariance selection matrix</td>
-</tr>
-<tr class="even">
-<td align="left"><span class="math inline">\(\mat{Q}_t\)</span></td>
-<td align="left"><span class="math inline">\(q \times q\)</span></td>
-<td align="left">state covariance matrix</td>
-</tr>
-<tr class="odd">
-<td align="left"><span class="math inline">\(\mat{P}_1\)</span></td>
-<td align="left"><span class="math inline">\(m \times m\)</span></td>
-<td align="left">initial state covariance matrix</td>
-</tr>
-</tbody>
-</table>
-
+<div id="other-software" class="section level1">
+<h1><span class="header-section-number">Chapter 5</span> Other Software</h1>
+<p>This a brief summary of other available software to estimate state space models with a focus on R and python.</p>
+<div id="r-packages" class="section level2">
+<h2><span class="header-section-number">5.1</span> R packages</h2>
+<p><span class="citation">Tusell (<a href="#ref-Tusell2011">2011</a>)</span> reviews R packages for state space models (as of 2011). <span class="citation">Helske (<a href="#ref-Helske2012">2012</a>)</span> includes an more recent review of R packages implementing state space models.</p>
+<ul>
+<li>The <strong>stats</strong> package includes functions for univariate Kalman filtering and smoothing (<code>KalmanLike</code>, <code>KalmanRun</code>, <code>KalmanSmooth</code>, <code>KalmanForecast</code>) which are used by <code>StructTS</code> and <code>arima</code>.</li>
+<li>dse</li>
+<li>sspir</li>
+<li>dlm</li>
+<li><p>KFAS</p></li>
+<li>dlmodeler - provides a unified interface to multiple packages</li>
+<li>rucm: structural time series</li>
+<li><p>MARSS - maximum likelihood estimation of a large glass of Guassian state space models with an EM-algorithm</p></li>
+</ul>
 </div>
-<div class="footnotes">
-<hr />
-<ol start="1">
-<li id="fn1"><p>This is also called a dynamic linear model (DLM).<a href="the-linear-state-space-model.html#fnref1">↩</a></p></li>
-</ol>
+<div id="other" class="section level2">
+<h2><span class="header-section-number">5.2</span> Other</h2>
+<p>The <a href="https://www.jstatsoft.org/issue/view/v041">JSS Volume 41</a> <span class="citation">(Commandeur, Koopman, and Ooms <a href="#ref-CommandeurKoopmanOoms2011">2011</a>)</span> contains articles on state space implementations in multiple languages</p>
+<ul>
+<li>STAMP <span class="citation">(Mendelssohn <a href="#ref-Mendelssohn2011a">2011</a>)</span></li>
+<li>Ox/SsfPack <span class="citation">(Pelagatti <a href="#ref-Pelagatti2011a">2011</a>)</span></li>
+<li>R <span class="citation">(Petris and Petrone <a href="#ref-PetrisPetrone2011a">2011</a>)</span></li>
+<li>SsfPack in S+FinMetrics <span class="citation">(Zivot <a href="#ref-Zivot2011a">2011</a>)</span></li>
+<li>Matlab <span class="citation">(Peng and Aston <a href="#ref-PengAston2011a">2011</a>)</span></li>
+<li>FORTRAN <span class="citation">(Bell <a href="#ref-Bell2011a">2011</a>)</span></li>
+<li>eViews <span class="citation">(Bossche <a href="#ref-Bossche2011a">2011</a>)</span></li>
+<li>RATS <span class="citation">(Doan <a href="#ref-Doan2011a">2011</a>)</span></li>
+<li>Stata <span class="citation">(Drukker and Gates <a href="#ref-DrukkerGates2011a">2011</a>)</span></li>
+<li>gretl <span class="citation">(Lucchetti <a href="#ref-Lucchetti2011a">2011</a>)</span></li>
+<li>SAS <span class="citation">(Selukar <a href="#ref-Selukar2011a">2011</a>)</span></li>
+<li>Ox <span class="citation">(Bos <a href="#ref-Bos2011a">2011</a>)</span></li>
+</ul>
+<div id="stata" class="section level3">
+<h3><span class="header-section-number">5.2.1</span> Stata</h3>
+<p>Stata’s <a href="http://www.stata.com/manuals14/ts.pdf">timeseries</a> capabilities includes the command <code>ssmodels</code> to estimate general state space models, as well as common special cases: <code>arima</code> (SARIMAX models), <code>dfactor</code> (Dynamic Factor), and <code>ucm</code> (Unobserved Components Models).</p>
+</div>
+<div id="python" class="section level3">
+<h3><span class="header-section-number">5.2.2</span> Python</h3>
+<p>The [statsmodels] module [statsmodels.tsa] contains functions and classes for time series analysis including autoregressive (AR), vector autoregressive (VAR), autoregressive moving avergage models (ARMA), and functions fo Kalman filtering. Currently the Kalman filter only handles the special univariate case for ARIMA.</p>
+<p>The <strong>statsmodels</strong> module <a href="http://www.statsmodels.org/dev/statespace.html#">statsmodels.tsa.statespace</a> contains more general state space code. The examples are very good.</p>
+<p>An <a href="http://pages.uoregon.edu/cfulton/posts/state_space_mh.html">example</a> of using <code>statsmodels.tsa.statespace</code> and <a href="http://pymcmc.readthedocs.io/en/latest/">PyMC</a> to simulate from the posterior of a state space model. See <a href="http://pages.uoregon.edu/cfulton/posts/state_space_python.html">State Space Modeling in Python</a>.</p>
+<p><span class="citation">Strickland et al. (<a href="#ref-StricklandBurdettMengersenEtAl2014a">2014</a>)</span> introduce <a href="https://bitbucket.org/christophermarkstrickland/pyssm">PySSM</a> to simulate state space models using PyMCMC (not to be confused with the more popular PyMC).</p>
+
+<div id="refs" class="references">
+<div>
+<p>Ansley, Craig F., and Robert Kohn. 1986. “A Note on Reparameterizing a Vector Autoregressive Moving Average Model to Enforce Stationarity.” <em>Journal of Statistical Computation and Simulation</em> 24 (2): 99–106. doi:<a href="https://doi.org/10.1080/00949658608810893">10.1080/00949658608810893</a>.</p>
+</div>
+<div>
+<p>Bell, William. 2011. “REGCMPNT  a Fortran Program for Regression Models with ARIMA Component Errors.” <em>Journal of Statistical Software</em> 41 (1): 1–23. doi:<a href="https://doi.org/10.18637/jss.v041.i07">10.18637/jss.v041.i07</a>.</p>
+</div>
+<div>
+<p>Bos, Charles. 2011. “A Bayesian Analysis of Unobserved Component Models Using Ox.” <em>Journal of Statistical Software</em> 41 (1): 1–24. doi:<a href="https://doi.org/10.18637/jss.v041.i13">10.18637/jss.v041.i13</a>.</p>
+</div>
+<div>
+<p>Bossche, Filip Van den. 2011. “Fitting State Space Models with EViews.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i08">10.18637/jss.v041.i08</a>.</p>
+</div>
+<div>
+<p>Carter, R., C. K. And Kohn. 1994. “On Gibbs Sampling for State Space Models.” <em>Biometrika</em> 81 (3): 541–53. doi:<a href="https://doi.org/10.1093/biomet/81.3.541">10.1093/biomet/81.3.541</a>.</p>
+</div>
+<div>
+<p>Commandeur, Jacques J. F., Siem Jan Koopman, and Marius Ooms. 2011. “Statistical Software for State Space Methods.” <em>Journal of Statistical Software</em> 41 (1): 1–18. <a href="http://www.jstatsoft.org/v41/i01" class="uri">http://www.jstatsoft.org/v41/i01</a>.</p>
+</div>
+<div>
+<p>De Jong, Piet, and Neil Shephard. 1995. “The Simulation Smoother for Time Series Models.” <em>Biometrika</em> 82 (2): 339–50. doi:<a href="https://doi.org/10.1093/biomet/82.2.339">10.1093/biomet/82.2.339</a>.</p>
+</div>
+<div>
+<p>Doan, Thomas. 2011. “State Space Methods in RATS.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i09">10.18637/jss.v041.i09</a>.</p>
+</div>
+<div>
+<p>Drukker, David, and Richard Gates. 2011. “State Space Methods in Stata.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i10">10.18637/jss.v041.i10</a>.</p>
+</div>
+<div>
+<p>Durbin, J., and S. J. Koopman. 2002. “A Simple and Efficient Simulation Smoother for State Space Time Series Analysis.” <em>Biometrika</em> 89 (3). Biometrika Trust: 603–15. <a href="http://www.jstor.org/stable/4140605" class="uri">http://www.jstor.org/stable/4140605</a>.</p>
+</div>
+<div>
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+<div>
+<p>Frühwirth-Schnatter, Sylvia. 1994. “Data Augmentation and Dynamic Linear Models.” <em>Journal of Time Series Analysis</em> 15 (2). Blackwell Publishing Ltd: 183–202. doi:<a href="https://doi.org/10.1111/j.1467-9892.1994.tb00184.x">10.1111/j.1467-9892.1994.tb00184.x</a>.</p>
+</div>
+<div>
+<p>Helske, Jouni. 2012. “KFAS: Kalman Filter and Smoother for Exponential Family State Space Models.” <a href="http://CRAN.R-project.org/package=KFAS" class="uri">http://CRAN.R-project.org/package=KFAS</a>.</p>
+</div>
+<div>
+<p>Jones, M. C. 1987. “Randomly Choosing Parameters from the Stationarity and Invertibility Region of Autoregressive-Moving Average Models.” <em>Journal of the Royal Statistical Society. Series C (Applied Statistics)</em> 36 (2). [Wiley, Royal Statistical Society]: 134–38. <a href="http://www.jstor.org/stable/2347544" class="uri">http://www.jstor.org/stable/2347544</a>.</p>
+</div>
+<div>
+<p>Jones, Richard H. 1980. “Maximum Likelihood Fitting of ARMA Models to Time Series with Missing Observations.” <em>Technometrics</em> 22 (3). [Taylor &amp; Francis, Ltd., American Statistical Association, American Society for Quality]: 389–95. <a href="http://www.jstor.org/stable/1268324" class="uri">http://www.jstor.org/stable/1268324</a>.</p>
+</div>
+<div>
+<p>Lucchetti, Riccardo. 2011. “State Space Methods in gretl.” <em>Journal of Statistical Software</em> 41 (1): 1–22. doi:<a href="https://doi.org/10.18637/jss.v041.i11">10.18637/jss.v041.i11</a>.</p>
+</div>
+<div>
+<p>Mendelssohn, Roy. 2011. “The STAMP Software for State Space Models.” <em>Journal of Statistical Software</em> 41 (1): 1–18. doi:<a href="https://doi.org/10.18637/jss.v041.i02">10.18637/jss.v041.i02</a>.</p>
+</div>
+<div>
+<p>Monahan, John F. 1984. “A Note on Enforcing Stationarity in Autoregressive-Moving Average Models.” <em>Biometrika</em> 71 (2): 403–4. doi:<a href="https://doi.org/10.1093/biomet/71.2.403">10.1093/biomet/71.2.403</a>.</p>
+</div>
+<div>
+<p>Pelagatti, Matteo. 2011. “State Space Methods in Ox/SsfPack.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i03">10.18637/jss.v041.i03</a>.</p>
+</div>
+<div>
+<p>Peng, Jyh-Ying, and John Aston. 2011. “The State Space Models Toolbox for MATLAB.” <em>Journal of Statistical Software</em> 41 (1): 1–26. doi:<a href="https://doi.org/10.18637/jss.v041.i06">10.18637/jss.v041.i06</a>.</p>
+</div>
+<div>
+<p>Petris, Giovanni, and Sonia Petrone. 2011. “State Space Models in R.” <em>Journal of Statistical Software</em> 41 (4): 1–25. <a href="http://www.jstatsoft.org/v41/i04" class="uri">http://www.jstatsoft.org/v41/i04</a>.</p>
+</div>
+<div>
+<p>Selukar, Rajesh. 2011. “State Space Modeling Using SAS.” <em>Journal of Statistical Software</em> 41 (1): 1–13. doi:<a href="https://doi.org/10.18637/jss.v041.i12">10.18637/jss.v041.i12</a>.</p>
+</div>
+<div>
+<p>Strickland, Christopher, Robert Burdett, Kerrie Mengersen, and Robert Denham. 2014. “PySSM: A Python Module for Bayesian Inference of Linear Gaussian State Space Models.” <em>Journal of Statistical Software</em> 57 (1): 1–37. doi:<a href="https://doi.org/10.18637/jss.v057.i06">10.18637/jss.v057.i06</a>.</p>
+</div>
+<div>
+<p>Tusell, Fernando. 2011. “Kalman Filtering in R.” <em>Journal of Statistical Software</em> 39 (2): 1–27. <a href="http://www.jstatsoft.org/v39/i02" class="uri">http://www.jstatsoft.org/v39/i02</a>.</p>
+</div>
+<div>
+<p>Zivot, Eric. 2011. “State Space Modeling Using SsfPack in S+FinMetrics 3.0.” <em>Journal of Statistical Software</em> 41 (1): 1–27. doi:<a href="https://doi.org/10.18637/jss.v041.i05">10.18637/jss.v041.i05</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-Tusell2011">
+<p>Tusell, Fernando. 2011. “Kalman Filtering in R.” <em>Journal of Statistical Software</em> 39 (2): 1–27. <a href="http://www.jstatsoft.org/v39/i02" class="uri">http://www.jstatsoft.org/v39/i02</a>.</p>
+</div>
+<div id="ref-Helske2012">
+<p>Helske, Jouni. 2012. “KFAS: Kalman Filter and Smoother for Exponential Family State Space Models.” <a href="http://CRAN.R-project.org/package=KFAS" class="uri">http://CRAN.R-project.org/package=KFAS</a>.</p>
+</div>
+<div id="ref-CommandeurKoopmanOoms2011">
+<p>Commandeur, Jacques J. F., Siem Jan Koopman, and Marius Ooms. 2011. “Statistical Software for State Space Methods.” <em>Journal of Statistical Software</em> 41 (1): 1–18. <a href="http://www.jstatsoft.org/v41/i01" class="uri">http://www.jstatsoft.org/v41/i01</a>.</p>
+</div>
+<div id="ref-Mendelssohn2011a">
+<p>Mendelssohn, Roy. 2011. “The STAMP Software for State Space Models.” <em>Journal of Statistical Software</em> 41 (1): 1–18. doi:<a href="https://doi.org/10.18637/jss.v041.i02">10.18637/jss.v041.i02</a>.</p>
+</div>
+<div id="ref-Pelagatti2011a">
+<p>Pelagatti, Matteo. 2011. “State Space Methods in Ox/SsfPack.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i03">10.18637/jss.v041.i03</a>.</p>
+</div>
+<div id="ref-PetrisPetrone2011a">
+<p>Petris, Giovanni, and Sonia Petrone. 2011. “State Space Models in R.” <em>Journal of Statistical Software</em> 41 (4): 1–25. <a href="http://www.jstatsoft.org/v41/i04" class="uri">http://www.jstatsoft.org/v41/i04</a>.</p>
+</div>
+<div id="ref-Zivot2011a">
+<p>Zivot, Eric. 2011. “State Space Modeling Using SsfPack in S+FinMetrics 3.0.” <em>Journal of Statistical Software</em> 41 (1): 1–27. doi:<a href="https://doi.org/10.18637/jss.v041.i05">10.18637/jss.v041.i05</a>.</p>
+</div>
+<div id="ref-PengAston2011a">
+<p>Peng, Jyh-Ying, and John Aston. 2011. “The State Space Models Toolbox for MATLAB.” <em>Journal of Statistical Software</em> 41 (1): 1–26. doi:<a href="https://doi.org/10.18637/jss.v041.i06">10.18637/jss.v041.i06</a>.</p>
+</div>
+<div id="ref-Bell2011a">
+<p>Bell, William. 2011. “REGCMPNT  a Fortran Program for Regression Models with ARIMA Component Errors.” <em>Journal of Statistical Software</em> 41 (1): 1–23. doi:<a href="https://doi.org/10.18637/jss.v041.i07">10.18637/jss.v041.i07</a>.</p>
+</div>
+<div id="ref-Bossche2011a">
+<p>Bossche, Filip Van den. 2011. “Fitting State Space Models with EViews.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i08">10.18637/jss.v041.i08</a>.</p>
+</div>
+<div id="ref-Doan2011a">
+<p>Doan, Thomas. 2011. “State Space Methods in RATS.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i09">10.18637/jss.v041.i09</a>.</p>
+</div>
+<div id="ref-DrukkerGates2011a">
+<p>Drukker, David, and Richard Gates. 2011. “State Space Methods in Stata.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i10">10.18637/jss.v041.i10</a>.</p>
+</div>
+<div id="ref-Lucchetti2011a">
+<p>Lucchetti, Riccardo. 2011. “State Space Methods in gretl.” <em>Journal of Statistical Software</em> 41 (1): 1–22. doi:<a href="https://doi.org/10.18637/jss.v041.i11">10.18637/jss.v041.i11</a>.</p>
+</div>
+<div id="ref-Selukar2011a">
+<p>Selukar, Rajesh. 2011. “State Space Modeling Using SAS.” <em>Journal of Statistical Software</em> 41 (1): 1–13. doi:<a href="https://doi.org/10.18637/jss.v041.i12">10.18637/jss.v041.i12</a>.</p>
+</div>
+<div id="ref-Bos2011a">
+<p>Bos, Charles. 2011. “A Bayesian Analysis of Unobserved Component Models Using Ox.” <em>Journal of Statistical Software</em> 41 (1): 1–24. doi:<a href="https://doi.org/10.18637/jss.v041.i13">10.18637/jss.v041.i13</a>.</p>
+</div>
+<div id="ref-StricklandBurdettMengersenEtAl2014a">
+<p>Strickland, Christopher, Robert Burdett, Kerrie Mengersen, and Robert Denham. 2014. “PySSM: A Python Module for Bayesian Inference of Linear Gaussian State Space Models.” <em>Journal of Statistical Software</em> 57 (1): 1–37. doi:<a href="https://doi.org/10.18637/jss.v057.i06">10.18637/jss.v057.i06</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="filtering-and-smoothing.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="stan-functions.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -401,7 +481,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/ssmodels.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/software.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

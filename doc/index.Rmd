@@ -17,4 +17,5 @@ description: "Documentation for State Space Models in Stan."
 This contains documentation for "State Space Models in Stan"
 
 ```{r include=FALSE}
+source("../.Rprofile", chdir = TRUE)
 ```

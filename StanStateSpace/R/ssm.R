@@ -24,7 +24,8 @@ gen_ssm_filter_extractor <- function(m, p) {
                     P = c(m, m))
 }
 
-#' Extract parameters from Stan State Space results
+
+#' Extract parameters from Stan State Space Model results
 #'
 #' Extract results from the output of the \code{ssm_filter} function
 #' in stan.
@@ -50,5 +51,7 @@ extract_from_ssm_filter <- function(x, m, p, params = NULL) {
   }
   map(extractor, ~ f(.x, x))
 }
+
+
 
 

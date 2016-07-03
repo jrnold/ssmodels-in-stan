@@ -1331,7 +1331,7 @@ $$
 <p>In smoothing recursions, the vector <span class="math inline">\(\vec{r}_t\)</span> is updated with, <span class="math display">\[
 \vec{r}_{t - 1} = \mat{Z}&#39; \mat{F}^{-1}_t \vec{v}_t + \mat{L}&#39; \vec{r}_{t} .
 \]</span></p>
-<p>See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, 91)</span></p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, 91)</span></p>
 <pre class="stan"><code>vector ssm_smooth_update_r(vector r, matrix Z, vector v, matrix Finv,
                            matrix L) {
   vector[num_elements(r)] r_new;
@@ -1354,7 +1354,7 @@ $$
 <p>In smoothing recursions, the matrix <span class="math inline">\(\vec{N}_t\)</span> is updated with, <span class="math display">\[
 \mat{N}_{t - 1} = \mat{Z}_t&#39; \mat{F}^{-1}_t \mat{Z}_t + \mat{L}_t&#39; \mat{N}_t \mat{L}_t .
 \]</span></p>
-<p>See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, 91)</span></p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, 91)</span></p>
 <pre class="stan"><code>matrix ssm_smooth_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   matrix[rows(N), cols(N)] N_new;
   N_new = quad_form(Finv, Z) + quad_form(N, L);
@@ -1451,7 +1451,7 @@ $$
 </tr>
 </tbody>
 </table>
-<p>See <span class="citation">Durbin and Koopman (<a href="other-software.html#ref-DurbinKoopman2012">2012</a>)</span>, Eq 4.44 and eq 4.69.</p>
+<p>See <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span>, Eq 4.44 and eq 4.69.</p>
 <pre class="stan"><code>vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
   vector[ssm_smooth_state_size(dims(Z)[3])] res[size(filter)];
   int n;
@@ -1611,7 +1611,7 @@ $$
 </tr>
 </tbody>
 </table>
-<p>See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, Sec 4.5.3 (eq 4.69))</span></p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.5.3 (eq 4.69))</span></p>
 <pre class="stan"><code>vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
   vector[ssm_smooth_eps_size(dims(Z)[2])] res[size(filter)];
   int n;
@@ -1774,7 +1774,7 @@ $$
 </tr>
 </tbody>
 </table>
-<p>See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, Sec 4.5.3 (eq 4.69))</span></p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.5.3 (eq 4.69))</span></p>
 <pre class="stan"><code>vector[] ssm_smooth_eta(vector[] filter,
                         matrix[] Z, matrix[] T,
                         matrix[] R, matrix[] Q) {
@@ -1873,7 +1873,7 @@ $$
 \]</span> where <span class="math inline">\(r_t\)</span> is calcualted from the state disturbance smoother. The smoother is initialized at <span class="math inline">\(t = 1\)</span> with <span class="math inline">\(\hat{\vec{\alpha}}_t = \vec{a}_1 + \mat{P}_1 \vec{r}_0\)</span>.</p>
 <p>Unlike the normal state smoother, it does not calculate the variances of the smoothed state.</p>
 <p>For <code>Z</code>, <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code> the array can have a size of 1, if it is not time-varying, or a size of <span class="math inline">\(n\)</span> (for <code>Z</code>) or <span class="math inline">\(n - 1\)</span> (for <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code>) if it is time varying.</p>
-<p>See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, Sec 4.5.3 (eq 4.69))</span></p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.5.3 (eq 4.69))</span></p>
 <pre class="stan"><code>vector[] ssm_smooth_faststate(vector[] filter,
                               vector[] c, matrix[] Z, matrix[] T,
                               matrix[] R, matrix[] Q) {
@@ -2300,7 +2300,7 @@ $$
 <p>State simulation smoother</p>
 <p>Draw samples from the posterior distribution of the states, <span class="math inline">\(\tilde{\vec{\alpha}}_{1:n} \sim p(\vec{\alpha}_{1:n} | \vec{y}_{1:n})\)</span>.</p>
 <p>For <code>d</code>, <code>Z</code>, <code>H</code>, <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code> the array can have a size of 1, if it is not time-varying, or a size of <span class="math inline">\(n\)</span> (for <code>d</code>, <code>Z</code>, <code>H</code>) or <span class="math inline">\(n - 1\)</span> (for <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code>) if it is time varying.</p>
-<p>This draws samples using mean-correction simulation smoother of <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2002">2002</a>)</span>. See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span>.</p>
+<p>This draws samples using mean-correction simulation smoother of <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2002">2002</a>)</span>. See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span>.</p>
 <pre class="stan"><code>vector[] ssm_simsmo_states_rng(vector[] alpha,
                       vector[] d, matrix[] Z, matrix[] H,
                       vector[] c, matrix[] T, matrix[] R, matrix[] Q,
@@ -2357,7 +2357,7 @@ $$
 <p>State disturbance simulation smoother</p>
 <p>Draw samples from the posterior distribution of the observation disturbances, <span class="math inline">\(\tilde{\vec{\eta}}_{1:n} \sim p(\vec{\eta}_{1:n} | \vec{y}_{1:n})\)</span>.</p>
 <p>For <code>d</code>, <code>Z</code>, <code>H</code>, <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code> the array can have a size of 1, if it is not time-varying, or a size of <span class="math inline">\(n\)</span> (for <code>d</code>, <code>Z</code>, <code>H</code>) or <span class="math inline">\(n - 1\)</span> (for <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code>) if it is time varying.</p>
-<p>This draws samples using mean-correction simulation smoother of <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2002">2002</a>)</span>. See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span>.</p>
+<p>This draws samples using mean-correction simulation smoother of <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2002">2002</a>)</span>. See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span>.</p>
 <pre class="stan"><code>vector[] ssm_simsmo_eta_rng(vector[] eta,
                             vector[] d, matrix[] Z, matrix[] H,
                             vector[] c, matrix[] T, matrix[] R, matrix[] Q,
@@ -2414,7 +2414,7 @@ $$
 <p>Observation disturbance simulation smoother</p>
 <p>Draw samples from the posterior distribution of the observation disturbances, <span class="math inline">\(\tilde{\vec{\varepsilon}}_{1:n} \sim p(\vec{\varepsilon}_{1:n} | \vec{y}_{1:n})\)</span>.</p>
 <p>For <code>d</code>, <code>Z</code>, <code>H</code>, <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code> the array can have a size of 1, if it is not time-varying, or a size of <span class="math inline">\(n\)</span> (for <code>d</code>, <code>Z</code>, <code>H</code>) or <span class="math inline">\(n - 1\)</span> (for <code>c</code>, <code>T</code>, <code>R</code>, <code>Q</code>) if it is time varying.</p>
-<p>This draws samples using mean-correction simulation smoother of <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2002">2002</a>)</span>. See <span class="citation">(Durbin and Koopman <a href="other-software.html#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span>.</p>
+<p>This draws samples using mean-correction simulation smoother of <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2002">2002</a>)</span>. See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec 4.9)</span>.</p>
 <pre class="stan"><code>vector[] ssm_simsmo_eps_rng(vector[] eps,
                       vector[] d, matrix[] Z, matrix[] H,
                       vector[] c, matrix[] T, matrix[] R, matrix[] Q,
@@ -2487,7 +2487,7 @@ $$
 </ul>
 <p><strong>Return Value:</strong> <code>vector</code> A vector of coefficients for a stationary AR or inverible MA process.</p>
 <p>Constrain vector of coefficients to the stationary and intertible region for AR or MA functions.</p>
-<p>See <span class="citation">R. H. Jones (<a href="other-software.html#ref-Jones1980a">1980</a>)</span>, <span class="citation">M. C. Jones (<a href="other-software.html#ref-Jones1987a">1987</a>)</span>, <span class="citation">Monahan (<a href="other-software.html#ref-Monahan1984a">1984</a>)</span>, <span class="citation">Ansley and Kohn (<a href="other-software.html#ref-AnsleyKohn1986a">1986</a>)</span>, and the functions <code>tools.constrain_stationary_univariate</code> and <code>tools.unconstraine_stationary_univariate</code> in <a href="http://www.statsmodels.org/dev/statespace.html#statespace-tools">statsmodels.tsa.statespace</a>.</p>
+<p>See <span class="citation">R. H. Jones (<a href="#ref-Jones1980a">1980</a>)</span>, <span class="citation">M. C. Jones (<a href="#ref-Jones1987a">1987</a>)</span>, <span class="citation">Monahan (<a href="#ref-Monahan1984a">1984</a>)</span>, <span class="citation">Ansley and Kohn (<a href="#ref-AnsleyKohn1986a">1986</a>)</span>, and the functions <code>tools.constrain_stationary_univariate</code> and <code>tools.unconstraine_stationary_univariate</code> in <a href="http://www.statsmodels.org/dev/statespace.html#statespace-tools">statsmodels.tsa.statespace</a>.</p>
 <pre class="stan"><code>vector constrain_stationary(vector x) {
   vector[num_elements(x)] r;
   int n;
@@ -2608,7 +2608,7 @@ a_{m1} B &amp; \cdots &amp; a_{mn} B
 <p>The initial conditions are <span class="math inline">\(\alpha_1 \sim N(0, \sigma^2 Q_0)\)</span>, where <span class="math inline">\(Q_0\)</span> is the solution to <span class="math display">\[
 (T \otimes T) \VEC(Q_0) = \VEC(R R&#39;)
 \]</span> where <span class="math inline">\(\VEC(Q_0)\)</span> and <span class="math inline">\(\VEC(R R&#39;)\)</span> are the stacked columns of <span class="math inline">\(Q_0\)</span> and <span class="math inline">\(R R&#39;\)</span></p>
-<p>See <span class="citation">Durbin and Koopman (<a href="other-software.html#ref-DurbinKoopman2012">2012</a>)</span>, Sec 5.6.2.</p>
+<p>See <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span>, Sec 5.6.2.</p>
 <pre class="stan"><code>matrix arima_stationary_cov(matrix T, matrix R) {
   matrix[rows(T), cols(T)] Q0;
   matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
@@ -2624,6 +2624,27 @@ a_{m1} B &amp; \cdots &amp; a_{mn} B
 }</code></pre>
 
 </div>
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+<div id="ref-DurbinKoopman2002">
+<p>Durbin, J., and S. J. Koopman. 2002. “A Simple and Efficient Simulation Smoother for State Space Time Series Analysis.” <em>Biometrika</em> 89 (3). Biometrika Trust: 603–15. <a href="http://www.jstor.org/stable/4140605" class="uri">http://www.jstor.org/stable/4140605</a>.</p>
+</div>
+<div id="ref-Jones1980a">
+<p>Jones, Richard H. 1980. “Maximum Likelihood Fitting of ARMA Models to Time Series with Missing Observations.” <em>Technometrics</em> 22 (3). [Taylor &amp; Francis, Ltd., American Statistical Association, American Society for Quality]: 389–95. <a href="http://www.jstor.org/stable/1268324" class="uri">http://www.jstor.org/stable/1268324</a>.</p>
+</div>
+<div id="ref-Jones1987a">
+<p>Jones, M. C. 1987. “Randomly Choosing Parameters from the Stationarity and Invertibility Region of Autoregressive-Moving Average Models.” <em>Journal of the Royal Statistical Society. Series C (Applied Statistics)</em> 36 (2). [Wiley, Royal Statistical Society]: 134–38. <a href="http://www.jstor.org/stable/2347544" class="uri">http://www.jstor.org/stable/2347544</a>.</p>
+</div>
+<div id="ref-Monahan1984a">
+<p>Monahan, John F. 1984. “A Note on Enforcing Stationarity in Autoregressive-Moving Average Models.” <em>Biometrika</em> 71 (2): 403–4. doi:<a href="https://doi.org/10.1093/biomet/71.2.403">10.1093/biomet/71.2.403</a>.</p>
+</div>
+<div id="ref-AnsleyKohn1986a">
+<p>Ansley, Craig F., and Robert Kohn. 1986. “A Note on Reparameterizing a Vector Autoregressive Moving Average Model to Enforce Stationarity.” <em>Journal of Statistical Computation and Simulation</em> 24 (2): 99–106. doi:<a href="https://doi.org/10.1080/00949658608810893">10.1080/00949658608810893</a>.</p>
 </div>
 </div>
             </section>

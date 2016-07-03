@@ -3,6 +3,7 @@
 #' @import lubridate
 NULL
 
+
 #' Upper and lower unit triangle matrices
 #'
 #' Some useful functions for generating matrices commonly encountered
@@ -26,16 +27,16 @@ NULL
 #'
 #' @export
 unit_lower_tri <- function(m, n = m, diag = TRUE) {
-  matrix(as.numeric(lower.tri(matrix(0, m, n), diag = diag)),
-         m, n)
+  matrix(as.numeric(lower.tri(matrix(0, m, n), diag = diag)), m, n)
 }
+
 
 #' @describeIn unit_lower_tri Generate an unit upper triangular matrix.
 #' @export
 unit_upper_tri <- function(m, n = m, diag = TRUE){
-  matrix(as.numeric(upper.tri(matrix(0, m, n), diag = diag)),
-         m, n)
+  matrix(as.numeric(upper.tri(matrix(0, m, n), diag = diag)), m, n)
 }
+
 
 #' @describeIn unit_lower_tri Generate a selection matrix.
 #' @export
@@ -50,6 +51,8 @@ selection_matrix <- function(m, idx, rows = TRUE) {
   }
   x
 }
+
+
 #' @describeIn unit_lower_tri Generate matrix with ones on the diagonal
 #' @export
 eye <- function(m, n = m, k = 0) {
@@ -70,7 +73,6 @@ eye <- function(m, n = m, k = 0) {
   }
   x
 }
-
 
 
 #' Vector to symmetric matrix
@@ -102,6 +104,7 @@ vector_to_symmat <- function(x) {
   }
   newmat
 }
+
 
 #' Convert
 #'

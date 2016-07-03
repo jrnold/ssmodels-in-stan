@@ -48,11 +48,13 @@ $$
 ```{r engine = 'cat', file = '../stan/local_level.stan', lang = 'stan'}
 ```
 
-```{r Nile-Model}
+```{r Nile-Model, message=FALSE, warning=FALSE}
 devtools::install("StanStateSpace")
+STAN_SSM_MODELS <- system.file("stan/models", package = "StanStateSpace")
+STAN_SSM_INCLUDE <- system.file("stan/include", package = "StanStateSpace")
 local_level_code <-
-  stanc_builder(find_rstudio_root_file("stan/models/local_level.stan"),
-                isystem = system.file("stan", package = "StanStateSpace"))
+  stanc_builder(file.path(STAN_SSM_MODELS, "local_level.stan"),
+                isystem = STAN_SSM_INCLUDE)
 local_level_mod <- stan_model(model_code = local_level_code[["model_code"]],
                               model_name = local_level_code[["model_name"]])
 ```

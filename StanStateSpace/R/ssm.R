@@ -1,3 +1,50 @@
+#' Stan Paths and Files
+#'
+#' \code{ssm_stan_include_path} returns the path to
+#' the directory with the Stan user-defined functions provided
+#' by this package. This is used with the \code{isystem}
+#' argument in \code{\link[rstan]{stanc_builder}}.
+#'
+#' \code{ssm_stan_models_path} returns the path to
+#' the directory containing the models provided by this package.
+#'
+#' \code{ssm_available_models} lists the names of the stan models
+#' provided by this package.
+#'
+#' \code{ssm_stan_model} runs a Stan model included in this package.
+#' This function is a wrapper for \code{\link[rstan]{stan}}, that
+#' sets the correct path to the model and includes the functions provided
+#' in this package.
+#'
+#' @export
+ssm_stan_include_path <- function() {
+  system.file("stan/include", package = "StanStateSpace")
+}
+
+#' @rdname ssm_stan_include_path
+#' @export
+ssm_stan_model_path <- function() {
+  system.file("stan/models", package = "StanStaceSpace")
+}
+
+#' @rdname ssm_stan_include_path
+#' @export
+ssm_available_models <- function() {
+  dir(ssm_stan_model_path(), pattern = "\\.stan$")
+}
+
+#' @param file The name of the Stan model to run
+#' @param ... Passed to \code{\link[rstan]{stan}}
+#' @rdname ssm_stan_include_path
+#' @export
+ssm_stan_model <- function(file, ...) {
+  if (!exists(file)) {
+    file <- file.path(ssm_stan_model_path(), file)
+  }
+  stan(model_code = stanc_builder(file, isystem = ssm_stan_include_path()),
+       model_name = gsub("\\.stan$", "", basename(file)), ...)
+}
+
 gen_ssm_extractor <- function(...) {
   params <- list(...)
   ret <- list()
@@ -57,16 +104,25 @@ gen_ssm_sim_rng_extractor <- function(m, p, q) {
                     eta = list(dim = q, type = "vector"))
 }
 
-extract_ssm_parameters <- function(extractor, params) {
-  f <- function(el, x) {
-    d <- dim(x)[1:2]
-    aperm(array(aperm(x[ , , el[["start"]]:el[["end"]], drop = FALSE]),
-                c(el[["dim"]], rev(d))))
+extract_ssm_param <- function(param, x) {
+  if (param[["type"]] == "symmetric_matrix") {
+      x[ , , param[["start"]]:param[["end"]], drop = FALSE]
+  } else {
+    if (length(param[["dim"]]) == 1) {
+      aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE])
+    } else {# length == 2
+      d <- dim(x)[1:2]
+      aperm(array(aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE]),
+                  c(param[["dim"]], rev(d))))
+    }
   }
+}
+
+extract_ssm_all_params <- function(extractor, params) {
   if (!is.null(params)) {
     extractor <- extractor[params]
   }
-  map(extractor, ~ f(.x, x))
+  #map(extractor, ~ f(.x, x))
 }
 
 
@@ -77,12 +133,13 @@ extract_ssm_parameters <- function(extractor, params) {
 #'
 #' @param x Array containing results from \code{ssm_filter} Stan function. This
 #'   is usually extracted from a \code{stanfit} object.
-#' @param m Number of states
+#' @param m Dimension of the state vector
 #' @param p Dimension of observation vector
+#' @param q Dimension of the state disturbance vector
 #' @param params Parameters to extract from the filter. One of
 #'   \code{"v"}, \code{"Finv"}, \code{"K"}, \code{"a"}, \code{"P"}.
 #'   If \code{NULL}, all values are extracted.
 #' @return A named \code{list} of \code{array} objects, one for each parameter.
-extract_from_ssm_filter <- function(x, m = NULL, p = NULL, q = NULL, params = NULL) {
-  extractor <- gen_ssm_filter_extractor(m, p)
-}
+# extract_from_ssm_filter <- function(x, m = NULL, p = NULL, q = NULL, params = NULL) {
+#   extractor <- gen_ssm_filter_extractor(m, p)
+# }

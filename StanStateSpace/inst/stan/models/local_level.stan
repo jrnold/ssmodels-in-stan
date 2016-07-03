@@ -75,6 +75,5 @@ generated quantities {
     eta_hat = ssm_smooth_eta(filtered, rep_array(Z, 1), rep_array(T, 1),
                              rep_array(R, 1), rep_array(Q, 1));
     // Simulations
-
   }
 }

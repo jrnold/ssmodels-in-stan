@@ -1,16 +1,18 @@
-STAN = "stan/includes/ssm.stan"
-PKGDIR =
+STAN = stan/includes/ssm.stan
+PKG_DIR = StanStateSpace
+STAN_INCLUDE_DIR = $(PKG_DIR)/inst/stan/include/
+SSM_STAN = stan/ssm.stan
+SSM_STAN_CLEAN = $(STAN_INCLUDE_DIR)/$(notdir $(SSM_STAN))
+STAN_FUNCTION_DOC = doc/stanfunctions.Rmd
 
 build: doc clean
 
-doc: doc/stanfunctions.Rmd
+doc: $(STAN_FUNCTION_DOC)
 
-clean: StanStateSpace/inst/stan/ssm.stan
+clean: $(SSM_STAN_CLEAN)
 
-doc/stanfunctions.Rmd: scripts/standoc.py stan/includes/ssm.stan
+$(STAN_FUNCTION_DOC): scripts/standoc.py $(SSM_STAN)
 	python $^ $@
 
-StanStateSpace/inst/stan/ssm.stan: scripts/stanclean.py stan/includes/ssm.stan
+$(SSM_STAN_CLEAN): scripts/stanclean.py $(SSM_STAN)
 	python $^ $@
-
-	

@@ -4,24 +4,69 @@ gen_ssm_extractor <- function(...) {
   start <- 0
   for (i in seq_along(params)) {
     x <- params[[i]]
-    len <- prod(x)
+    if (x[["type"]] == "symmetric_matrix") {
+      n <- x[["dim"]][1]
+      len <- n * (n + 1) / 2
+    } else {
+      len <- prod(x[["dim"]])
+    }
     ret[[names(params)[i]]] <-
       list(start = start + 1,
            end = start + len,
            len = len,
-           dim = x)
+           dim = x[["dim"]],
+           type = x[["type"]])
     start <- start + len
   }
   ret
 }
 
 gen_ssm_filter_extractor <- function(m, p) {
-  gen_ssm_extractor(loglik = 1,
-                    v = p,
-                    Finv = c(p, p),
-                    K = c(m, p),
-                    a = m,
-                    P = c(m, m))
+  gen_ssm_extractor(loglik = list(dim = 1, type = "real"),
+                    v = list(dim = 1, type = "vector"),
+                    Finv = list(dim = c(p, p), type = "symmetric_matrix"),
+                    K = list(dim = c(m, p), type = "matrix"),
+                    a = list(dim = m, type = "vector"),
+                    P = list(dim = c(m, m), type = "symmetric_matrix"))
+}
+
+gen_ssm_filter_states_extractor <- function(m) {
+  gen_ssm_extractor(a = list(dim = m, type = "vector"),
+                    P = list(dim = c(m, m), type = "symmetric_matrix"))
+}
+
+gen_ssm_smooth_state_extractor <- function(m) {
+  gen_ssm_extractor(alpha = list(dim = m, type = "vector"),
+                    V = list(dim = c(m, m), type = "symmetric_matrix"))
+}
+
+gen_ssm_smooth_eps_extractor <- function(p) {
+  gen_ssm_extractor(mean = list(dim = p, type = "vector"),
+                    var = list(dim = c(p, p), type = "symmetric_matrix"))
+}
+
+gen_ssm_smooth_eta_extractor <- function(q) {
+  gen_ssm_extractor(mean = list(dim = q, type = "vector"),
+                    var = list(dim = c(q, q), type = "symmetric_matrix"))
+}
+
+gen_ssm_sim_rng_extractor <- function(m, p, q) {
+  gen_ssm_extractor(y = list(dim = p, type = "vector"),
+                    a = list(dim = m, type = "vector"),
+                    eps = list(dim = p, type = "vector"),
+                    eta = list(dim = q, type = "vector"))
+}
+
+extract_ssm_parameters <- function(extractor, params) {
+  f <- function(el, x) {
+    d <- dim(x)[1:2]
+    aperm(array(aperm(x[ , , el[["start"]]:el[["end"]], drop = FALSE]),
+                c(el[["dim"]], rev(d))))
+  }
+  if (!is.null(params)) {
+    extractor <- extractor[params]
+  }
+  map(extractor, ~ f(.x, x))
 }
 
 
@@ -38,20 +83,6 @@ gen_ssm_filter_extractor <- function(m, p) {
 #'   \code{"v"}, \code{"Finv"}, \code{"K"}, \code{"a"}, \code{"P"}.
 #'   If \code{NULL}, all values are extracted.
 #' @return A named \code{list} of \code{array} objects, one for each parameter.
-#' @export
-extract_from_ssm_filter <- function(x, m, p, params = NULL) {
-  f <- function(el, x) {
-    d <- dim(x)[1:2]
-    aperm(array(aperm(x[ , , el[["start"]]:el[["end"]], drop = FALSE]),
-                c(el[["dim"]], rev(d))))
-  }
+extract_from_ssm_filter <- function(x, m = NULL, p = NULL, q = NULL, params = NULL) {
   extractor <- gen_ssm_filter_extractor(m, p)
-  if (!is.null(params)) {
-    extractor <- extractor[params]
-  }
-  map(extractor, ~ f(.x, x))
 }
-
-
-
-

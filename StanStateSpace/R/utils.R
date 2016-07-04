@@ -1,7 +1,7 @@
 #' @importFrom purrr map array_tree
 #' @import stats
 #' @import lubridate
-#' @importFrom rstan stanc_builder stan
+#' @import rstan
 NULL
 
 

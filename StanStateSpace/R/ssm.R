@@ -38,10 +38,11 @@ ssm_available_models <- function() {
 #' @rdname ssm_stan_include_path
 #' @export
 ssm_stan_model <- function(file, ...) {
-  if (!exists(file)) {
+  if (!file.exists(file)) {
     file <- file.path(ssm_stan_model_path(), file)
   }
-  stan(model_code = stanc_builder(file, isystem = ssm_stan_include_path()),
+  model_code <- stanc_builder(file, isystem = ssm_stan_include_path())[["model_code"]]
+  stan(model_code = model_code,
        model_name = gsub("\\.stan$", "", basename(file)), ...)
 }
 
@@ -104,30 +105,30 @@ gen_ssm_sim_rng_extractor <- function(m, p, q) {
                     eta = list(dim = q, type = "vector"))
 }
 
-extract_ssm_param <- function(param, x) {
-  # The dimensions of the array are (iteration, time, returndim)
-  if (param[["type"]] == "symmetric_matrix") {
-      x[ , , param[["start"]]:param[["end"]], drop = FALSE],
-  } else {
-    if (length(param[["dim"]]) == 1) {
-      aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE])
-    } else {# length == 2
-      d <- dim(x)[1:2]
-      aperm(array(aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE]),
-                  c(param[["dim"]], rev(d))))
-    }
-  }
-}
+# extract_ssm_param <- function(param, x) {
+#   # The dimensions of the array are (iteration, time, returndim)
+#   if (param[["type"]] == "symmetric_matrix") {
+#       x[ , , param[["start"]]:param[["end"]], drop = FALSE],
+#   } else {
+#     if (length(param[["dim"]]) == 1) {
+#       aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE])
+#     } else {# length == 2
+#       d <- dim(x)[1:2]
+#       aperm(array(aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE]),
+#                   c(param[["dim"]], rev(d))))
+#     }
+#   }
+# }
 
-extract_ssm_all_params <- function(extractor, params) {
-  if (!is.null(params)) {
-    extractor <- extractor[params]
-  }
-  #map(extractor, ~ f(.x, x))
-}
-
-
-#' Extract parameters from Stan State Space Model results
+#' extract_ssm_all_params <- function(extractor, params) {
+#'   if (!is.null(params)) {
+#'     extractor <- extractor[params]
+#'   }
+#'   #map(extractor, ~ f(.x, x))
+#' }
+#'
+#'
+#' #' Extract parameters from Stan State Space Model results
 #'
 #' Extract results from the output of the \code{ssm_filter} function
 #' in stan.

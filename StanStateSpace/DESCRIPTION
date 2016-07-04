@@ -7,11 +7,13 @@ Authors@R: person("Jeffrey", "Arnold", email = "jeffrey.arnold@gmail.com",
 Description: Functions and data for State Space Models in Stan.
 License: MIT + file LICENSE
 LazyData: TRUE
+Depends:
+  R (>= 3.2.0),
+  rstan (>= 2.10.1)
 Imports:
   purrr,
-  rstan,
   lubridate
 Suggests:
   KFAS,
-    testthat
+  testthat
 RoxygenNote: 5.0.1

@@ -11,7 +11,7 @@ if (interactive()) {
     expect_named(mc,
                  c("status", "model_cppname", "cppcode",
                    "model_name", "model_code"))
-    suppressMessages({
+    capture_output({
       mod <- rstan::stan_model(model_code = mc[["model_code"]])
     })
     expect_is(mod, "stanmodel")
@@ -27,7 +27,7 @@ if (interactive()) {
       expect_named(mc,
                    c("status", "model_cppname", "cppcode",
                      "model_name", "model_code"))
-      suppressMessages({
+      capture.output({
         mod <- rstan::stan_model(model_code = mc[["model_code"]])
       })
       expect_is(mod, "stanmodel")

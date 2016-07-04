@@ -45,70 +45,14 @@ Convert vector to a matrix (column-major).
 */
 matrix to_matrix_colwise(vector v, int m, int n) {
   matrix[m, n] res;
+  int k;
+  k = 1;
+  // by col
   for (j in 1:n) {
+    // by row
     for (i in 1:m) {
-      res[i, j] = v[(j - 1) * m + m];
-    }
-  }
-  return res;
-}
-
-/** to_matrix_rowwise
-Convert vector to a matrix (row-major).
-
-@param vector v An $n \times m$ vector.
-@param int m Number of rows in the matrix.
-@param int n Number of columns in the matrix.
-@return matrix A $m \times n$ matrix containting the elements from `v`
-
-*/
-matrix to_matrix_rowwise(vector v, int m, int n) {
-  matrix[m, n] res;
-  for (i in 1:n) {
-    for (j in 1:m) {
-      res[i, j] = v[(i - 1) * n + n];
-    }
-  }
-  return res;
-}
-
-/** to_vector_colwise
-Convert a matrix to a vector (column-major)
-
-@param matrix x An $n \times m$ matrix.
-@return vector with $n m$ elements.
-
-*/
-vector to_vector_colwise(matrix x) {
-  vector[num_elements(x)] res;
-  int n;
-  int m;
-  n = rows(x);
-  m = cols(x);
-  for (i in 1:n) {
-    for (j in 1:m) {
-      res[n * (j - 1) + i] = x[i, j];
-    }
-  }
-  return res;
-}
-
-/** to_vector_rowwise
-Convert a matrix to a vector (row-major)
-
-@param matrix x An $n \times m$ matrix.
-@return vector with $n m$ elements.
-
-*/
-vector to_vector_rowwise(matrix x) {
-  vector[num_elements(x)] res;
-  int n;
-  int m;
-  n = rows(x);
-  m = cols(x);
-  for (i in 1:rows(x)) {
-    for (j in 1:cols(x)) {
-      res[(i - 1) * m + j] = x[i, j];
+      res[i, j] = v[k];
+      k = k + 1;
     }
   }
   return res;
@@ -149,8 +93,9 @@ int find_symmat_dim(int n) {
   // Stan doesn't support all the functions necessary to do this.
   int i;
   int remainder;
+  remainder = n;
   i = 0;
-  while (n > 0) {
+  while (remainder > 0) {
     i = i + 1;
     remainder = remainder - i;
   }
@@ -169,8 +114,10 @@ matrix vector_to_symmat(vector x, int n) {
   matrix[n, n] m;
   int k;
   k = 1;
+  // for column
   for (j in 1:n) {
-    for (i in 1:j) {
+    // for row
+    for (i in j:n) {
       m[i, j] = x[k];
       if (i != j) {
         m[j, i] = m[i, j];
@@ -190,13 +137,15 @@ containing its unique elements.
 
 */
 vector symmat_to_vector(matrix x) {
-  vector[symmat_size(rows(x))] v;
+  vector[symmat_size(min(rows(x), cols(x)))] v;
+  int m;
   int k;
   k = 1;
+  m = min(rows(x), cols(x));
   // if x is m x n symmetric, then this will return
   // only parts of an m x m matrix.
-  for (j in 1:rows(x)) {
-    for (i in 1:j) {
+  for (j in 1:m) {
+    for (i in j:m) {
       v[k] = x[i, j];
       k = k + 1;
     }
@@ -2259,7 +2208,7 @@ matrix kronecker_prod(matrix A, matrix B) {
       row_start = (i - 1) * p + 1;
       row_end = (i - 1) * p + p;
       col_start = (j - 1) * q + 1;
-      col_end = (j - 1) * q + 1;
+      col_end = (j - 1) * q + q;
       C[row_start:row_end, col_start:col_end] = A[i, j] * B;
     }
   }

@@ -18,3 +18,5 @@ auto/
 # Doc generated
 /doc/_bookdown_files
 /doc/libs/
+lib/cmdstan-*
+stan/tests/build/

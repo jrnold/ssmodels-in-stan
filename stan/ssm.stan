@@ -161,7 +161,7 @@ Functions used in filtering and log-likelihood calculations.
 /** ssm_filter_update_a
 Update the expected value of the predicted state, $\vec{a}_{t + 1} = \E(\vec{\alpha}_{t + 1} | \vec{y}_{1:t})$,
 
-@param vector a An $m \times 1$ vector with the prected state, $\vec{a}_t$.
+@param vector a An $m \times 1$ vector with the predicted state, $\vec{a}_t$.
 @param vector c An $m \times 1$ vector with the system intercept, $\vec{c}_t$
 @param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
 @param vector v A $p \times 1$ vector with the forecast error, $\vec{v}_t$.
@@ -183,7 +183,7 @@ vector ssm_filter_update_a(vector a, vector c, matrix T, vector v, matrix K) {
 /** ssm_filter_update_P
 Update the expected value of the predicted state, $\mat{P}_{t + 1} = \Var(\alpha_{t + 1} | \vec{y}_{1:t})$,
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 @param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 @param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
 @param matrix RQR A $m \times m$ matrix with the system covariance matrix, $\mat{R}_t \mat{Q}_t \mat{R}_t'$.
@@ -206,7 +206,7 @@ matrix ssm_filter_update_P(matrix P, matrix Z, matrix T,
 /** ssm_filter_update_v
 Update the forcast error, $\vec{v}_t = \vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}})$
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 @param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 @param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
 @param matrix RQR An $m \times m$ matrix with the system covariance matrix, $\mat{R}_t \mat{Q}_t \mat{R}_t'$.
@@ -228,7 +228,7 @@ vector ssm_filter_update_v(vector y, vector a, vector d, matrix Z) {
 /** ssm_filter_update_F
 Update the variance of the forcast error, $\mat{F}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))$
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 @param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 @param matrix H A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
 @return matrix A $p \times p$ vector with $\mat{F}_t$.
@@ -248,7 +248,7 @@ matrix ssm_filter_update_F(matrix P, matrix Z, matrix H) {
 /** ssm_filter_update_Finv
 Update the precision of the forcast error, $\mat{F}^{-1}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))^{-1}$
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $\mat{P}_t$.
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 @param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 @param matrix H A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
 @return matrix A $p \times p$ vector with $\mat{F}^{-1}_t$.
@@ -265,7 +265,7 @@ matrix ssm_filter_update_Finv(matrix P, matrix Z, matrix H) {
 /** ssm_filter_update_K
 Update the Kalman gain, $\mat{K}_t$.
 
-@param matrix P An $m \times m$ vector with the variance of the prected state, $P_t$.
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $P_t$.
 @param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 @param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
 @param matrix Finv A $p \times p$ matrix
@@ -668,6 +668,49 @@ matrix ssm_filter_states_get_P(vector x, int m) {
   return P;
 }
 
+/** ssm_filter_states_update_a
+
+Calculate filtered state values [@DurbinKoopman2012, Sec 4.3.2],
+$$
+\E(\vec{alpha}_t | \vec{y}_{1:t}) = \vec{a}_{t|t} = \mat{T}_t * \vec{a}_t + \mat{K}_t \vec{v}_t .
+$$
+
+@param vector a An $m \times 1$ vector with the expected value of the predicted state, $\vec{a}_t$.
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param vector v A $p \times 1$ vector with the forecast errors, $\vec{v}_t$
+@param matrix Finv A $p \times p$ matrix with the forecast prediction, $\mat{F}_{t}^{-1}$.
+@return matrix An $m \times 1$ matrix the expected value of the fitered states, $\E(\vec{alpha}_t | \vec{y}_{1:t}) = \vec{a}_{t|t}$.
+
+*/
+vector ssm_filter_states_update_a(vector a, matrix P, matrix Z,
+                                  vector v, matrix Finv) {
+  vector[num_elements(a)] aa;
+  aa = a + P * Z ' * Finv * v;
+  return aa;
+}
+
+/** ssm_filter_states_update_P
+
+Calculate filtered state variance values [@DurbinKoopman2012, Sec 4.3.2],
+$$
+\Var(\vec{alpha}_t | \vec{y}_{1:t}) = \mat{P}_{t|t} = \mat{P}_t - \mat{P}_t \mat{Z}_t' \mat{F}_t^{-1} \mat{Z}_t \mat{P}_t .
+$$
+
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param matrix Finv A $p \times p$ matrix with the forecast prediction, $\mat{F}_{t}^{-1}$.
+@return matrix An $m \times m$ matrix with variance of the filtered states, $\Var(\vec{alpha}_t | \vec{y}_{1:t}) = \mat{P}_{t|t}$.
+
+
+*/
+matrix ssm_filter_states_update_P(matrix P, matrix Z, matrix Finv) {
+  matrix[rows(P), cols(P)] PP;
+  PP = to_symmetric_matrix(P - P * quad_form(Finv, Z) * P);
+  return PP;
+}
+
+
 /** ssm_filter_states
 Calculate filtered expected values and variances of the states
 
@@ -720,8 +763,8 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
       a = ssm_filter_get_a(filter[t], m, p);
       P = ssm_filter_get_P(filter[t], m, p);
       // calcualte filtered values
-      aa = a + P * Z_t ' * Finv * v;
-      PP = to_symmetric_matrix(P - P * quad_form(Finv, Z_t) * P);
+      aa = ssm_filter_states_update_a(a, P, Z_t, v, Finv);
+      PP = ssm_filter_states_update_P(P, Z_t, Finv);
       // saving
       res[t, :m] = aa;
       res[t, (m + 1): ] = symmat_to_vector(PP);
@@ -999,7 +1042,7 @@ $$
 \vec{r}_{t - 1} = \mat{Z}' \mat{F}^{-1}_t \vec{v}_t + \mat{L}' \vec{r}_{t} .
 $$
 
-See [@DurbinKoopman2012, p. 91]
+See [@DurbinKoopman2012, Sec 4.4.4, p. 91]
 */
 vector ssm_smooth_update_r(vector r, matrix Z, vector v, matrix Finv,
                            matrix L) {
@@ -1022,11 +1065,12 @@ $$
 \mat{N}_{t - 1} = \mat{Z}_t' \mat{F}^{-1}_t \mat{Z}_t + \mat{L}_t' \mat{N}_t \mat{L}_t .
 $$
 
-See [@DurbinKoopman2012, p. 91]
+See [@DurbinKoopman2012, Sec 4.4.4, p. 91]
 */
 matrix ssm_smooth_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   matrix[rows(N), cols(N)] N_new;
-  N_new = quad_form(Finv, Z) + quad_form(N, L);
+  # may not need this to_symmetric_matrix
+  N_new = to_symmetric_matrix(quad_form(Finv, Z) + quad_form(N, L));
   return N_new;
 }
 
@@ -1668,7 +1712,7 @@ Extract $\vec{y}_t$ from vectors returned by `ssm_sim_rng`.
 
 */
 vector ssm_sim_get_y(vector x, int m, int p, int q) {
-  vector[m] y;
+  vector[p] y;
   int idx[4, 3];
   idx = ssm_sim_idx(m, p, q);
   y = x[idx[1, 2]:idx[1, 3]];
@@ -1705,7 +1749,7 @@ Extract $\vec{\varepsilon}_t$ from vectors returne by `ssm_sim_rng`.
 
 */
 vector ssm_sim_get_eps(vector x, int m, int p, int q) {
-  vector[m] eps;
+  vector[p] eps;
   int idx[4, 3];
   idx = ssm_sim_idx(m, p, q);
   eps = x[idx[3, 2]:idx[3, 3]];
@@ -1722,7 +1766,7 @@ Extract $\vec{\eta}_t$ from vectors returne by `ssm_sim_rng`.
 
 */
 vector ssm_sim_get_eta(vector x, int m, int p, int q) {
-  vector[m] eta;
+  vector[q] eta;
   int idx[4, 3];
   idx = ssm_sim_idx(m, p, q);
   eta = x[idx[4, 2]:idx[4, 3]];

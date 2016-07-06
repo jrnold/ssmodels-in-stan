@@ -271,6 +271,17 @@ matrix ssm_filter_states_get_P(vector x, int m) {
   P = vector_to_symmat(x[(m + 1): ], m);
   return P;
 }
+vector ssm_filter_states_update_a(vector a, matrix P, matrix Z,
+                                  vector v, matrix Finv) {
+  vector[num_elements(a)] aa;
+  aa = a + P * Z ' * Finv * v;
+  return aa;
+}
+matrix ssm_filter_states_update_P(matrix P, matrix Z, matrix Finv) {
+  matrix[rows(P), cols(P)] PP;
+  PP = to_symmetric_matrix(P - P * quad_form(Finv, Z) * P);
+  return PP;
+}
 vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
   vector[ssm_filter_states_size(dims(Z)[3])] res[size(filter)];
   int n;
@@ -298,8 +309,8 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       a = ssm_filter_get_a(filter[t], m, p);
       P = ssm_filter_get_P(filter[t], m, p);
-      aa = a + P * Z_t ' * Finv * v;
-      PP = to_symmetric_matrix(P - P * quad_form(Finv, Z_t) * P);
+      aa = ssm_filter_states_update_a(a, P, Z_t, v, Finv);
+      PP = ssm_filter_states_update_P(P, Z_t, Finv);
       res[t, :m] = aa;
       res[t, (m + 1): ] = symmat_to_vector(PP);
     }
@@ -471,7 +482,7 @@ vector ssm_smooth_update_r(vector r, matrix Z, vector v, matrix Finv,
 }
 matrix ssm_smooth_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   matrix[rows(N), cols(N)] N_new;
-  N_new = quad_form(Finv, Z) + quad_form(N, L);
+  N_new = to_symmetric_matrix(quad_form(Finv, Z) + quad_form(N, L));
   return N_new;
 }
 int ssm_smooth_state_size(int m) {
@@ -802,7 +813,7 @@ int ssm_sim_size(int m, int p, int q) {
   return sz;
 }
 vector ssm_sim_get_y(vector x, int m, int p, int q) {
-  vector[m] y;
+  vector[p] y;
   int idx[4, 3];
   idx = ssm_sim_idx(m, p, q);
   y = x[idx[1, 2]:idx[1, 3]];
@@ -816,14 +827,14 @@ vector ssm_sim_get_a(vector x, int m, int p, int q) {
   return a;
 }
 vector ssm_sim_get_eps(vector x, int m, int p, int q) {
-  vector[m] eps;
+  vector[p] eps;
   int idx[4, 3];
   idx = ssm_sim_idx(m, p, q);
   eps = x[idx[3, 2]:idx[3, 3]];
   return eps;
 }
 vector ssm_sim_get_eta(vector x, int m, int p, int q) {
-  vector[m] eta;
+  vector[q] eta;
   int idx[4, 3];
   idx = ssm_sim_idx(m, p, q);
   eta = x[idx[4, 2]:idx[4, 3]];

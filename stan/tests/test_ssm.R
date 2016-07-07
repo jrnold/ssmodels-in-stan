@@ -612,22 +612,40 @@ test_that("Stan function constrain_stationary works", {
   }
   for (i in 1:3) {
     x <- rnorm(i)
-    expected <- ar_trans(x)
-    expect_equal(x, expected)
+    expect_equal(f(x), ar_trans(x))
   }
 })
 
 test_that("Stan function pacf_to_acf works", {
+  f <- function(x) {
+    modfit <- test_stan_function("acf_to_pacf", data = list(x = x))
+    as.numeric(rstan::extract(modfit)[["output"]])
+  }
   for (i in 1:3) {
-    pacf <- runif(i, -1, 1)
-    expected <- pacf_to_acf(pacf)
+    x <- runif(i, -1, 1)
+    expect_equal(f(x), pacf_to_acf(x))
   }
 })
 
 test_that("Stan function unconstrain_stationary works", {
+  f <- function(x) {
+    modfit <- test_stan_function("unconstrain_stationary", data = list(x = x))
+    as.numeric(rstan::extract(modfit)[["output"]])
+  }
   for (i in 1:3) {
     expected <- rnorm(i)
     phi <- ar_invtrans(expected)
-    cat()
+    expect_equal(f(phi), expected)
+  }
+})
+
+test_that("Stan function acf_to_pacf works", {
+  f <- function(x) {
+    modfit <- test_stan_function("acf_to_pacf", data = list(x = x))
+    as.numeric(rstan::extract(modfit)[["output"]])
+  }
+  for (i in 1:3) {
+    x <- constrain_stationary(rnorm(i))
+    expect_equal(f(x), acf_to_pacf(x))
   }
 })

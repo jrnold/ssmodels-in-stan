@@ -20,7 +20,9 @@ These
 - `seatbelt.dat`: is the same as `datasets::Seatbelts`
 - `internet.dat`: is the same as `datasets::WWWusage`
 - `motorcyle.dat` is the same as `boot::motor`
-- `sv.dat: There are several dollar pound datasets in R packages.
+- `sv.dat: There are several dollar/pound datasets in R packages.
+    - [US Fed Reserve monthly USD/GBP](https://www.quandl.com/data/FED/RXI_US_N_M_UK-United-Kingdom-Spot-Exchange-Rate-US-Pound-Sterling-Reciprocal-of-rxi_n-m-uk-Monthly)
+    - [US Fed Reserve business day](https://www.quandl.com/data/FED/RXI_US_N_B_UK-UNITED-KINGDOM-SPOT-EXCHANGE-RATE-US-POUND-1-RXI_N-B-UK-Business-day)
 - `van.dat`: ??
 - `gas.dat` is the same as `datasets::UKgas`
 - `boat.dat`: `KFAS::boat`

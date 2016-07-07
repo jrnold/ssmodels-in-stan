@@ -1039,7 +1039,7 @@ vector constrain_stationary(vector x) {
   int n;
   n = num_elements(x);
   for (i in 1:n) {
-    r[i] = x[i] / (sqrt(1.0 + pow(x[i], 2)));
+    r[i] = tanh(x[i]);
   }
   return pacf_to_acf(r);
 }
@@ -1068,7 +1068,7 @@ vector unconstrain_stationary(vector x) {
   n = num_elements(x);
   r = acf_to_pacf(x);
   for (i in 1:n) {
-    z[i] = r[i] / (sqrt(1.0 - pow(r[i], 2)));
+    z[i] = atanh(r[i]);
   }
   return z;
 }

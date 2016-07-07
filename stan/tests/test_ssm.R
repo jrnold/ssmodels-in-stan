@@ -40,8 +40,8 @@ test_stan_function <- function(FUN, data = NULL, init = NULL,
                       envir = as.environment(data))
     args <- append(args, paste0("init=", init_tmpfile))
   }
-  rc <- devtools::system_check(filename, args = args)
-                         #ignore.stdout = TRUE, quiet = TRUE)
+  rc <- devtools::system_check(filename, args = args,
+                               ignore.stdout = TRUE, quiet = TRUE)
   if (output) {
     # IF output, then return data
     rstan::read_stan_csv(out_tmpfile)
@@ -255,9 +255,9 @@ test_that("Stan function ssm_filter_update_K works", {
   Z <- matrix(rnorm(m * p), p, m)
   P <- rand_pdmat(m)
   Finv <- solve(rand_pdmat(p))
-  expected <- solve(T %*% P %*% t(Z) * Finv)
+  expected <- T %*% P %*% t(Z) %*% Finv
   output <- f(m, p, P, Z, T, Finv)
-  expect_length(output, p * p)
+  expect_length(output, m * p)
   expect_equal(output, expected, tolerance = 10e-5)
 })
 
@@ -277,6 +277,7 @@ test_that("Stan function ssm_filter_update_L works", {
   m <- 3L
   Z <- matrix(rnorm(m * p), p, m)
   T <- matrix(rnorm(m * m), m, m)
+  P <- rand_pdmat(m)
   # Need Kalman gain to be generated in this way; otherwise (T - K Z) not symm
   K <- T %*% P %*% t(Z) %*% solve(rand_pdmat(p))
   expected <- T - K %*% Z
@@ -323,7 +324,7 @@ test_that("Stan function ssm_filter_idx and ssm_filter_get_* functions work", {
   xsz <- 1 + p + symmat_size(p) + m * p + m + symmat_size(m)
   x <- seq_len(xsz)
   output <- f(m, p, x)
-  expect_equal(output[["sz"]], length(x))
+  expect_equal(as.numeric(output[["sz"]]), length(x))
   expect_equal(output[["idx"]][1, , ],
                matrix(c(1, 1, 1,
                       p, 1 + 1, 1 + p,
@@ -435,7 +436,7 @@ test_that("Stan function matrix_diff works", {
   B <- matrix(rnorm(m * n), m, n)
   output <- f(m, n, A, B)
   expected <- max(abs(A - B)) / max(abs(A))
-  expect_equal(as.numeric(output), as.numeric(expected))
+  expect_equal(as.numeric(output), as.numeric(expected), tol = 10e-5)
 })
 
 #' Expected value is in DK Sec 4.4.4
@@ -463,7 +464,8 @@ test_that("Stan function ssm_smoth_update_r works", {
 test_that("Stan function ssm_smoth_update_N works", {
   f <- function(m, p, N, Z, Finv, L) {
     modfit <- test_stan_function("ssm_smooth_update_N",
-                                 data = list(m = m, p = p, r = r, N = N,
+                                 data = list(m = m, p = p,
+                                             N = N,
                                              Z = Z,
                                              Finv = Finv, L = L))
     ret <- rstan::extract(modfit, "output")[[1]]
@@ -602,3 +604,30 @@ acf_to_pacf <- function(par) {
   # Redo the tanh transformation to get to partial autocorrelations
   tanh(ar_invtrans(par))
 }
+
+test_that("Stan function constrain_stationary works", {
+  f <- function(x) {
+    modfit <- test_stan_function("constrain_stationary", data = list(x = x))
+    as.numeric(rstan::extract(modfit)[["output"]])
+  }
+  for (i in 1:3) {
+    x <- rnorm(i)
+    expected <- ar_trans(x)
+    expect_equal(x, expected)
+  }
+})
+
+test_that("Stan function pacf_to_acf works", {
+  for (i in 1:3) {
+    pacf <- runif(i, -1, 1)
+    expected <- pacf_to_acf(pacf)
+  }
+})
+
+test_that("Stan function unconstrain_stationary works", {
+  for (i in 1:3) {
+    expected <- rnorm(i)
+    phi <- ar_invtrans(expected)
+    cat()
+  }
+})

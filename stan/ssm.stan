@@ -2161,7 +2161,7 @@ vector constrain_stationary(vector x) {
   n = num_elements(x);
   // transform (-Inf, Inf) to (-1, 1)
   for (i in 1:n) {
-    r[i] = x[i] / (sqrt(1.0 + pow(x[i], 2)));
+    r[i] = tanh(x[i]);
   }
   // Transform PACF to ACF
   return pacf_to_acf(r);
@@ -2209,7 +2209,7 @@ vector unconstrain_stationary(vector x) {
   r = acf_to_pacf(x);
   // Transform (-1, 1) to (-Inf, Inf)
   for (i in 1:n) {
-    z[i] = r[i] / (sqrt(1.0 - pow(r[i], 2)));
+    z[i] = atanh(r[i]);
   }
   return z;
 }
@@ -2218,13 +2218,13 @@ vector unconstrain_stationary(vector x) {
 
 Kronecker product
 
-The Kronecker product of a $A$ and $B$ is
+The Kronecker product of a $\mat{A}$ and $\mat{B}$ is
 $$
-A \otimes B =
+\mat{A} \otimes \mat{B} =
 \begin{bmatrix}
-a_{11} B \cdots a_{1n} B \\
+a_{11} \mat{B} \cdots a_{1n} \mat{B} \\
 \vdots & \ddots & vdots \\
-a_{m1} B & \cdots & a_{mn} B
+a_{m1} \mat{B} & \cdots & a_{mn} \mat{B}
 \end{bmatrix} .
 $$
 
@@ -2267,12 +2267,12 @@ Find the covariance of the stationary distribution of an ARMA model
 @param matrix R The $m \times q$ system disturbance selection matrix
 @return matrix An $m \times m$ matrix with the stationary covariance matrix.
 
-The initial conditions are $\alpha_1 \sim N(0, \sigma^2 Q_0)$,
+The initial conditions are $\alpha_1 \sim N(0, \sigma^2 \mat{Q}_0)$,
 where $Q_0$ is the solution to
 $$
-(T \otimes T) \VEC(Q_0) = \VEC(R R')
+(\mat{T} \otimes \mat{T}) \VEC(\mat{Q}_0) = \VEC(\mat{R} \mat{R}\T)
 $$
-where $\VEC(Q_0)$ and $\VEC(R R')$ are the stacked columns of $Q_0$ and $R R'$
+where $\VEC(Q_0)$ and $\VEC(R R')$ are the stacked columns of $\mat{Q}_0$ and $\mat{R} \mat{R}\T$
 
 See @DurbinKoopman2012, Sec 5.6.2.
 

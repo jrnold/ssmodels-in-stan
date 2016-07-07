@@ -11,6 +11,6 @@ data {
 }
 model {}
 generated quantities {
-  matrix[p, p] output;
+  matrix[m, p] output;
   output = ssm_filter_update_K(P, Z, T, Finv);
 }

@@ -41,7 +41,7 @@ test_stan_function <- function(FUN, data = NULL, init = NULL,
     args <- append(args, paste0("init=", init_tmpfile))
   }
   rc <- devtools::system_check(filename, args = args,
-                               ignore.stdout = TRUE, quiet = TRUE)
+                               ignore.stdout = FALSE, quiet = FALSE)
   if (output) {
     # IF output, then return data
     rstan::read_stan_csv(out_tmpfile)
@@ -607,7 +607,7 @@ acf_to_pacf <- function(par) {
 
 test_that("Stan function constrain_stationary works", {
   f <- function(x) {
-    modfit <- test_stan_function("constrain_stationary", data = list(x = x))
+    modfit <- test_stan_function("constrain_stationary", data = list(n = length(x), x = array(x)))
     as.numeric(rstan::extract(modfit)[["output"]])
   }
   for (i in 1:3) {
@@ -618,7 +618,7 @@ test_that("Stan function constrain_stationary works", {
 
 test_that("Stan function pacf_to_acf works", {
   f <- function(x) {
-    modfit <- test_stan_function("acf_to_pacf", data = list(x = x))
+    modfit <- test_stan_function("acf_to_pacf", data = list(x = array(x), n = length(x)))
     as.numeric(rstan::extract(modfit)[["output"]])
   }
   for (i in 1:3) {
@@ -629,7 +629,7 @@ test_that("Stan function pacf_to_acf works", {
 
 test_that("Stan function unconstrain_stationary works", {
   f <- function(x) {
-    modfit <- test_stan_function("unconstrain_stationary", data = list(x = x))
+    modfit <- test_stan_function("unconstrain_stationary", data = list(x = array(x), n = length(x)))
     as.numeric(rstan::extract(modfit)[["output"]])
   }
   for (i in 1:3) {
@@ -641,11 +641,11 @@ test_that("Stan function unconstrain_stationary works", {
 
 test_that("Stan function acf_to_pacf works", {
   f <- function(x) {
-    modfit <- test_stan_function("acf_to_pacf", data = list(x = x))
+    modfit <- test_stan_function("acf_to_pacf", data = list(x = array(x), n = length(x)))
     as.numeric(rstan::extract(modfit)[["output"]])
   }
   for (i in 1:3) {
-    x <- constrain_stationary(rnorm(i))
+    x <- ar_trans(rnorm(i))
     expect_equal(f(x), acf_to_pacf(x))
   }
 })

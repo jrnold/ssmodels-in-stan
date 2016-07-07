@@ -570,3 +570,35 @@ test_that("Stan functions ssm_sim_get works", {
   expect_equal(as.numeric(output[["eta"]]), 14:16)
 
 })
+
+#' Compare results of Stationary coefficients against R's implementation of the transformation
+
+#' Transform vector of real numbers to stationary AR(p) coefficients
+#'
+#' this function is used by stats::arima()
+ar_trans <- function(par) {
+  # ARMA object (AR, MA, SAR, SMA, S period, I, SI). I just need to worry about one set of coefficients
+  # so ignore the other parts
+  .Call(stats:::C_ARIMA_transPars, par, as.integer(c(length(par), rep(0, 5))), TRUE)[[1]]
+}
+
+#' Transform PACF to ACF
+pacf_to_acf <- function(par) {
+  # ARMA object (AR, MA, SAR, SMA, S period, I, SI)
+  # Undo the tanh transformation in C_ARIMA_tranPars to get back to partial autocorrelation
+  ar_trans(atanh(par))
+}
+
+#' Transform vector of stationary AR(p) coefficients to real numbers
+#'
+#' This function is used by stats::arima()
+ar_invtrans <- function(par) {
+  # ARMA object (AR, MA, SAR, SMA, S period, I, SI)
+  .Call(stats:::C_ARIMA_Invtrans, par, as.integer(c(length(par), rep(0, 5))))
+}
+
+#' Transform ACF to PACF
+acf_to_pacf <- function(par) {
+  # Redo the tanh transformation to get to partial autocorrelations
+  tanh(ar_invtrans(par))
+}

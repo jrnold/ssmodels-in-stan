@@ -7,6 +7,8 @@ all: test
 test: $(STAN_TESTS)
 	Rscript -e 'testthat::test_dir(".")'
 
+test-%: /build/test_%
+
 build/%.stan: src/%.stan $(SSM_STAN)
 	mkdir -p build
 	# hacky #include alternative

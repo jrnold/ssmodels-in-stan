@@ -1,5 +1,10 @@
 context("Stan models")
 
+set.seed(60322390);
+
+#' Tolerance needs to be a little lower due to round tripping.
+TOL <- 1e-5
+
 # Positive definite matrix: https://stat.ethz.ch/pipermail/r-help/2008-February/153708.html
 rand_pdmat <- function(n, ev = runif(n, 0, 10)) {
   Z <- matrix(ncol = n, rnorm(n ^ 2))
@@ -40,19 +45,23 @@ test_stan_function <- function(FUN, data = NULL, init = NULL,
                       envir = as.environment(data))
     args <- append(args, paste0("init=", init_tmpfile))
   }
-  rc <- devtools::system_check(filename, args = args,
-                               ignore.stdout = FALSE, quiet = FALSE)
+  msg <- capture.output({
+    rc <- devtools::system_check(filename, args = args)
+  })
+  # If error, then raise it
+  if (rc > 0) {
+    stop(msg)
+  }
   if (output) {
     # IF output, then return data
     rstan::read_stan_csv(out_tmpfile)
   } else {
     # else return the return code
-    rc
   }
 }
 
 test_that("Stan file ssm.stan compiles and runs", {
-  expect_equal(test_stan_function("ssm", output = FALSE), 0)
+  expect_equal(test_stan_function("ssm", output = FALSE), NULL)
 })
 
 test_that("Stan function to_symmetric_matrix works", {
@@ -577,14 +586,16 @@ test_that("Stan functions ssm_sim_get works", {
 
 #' Transform vector of real numbers to stationary AR(p) coefficients
 #'
-#' this function is used by stats::arima()
+#' Extracted from `stats::arima()`
 ar_trans <- function(par) {
   # ARMA object (AR, MA, SAR, SMA, S period, I, SI). I just need to worry about one set of coefficients
   # so ignore the other parts
-  .Call(stats:::C_ARIMA_transPars, par, as.integer(c(length(par), rep(0, 5))), TRUE)[[1]]
+  .Call(stats:::C_ARIMA_transPars, as.numeric(par), as.integer(c(length(par), rep(0, 5))), TRUE)[[1]]
 }
 
 #' Transform PACF to ACF
+#'
+#' Extracted from `stats::arima()`
 pacf_to_acf <- function(par) {
   # ARMA object (AR, MA, SAR, SMA, S period, I, SI)
   # Undo the tanh transformation in C_ARIMA_tranPars to get back to partial autocorrelation
@@ -593,16 +604,29 @@ pacf_to_acf <- function(par) {
 
 #' Transform vector of stationary AR(p) coefficients to real numbers
 #'
-#' This function is used by stats::arima()
+#' Extracted from `stats::arima()`
 ar_invtrans <- function(par) {
   # ARMA object (AR, MA, SAR, SMA, S period, I, SI)
-  .Call(stats:::C_ARIMA_Invtrans, par, as.integer(c(length(par), rep(0, 5))))
+  # goes from AR to pacf, pacf (-1, 1) to (-infty, infty)
+  .Call(stats:::C_ARIMA_Invtrans, as.numeric(par), as.integer(c(length(par), rep(0, 5))))
 }
 
 #' Transform ACF to PACF
 acf_to_pacf <- function(par) {
   # Redo the tanh transformation to get to partial autocorrelations
   tanh(ar_invtrans(par))
+}
+
+#' Stationary ARMA covariance
+#'
+#' Extracted parts from the function `stats::arima`.
+arma_init <- function(theta, phi, method = "Gardner1980", tol = 0) {
+  if (method == "Gardner1980") {
+    Q0 <- .Call(stats:::C_getQ0, as.numeric(phi), as.numeric(theta))
+  } else {
+    Q0 <- .Call(stats:::C_getQ0bis, as.numeric(phi), as.numeric(theta), tol = tol)
+  }
+  Q0
 }
 
 test_that("Stan function constrain_stationary works", {
@@ -612,18 +636,22 @@ test_that("Stan function constrain_stationary works", {
   }
   for (i in 1:3) {
     x <- rnorm(i)
-    expect_equal(f(x), ar_trans(x))
+    output <- f(x)
+    expected <- ar_trans(x)
+    expect_equal(output, expected, tolerance = 10e-5)
   }
 })
 
 test_that("Stan function pacf_to_acf works", {
   f <- function(x) {
-    modfit <- test_stan_function("acf_to_pacf", data = list(x = array(x), n = length(x)))
+    modfit <- test_stan_function("pacf_to_acf", data = list(x = array(x), n = length(x)))
     as.numeric(rstan::extract(modfit)[["output"]])
   }
   for (i in 1:3) {
-    x <- runif(i, -1, 1)
-    expect_equal(f(x), pacf_to_acf(x))
+    x <- tanh(rnorm(i))
+    expected <- pacf_to_acf(x)
+    output <- f(x)
+    expect_equal(output, expected, tolerance = TOL)
   }
 })
 
@@ -633,9 +661,12 @@ test_that("Stan function unconstrain_stationary works", {
     as.numeric(rstan::extract(modfit)[["output"]])
   }
   for (i in 1:3) {
+    # real numbers
     expected <- rnorm(i)
-    phi <- ar_invtrans(expected)
-    expect_equal(f(phi), expected)
+    # AR coefficients
+    phi <- ar_trans(expected)
+    output <- f(phi)
+    expect_equal(f(phi), expected, tolerance = TOL)
   }
 })
 
@@ -646,6 +677,40 @@ test_that("Stan function acf_to_pacf works", {
   }
   for (i in 1:3) {
     x <- ar_trans(rnorm(i))
-    expect_equal(f(x), acf_to_pacf(x))
+    expect_equal(f(x), acf_to_pacf(x), tolerance = TOL)
   }
+})
+
+test_that("Stan function ssm_stationary_cov works", {
+  f <- function(T, RQR) {
+    modfit <- test_stan_function("stationary_cov",
+                                 data = list(T = T, RQR = RQR,
+                                             m = nrow(T)))
+    ret <- rstan::extract(modfit)[["output"]]
+    array(ret, dim(ret)[-1L])
+  }
+
+  # ARMA(1, 1)
+  arma11 <- function(phi, theta) {
+    x <- matrix(0, 2, 2)
+    x[1, 1] <- (1 + theta ^ 2 + 2 * theta * phi) / (1 - phi ^  2)
+    x[2, 1] <- x[1, 2] <- theta
+    x[2, 2] <- theta ^ 2
+    x
+  }
+  phi <- 0.5
+  theta <- 0.25
+  arma11(0.5, 0.25)
+  T <- matrix(c(phi, 0, 1, 0), 2, 2)
+  R <- matrix(c(1, theta))
+  RQR <- tcrossprod(R)
+  expect_equal(f(T, RQR), arma11(phi, theta))
+
+  # AR(1, 1)
+  phi <- 0.5
+  T <- matrix(phi)
+  RQR <- matrix(1)
+  f(T, RQR)
+  expect_equal(as.numeric(f(T, RQR)), 1 / (1 - phi ^ 2), tolerance = TOL)
+
 })

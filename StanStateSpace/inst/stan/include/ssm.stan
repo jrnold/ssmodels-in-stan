@@ -1021,18 +1021,25 @@ vector[] ssm_simsmo_eps_rng(vector[] eps,
     return draws;
 }
 vector pacf_to_acf(vector x) {
-  matrix[num_elements(x), num_elements(x)] y;
-  int n;
-  n = num_elements(x);
-  y = rep_matrix(0.0, n, n);
-  for (k in 1:n) {
-    for (i in 1:(k - 1)) {
-      y[k, i] = y[k - 1, i] + x[k] * y[k - 1, k - i];
+  vector[num_elements(x)] x_new;
+  vector[num_elements(x)] work;
+  real a;
+  int p;
+  p = num_elements(x);
+  work = x;
+  x_new = x;
+  if (p > 1) {
+    for (j in 2:p) {
+      a = x_new[j];
+      for (k in 1:(j - 1)) {
+        work[k] = work[k] - a * x_new[j - k];
+      }
+      for (k in 1:j) {
+        x_new[k] = work[k];
+      }
     }
-    y[k, k] = x[k];
-    print(y);
   }
-  return -y[n] ';
+  return x_new;
 }
 vector constrain_stationary(vector x) {
   vector[num_elements(x)] r;
@@ -1044,21 +1051,27 @@ vector constrain_stationary(vector x) {
   return pacf_to_acf(r);
 }
 vector acf_to_pacf(vector x) {
-  matrix[num_elements(x), num_elements(x)] y;
-  vector[num_elements(x)] r;
-  int n;
-  n = num_elements(x);
-  y = rep_matrix(0.0, n, n);
-  y[n] = -x ';
-  for (j in 0:(n - 1)) {
-    int k;
-    k = n - j;
-    for (i in 1:(k - 1)) {
-      y[k - 1, i] = (y[k, i] - y[k, k] * y[k, k - i]) / (1 - pow(y[k, k], 2));
+  vector[num_elements(x)] x_new;
+  vector[num_elements(x)] work;
+  real a;
+  int p;
+  p = num_elements(x);
+  work = x;
+  x_new = x;
+  if (p > 1) {
+    for(i in 0:(p - 2)) {
+      int j;
+      j = p - i;
+      a = x_new[j];
+      for(k in 1:(j - 1)) {
+        work[k]  = (x_new[k] + a * x_new[j - k]) / (1 - pow(a, 2));
+      }
+      for (k in 1:j) {
+        x_new[k] = work[k];
+      }
     }
   }
-  r = diagonal(y);
-  return r;
+  return x_new;
 }
 vector unconstrain_stationary(vector x) {
   matrix[num_elements(x), num_elements(x)] y;
@@ -1097,16 +1110,21 @@ matrix kronecker_prod(matrix A, matrix B) {
   }
   return C;
 }
-matrix arima_stationary_cov(matrix T, matrix R) {
-  matrix[rows(T), cols(T)] Q0;
+matrix stationary_cov(matrix T, matrix RQR) {
+  matrix[rows(T), cols(T)] P;
   matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
-  vector[rows(T) * rows(T)] RR;
+  vector[rows(T) * rows(T)] RQR_vec;
   int m;
   int m2;
   m = rows(T);
   m2 = m * m;
-  RR = to_vector(tcrossprod(R));
-  TT = kronecker_prod(T, T);
-  Q0 = to_matrix_colwise((diag_matrix(rep_vector(1.0, m2)) - TT) \ RR, m, m);
-  return Q0;
+  RQR_vec = to_vector(RQR);
+  TT = - kronecker_prod(T, T);
+  print(to_vector(TT));
+  for (i in 1:m2) {
+    TT[i, i] = 1.0 + TT[i, i];
+  }
+  print(to_vector(TT));
+  P = to_matrix_colwise(inverse(TT) * RQR_vec, m, m);
+  return P;
 }

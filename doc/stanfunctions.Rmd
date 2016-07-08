@@ -2687,19 +2687,28 @@ Partial Autocorrelations to Autocorrelations
 
 
 ```stan
+// from R function partrans in arima.c
+// https://github.com/wch/r-source/blob/e5b21d0397c607883ff25cca379687b86933d730/src/library/stats/src/arima.c#L439
 vector pacf_to_acf(vector x) {
-  matrix[num_elements(x), num_elements(x)] y;
-  int n;
-  n = num_elements(x);
-  y = rep_matrix(0.0, n, n);
-  for (k in 1:n) {
-    for (i in 1:(k - 1)) {
-      y[k, i] = y[k - 1, i] + x[k] * y[k - 1, k - i];
+  vector[num_elements(x)] x_new;
+  vector[num_elements(x)] work;
+  real a;
+  int p;
+  p = num_elements(x);
+  work = x;
+  x_new = x;
+  if (p > 1) {
+    for (j in 2:p) {
+      a = x_new[j];
+      for (k in 1:(j - 1)) {
+        work[k] = work[k] - a * x_new[j - k];
+      }
+      for (k in 1:j) {
+        x_new[k] = work[k];
+      }
     }
-    y[k, k] = x[k];
-    print(y);
   }
-  return -y[n] ';
+  return x_new;
 }
 
 ```
@@ -2721,6 +2730,24 @@ See @Jones1980a, @Jones1987a, @Monahan1984a, @AnsleyKohn1986a, and the functions
 [statsmodels.tsa.statespace](http://www.statsmodels.org/dev/statespace.html#statespace-tools).
 
 
+1. Each $\alpha_j \in (-\infty, \infty)$ is transformed to a partial correlation within $(-1, 1)$,
+   with $\rho_j = \tanh(\alpha_j)$.
+2. Then the partial correlations are converted to autocorrelation coefficients
+   using the Durbin-Levinson recursions:
+   $$
+   $$
+
+The transformatation is reversed to take autocorrelation coefficients to
+an unconstrained $R^p$ space.
+
+1. Autocorrelation coefficients are transformed to partial autocorrelation coefficients,
+    by running the Durbin-Levinson recursions in reverse.
+2. Transform each partial autocorrelation to go from $(-1, 1) \to (-\infty, \infty)$ using,
+    $\alpha_j = \atanh(\rho_j)$.
+
+
+
+
 
 ```stan
 vector constrain_stationary(vector x) {
@@ -2734,6 +2761,8 @@ vector constrain_stationary(vector x) {
   // Transform PACF to ACF
   return pacf_to_acf(r);
 }
+
+
 
 ```
 
@@ -2752,22 +2781,32 @@ Convert coefficients of an autocorrelation function to partial autocorrelations.
 
 
 ```stan
+
+// from R function invpartrans in arima.c
+// https://github.com/wch/r-source/blob/e5b21d0397c607883ff25cca379687b86933d730/src/library/stats/src/arima.c#L525
 vector acf_to_pacf(vector x) {
-  matrix[num_elements(x), num_elements(x)] y;
-  vector[num_elements(x)] r;
-  int n;
-  n = num_elements(x);
-  y = rep_matrix(0.0, n, n);
-  y[n] = -x ';
-  for (j in 0:(n - 1)) {
-    int k;
-    k = n - j;
-    for (i in 1:(k - 1)) {
-      y[k - 1, i] = (y[k, i] - y[k, k] * y[k, k - i]) / (1 - pow(y[k, k], 2));
+  vector[num_elements(x)] x_new;
+  vector[num_elements(x)] work;
+  real a;
+  int p;
+  p = num_elements(x);
+  work = x;
+  x_new = x;
+  // Run the Durbin-Levinson recursions backwards
+  if (p > 1) {
+    for(i in 0:(p - 2)) {
+      int j;
+      j = p - i;
+      a = x_new[j];
+      for(k in 1:(j - 1)) {
+        work[k]  = (x_new[k] + a * x_new[j - k]) / (1 - pow(a, 2));
+      }
+      for (k in 1:j) {
+        x_new[k] = work[k];
+      }
     }
   }
-  r = diagonal(y);
-  return r;
+  return x_new;
 }
 
 ```
@@ -2801,6 +2840,8 @@ vector unconstrain_stationary(vector x) {
   }
   return z;
 }
+
+
 
 ```
 
@@ -2860,7 +2901,7 @@ matrix kronecker_prod(matrix A, matrix B) {
 ```
 
 
-### arima_stationary_cov
+### ssm_stationary_cov
 
 **Parameters:**
 
@@ -2873,29 +2914,47 @@ matrix kronecker_prod(matrix A, matrix B) {
 Find the covariance of the stationary distribution of an ARMA model
 
 
-The initial conditions are $\alpha_1 \sim N(0, \sigma^2 \mat{Q}_0)$,
-where $Q_0$ is the solution to
+When a system is stationary, the initial covariance $P_1$ satistfies,
 $$
-(\mat{T} \otimes \mat{T}) \VEC(\mat{Q}_0) = \VEC(\mat{R} \mat{R}\T)
+\mat{P}_1 = \mat{T} \mat{P}_1 \mat{T}\T + \mat{R} \mat{Q} \mat{R}\T
 $$
-where $\VEC(Q_0)$ and $\VEC(R R')$ are the stacked columns of $\mat{Q}_0$ and $\mat{R} \mat{R}\T$
+This can be solved as,
+$$
+(\mat{T} \otimes \mat{T}) \VEC(\mat{P}_1) = \VEC(\mat{R} \mat{Q} \mat{R}\T)
+$$
+where $\VEC(P_1)$ and $\VEC(R R')$ are the stacked columns of $\mat{P}_1$ and $\mat{R} \mat{Q} \mat{R}\T$
+
+Note that in the special case of ARIMA models, $\mat{Q} = \sigma^2$, so
+this simplifies to,
+$$
+(\mat{T} \otimes \mat{T}) \VEC(\mat{Q}_0) = \VEC(\mat{R} \mat{R}\T),
+$$
+where $P_1 = \sigma^2 \mat{Q}_0$.
+
+In a stationary distribution, the initial mean $\vec{a}_1 = \vec{c}$.
 
 See @DurbinKoopman2012, Sec 5.6.2.
 
 
 
 ```stan
-matrix arima_stationary_cov(matrix T, matrix R) {
-  matrix[rows(T), cols(T)] Q0;
+matrix stationary_cov(matrix T, matrix RQR) {
+  matrix[rows(T), cols(T)] P;
   matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
-  vector[rows(T) * rows(T)] RR;
+  vector[rows(T) * rows(T)] RQR_vec;
   int m;
   int m2;
   m = rows(T);
   m2 = m * m;
-  RR = to_vector(tcrossprod(R));
-  TT = kronecker_prod(T, T);
-  Q0 = to_matrix_colwise((diag_matrix(rep_vector(1.0, m2)) - TT) \ RR, m, m);
-  return Q0;
+  RQR_vec = to_vector(RQR);
+  # I - T x T
+  TT = - kronecker_prod(T, T);
+  print(to_vector(TT));
+  for (i in 1:m2) {
+    TT[i, i] = 1.0 + TT[i, i];
+  }
+  print(to_vector(TT));
+  P = to_matrix_colwise(inverse(TT) * RQR_vec, m, m);
+  return P;
 }
 ```

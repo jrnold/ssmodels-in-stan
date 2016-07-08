@@ -21,7 +21,7 @@ $(STAN_FUNCTION_DOC): scripts/standoc.py $(SSM_STAN)
 $(SSM_STAN_CLEAN): scripts/stanclean.py $(SSM_STAN)
 	python $^ $@
 
-test:
+test: build
 	make -C stan/tests test
 
 cmdstan-build:

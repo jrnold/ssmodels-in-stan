@@ -152,6 +152,90 @@ vector symmat_to_vector(matrix x) {
   }
   return v;
 }
+
+/** fill_matrix
+
+Given a $p \times q$ matrix $A$, default value $x$, and indexes $I = i_1, ..., i_p$,
+and $J = j_1, ...j_q$, return a $m \times n$ matrix where $m \geq p$, $n \geq q$, where
+$$
+B_{k,l} =
+\begin{cases}
+A_{i, j} & \text{if $k = i$, $l = j$, for some $i \in I$, $j \in J$,} \\
+x & \text{otherwise} .
+\end{cases}
+$$
+
+@param int m Number of rows in the returned matrix
+@param int n Number of columns in the returned matrix
+@param real x The default value in the returned matrix
+@param real A A $p \times q$, $p \leq m$, $\q \leq n$ matrix
+@param int i Indices mapping the rows of $A$ to the rows in the output matrix
+@param int j Indices mapping the columns of $A$ to the columns of the output matrix
+@return matrix A $m \times n$ matrix
+
+*/
+matrix fill_matrix(int m, int n, real x, matrix A, int[] i, int[] j) {
+  matrix[m, n] ret;
+  ret = rep_matrix(m, n, x);
+  ret[i, j] = A;
+  return ret;
+}
+
+/** fill_vector
+
+Given an $m \times 1$ vector $a$, an integer $n \geq m$, a default value $x$,
+and indexes $I = i_1, ..., i_m \in 1:n$, return a $n \times 1$ vector where
+b_{j} =
+\begin{cases}
+a_{i} & \text{if $j = i$ for some $i \in I$,} \\
+x & \text{otherwise}
+\end{cases} .
+$$
+
+@param int m Number of rows in the returned matrix
+@param int n Number of columns in the returned matrix
+@param real x The default value in the returned matrix
+@param real A A $p \times q$, $p \leq m$, $\q \leq n$ matrix
+@param int i Indices mapping the rows of $A$ to the rows in the output matrix
+@param int j Indices mapping the columns of $A$ to the columns of the output matrix
+@return matrix A $m \times n$ matrix
+
+*/
+vector fill_vector(int n, real x, vector a, int[] i) {
+  vector[n] ret;
+  ret = rep_vector(n, x);
+  ret[i] = a;
+  return ret;
+}
+
+/**
+
+For an array of integers, return the indexes where it is greater than zero.
+
+@param int[] x
+*/
+int sum_int_step(int[] x) {
+  int n;
+  n = 0;
+  for (i in 1:num_elements(x)) {
+    if (int_step(x[i])) {
+      n = n + 1;
+    }
+  }
+}
+
+int[] mask_to_indexes(int[] mask) {
+  int[num_elements(mask) - sum_int_step(x)] indexes;
+  int j;
+  j = 1;
+  for (i in 1:num_elements(mask)) {
+    if (! int_step(x[i])) {
+      indexes[j] = i;
+    }
+  }
+  return indexes;
+}
+
 /**
 
 @section Filtering

@@ -61,6 +61,66 @@ vector symmat_to_vector(matrix x) {
   }
   return v;
 }
+matrix fill_matrix(matrix x, int m, int n, int[] i, int[] j, real a) {
+  matrix[m, n] ret;
+  ret = rep_matrix(a, m, n);
+  ret[i, j] = x;
+  return ret;
+}
+vector fill_vector(vector x, int n, int[] i, real a) {
+  vector[n] ret;
+  ret = rep_vector(a, n);
+  ret[i] = x;
+  return ret;
+}
+int int_sum_true(int[] x) {
+  int n;
+  n = 0;
+  for (i in 1:num_elements(x)) {
+    if (int_step(x[i])) {
+      n = n + 1;
+    }
+  }
+  return n;
+}
+int int_sum_false(int[] x) {
+  int n;
+  n = 0;
+  for (i in 1:num_elements(x)) {
+    if (! int_step(x[i])) {
+      n = n + 1;
+    }
+  }
+  return n;
+}
+int[] mask_indexes(int[] x, int n) {
+  int idx[n];
+  int j;
+  j = 1;
+  if (n > 0) {
+    for (i in 1:num_elements(x)) {
+      if (! int_step(x[i]) && j <= n) {
+        idx[j] = i;
+        j = j + 1;
+      }
+    }
+  }
+  return idx;
+}
+int[] select_indexes(int[] x, int n) {
+  int idx[n];
+  int j;
+  j = 1;
+  if (n > 0) {
+    for (i in 1:num_elements(x)) {
+      if (int_step(x[i]) && j <= n) {
+        idx[j] = i;
+        j = j + 1;
+      }
+    }
+  }
+  return idx;
+}
 vector ssm_filter_update_a(vector a, vector c, matrix T, vector v, matrix K) {
   vector[num_elements(a)] a_new;
   a_new = T * a + K * v + c;
@@ -1112,19 +1172,21 @@ matrix kronecker_prod(matrix A, matrix B) {
 }
 matrix stationary_cov(matrix T, matrix RQR) {
   matrix[rows(T), cols(T)] P;
-  matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
-  vector[rows(T) * rows(T)] RQR_vec;
   int m;
-  int m2;
   m = rows(T);
-  m2 = m * m;
-  RQR_vec = to_vector(RQR);
-  TT = - kronecker_prod(T, T);
-  print(to_vector(TT));
-  for (i in 1:m2) {
-    TT[i, i] = 1.0 + TT[i, i];
+  if (m == 1) {
+    P[1, 1] = RQR[1, 1] / (1.0 - pow(T[1, 1], 2));
+  } else {
+    matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
+    vector[rows(T) * rows(T)] RQR_vec;
+    int m2;
+    m2 = m * m;
+    RQR_vec = to_vector(RQR);
+    TT = - kronecker_prod(T, T);
+    for (i in 1:m2) {
+      TT[i, i] = 1.0 + TT[i, i];
+    }
+    P = to_matrix_colwise(inverse(TT) * RQR_vec, m, m);
   }
-  print(to_vector(TT));
-  P = to_matrix_colwise(inverse(TT) * RQR_vec, m, m);
   return P;
 }

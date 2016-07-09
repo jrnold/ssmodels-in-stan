@@ -714,3 +714,105 @@ test_that("Stan function ssm_stationary_cov works", {
   expect_equal(as.numeric(f(T, RQR)), 1 / (1 - phi ^ 2), tolerance = TOL)
 
 })
+
+test_that("Stan function fill_matrix works", {
+  f <- function(x, m, n, i, j, a) {
+    p <- nrow(x)
+    q <- ncol(x)
+    modfit <- test_stan_function("fill_matrix",
+                                 data = list(m = m, n = n, p = p, q = q,
+                                             x = x, i = array(as.integer(i)), j = array(as.integer(j)),
+                                             a = a))
+    ret <- rstan::extract(modfit)[["output"]]
+    array(ret, dim(ret)[-1L])
+  }
+  m <- 4
+  n <- 5
+  x <- matrix(1:6, 2, 3)
+  a <- 0.0
+  i <- c(1, 3)
+  j <- c(1, 2, 5)
+  output <- f(x, m, n, i, j, a)
+  expected <- structure(c(1, 0, 2, 0, 3, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
+                          0, 6, 0), .Dim = 4:5)
+  expect_equal(output, expected)
+
+})
+
+test_that("Stan function fill_vector works", {
+  f <- function(x, n, i, a) {
+    m <- length(x)
+    modfit <- test_stan_function("fill_vector",
+                                 data = list(m = m, n = n,
+                                             x = x, i = array(as.integer(i)),
+                                             a = a))
+    ret <- rstan::extract(modfit)[["output"]]
+    as.numeric(ret)
+  }
+  n <- 5
+  x <- 1:3
+  a <- 0.0
+  i <- c(1, 3, 4)
+  output <- f(x, n, i, a)
+  expected <- c(1, 0, 2, 3, 0)
+  expect_equal(output, expected)
+})
+
+test_that("Stan function sum_true works", {
+  f <- function(x) {
+    n <- length(x)
+    modfit <- test_stan_function("int_sum_true",
+                                 data = list(n = n, x = array(x)))
+    ret <- rstan::extract(modfit)[["output"]]
+    as.integer(ret)
+  }
+  expect_equal(f(c(1, -1, 3, 0, 0)), 2L)
+  expect_equal(f(c(1, 1, 1)), 3L)
+  expect_equal(f(c(0, 0, 0)), 0L)
+
+})
+
+test_that("Stan function sum_false works", {
+  f <- function(x) {
+    n <- length(x)
+    modfit <- test_stan_function("int_sum_false",
+                                 data = list(n = n, x = array(x)))
+    ret <- rstan::extract(modfit)[["output"]]
+    as.integer(ret)
+  }
+  expect_equal(f(c(1, -1, 3, 0, 0)), 3L)
+  expect_equal(f(c(1, 1, 1)), 0L)
+  expect_equal(f(c(0, 0, 0)), 3L)
+
+})
+
+test_that("Stan function mask_indexes works", {
+  f <- function(x) {
+    x <- as.integer(x)
+    m <- length(x)
+    n <- sum(x <= 0L)
+    modfit <- test_stan_function("mask_indexes",
+                                 data = list(n = n, m = m, x = array(x)))
+    ret <- rstan::extract(modfit)[["output"]]
+    as.integer(ret)
+  }
+  expect_equal(f(c(1, -1, 3, 0, 0)), as.integer(c(2, 4, 5)))
+  expect_equal(f(c(0, 0, 0)), as.integer(c(1, 2, 3)))
+
+})
+
+test_that("Stan function select_indexes works", {
+  f <- function(x) {
+    x <- as.integer(x)
+    m <- length(x)
+    n <- sum(x > 0L)
+    modfit <- test_stan_function("select_indexes",
+                                 data = list(n = n, m = m, x = array(x)))
+    ret <- rstan::extract(modfit)[["output"]]
+    as.integer(ret)
+  }
+  expect_equal(f(c(0, 1, 0, 3, -1)), as.integer(c(2, 4)))
+  expect_equal(f(c(1, 1, 1)), as.integer(c(1, 2, 3)))
+
+})
+

@@ -208,6 +208,217 @@ vector symmat_to_vector(matrix x) {
   }
   return v;
 }
+
+```
+
+
+### fill_matrix
+
+**Parameters:**
+
+- `matrix`  **x** A $p \times q$, $p \leq m$, $\q \leq n$ matrix
+- `int`  **m** Number of rows in the returned matrix
+- `int`  **n** Number of columns in the returned matrix
+- `int`  **i** Indices mapping the rows of $A$ to the rows in the output matrix
+- `int`  **j** Indices mapping the columns of $A$ to the columns of the output matrix
+- `real`  **a** The default value in the returned matrix
+
+**Return Value:** `matrix` A $m \times n$ matrix
+
+
+Given a $p \times q$ matrix $\mat{X}$, default value $a$, and indexes $\vec{I} = i_1, ..., i_p$,
+and $\vec{J} = j_1, ...j_q$, return a $m \times n$ matrix where $m \geq p$, $n \geq q$, where
+$$
+Y_{k, l} =
+\begin{cases}
+X_{i, j} & \text{if $k = i$, $l = j$, for some $i \in \vec{I}$, $j \in \vec{J}$,} \\
+a & \text{otherwise} .
+\end{cases}
+$$
+
+
+
+
+```stan
+matrix fill_matrix(matrix x, int m, int n, int[] i, int[] j, real a) {
+  matrix[m, n] ret;
+  ret = rep_matrix(a, m, n);
+  ret[i, j] = x;
+  return ret;
+}
+
+```
+
+
+### fill_vector
+
+**Parameters:**
+
+- `vector`  **x** A $p \times q$, $p \leq m$, $\q \leq n$ matrix
+- `int`  **n** Number of elements in the returned vector
+- `int`  **i** Indices mapping the rows of $A$ to the rows in the output matrix
+- `real`  **y** The default value in the returned vector
+
+**Return Value:** `vector` A $n \times 1$ matrix
+
+
+Given an $m \times 1$ vector $\vec{x}$, an integer $n \geq m$, a default value $a$,
+and indexes $\vec{I} = i_1, ..., i_m \in 1:n$, return a $n \times 1$ vector where
+y_{j} =
+\begin{cases}
+x_{i} & \text{if $j = i$ for some $i \in \vec{I}$,} \\
+a & \text{otherwise}
+\end{cases} .
+$$
+
+
+
+
+```stan
+vector fill_vector(vector x, int n, int[] i, real a) {
+  vector[n] ret;
+  ret = rep_vector(a, n);
+  ret[i] = x;
+  return ret;
+}
+
+```
+
+
+### sum_int_true
+
+**Parameters:**
+
+- `int[]`  **x** An array of length $n$ of integers
+
+**Return Value:** `int` An integer between 0 and $n$.
+
+
+For an array of integers, return the indexes where it is greater than zero.
+
+
+
+
+```stan
+int int_sum_true(int[] x) {
+  int n;
+  n = 0;
+  for (i in 1:num_elements(x)) {
+    if (int_step(x[i])) {
+      n = n + 1;
+    }
+  }
+  return n;
+}
+
+```
+
+
+### sum_int_false
+
+**Parameters:**
+
+- `int[]`  **x** An array of length $n$ of integers
+
+**Return Value:** `int` An integer between 0 and $n$.
+
+
+For an array of integers, return the indexes where it is less than or equal to zero.
+
+
+
+
+```stan
+int int_sum_false(int[] x) {
+  int n;
+  n = 0;
+  for (i in 1:num_elements(x)) {
+    if (! int_step(x[i])) {
+      n = n + 1;
+    }
+  }
+  return n;
+}
+
+
+```
+
+
+### mask_indexes
+
+**Parameters:**
+
+- `int[]`  **x** An array of length $n$ of integers
+- `int`  **m** The number of false values in `x`.
+
+**Return Value:** `int[]` An array of integers with elements having values between 1 and $m$.
+
+
+For an array of integers, `x`, return the indexes where
+mask is not true (`x[i] <= 0`).
+The primary use of this function is where `x` represents
+indicators for missing values,  and it is used to extract
+the indexes of non-missing values.
+
+
+
+
+```stan
+int[] mask_indexes(int[] x, int n) {
+  int idx[n];
+  int j;
+  j = 1;
+  if (n > 0) {
+    for (i in 1:num_elements(x)) {
+      if (! int_step(x[i]) && j <= n) {
+        idx[j] = i;
+        j = j + 1;
+      }
+    }
+  }
+  return idx;
+}
+
+
+```
+
+
+### select_indexes
+
+**Parameters:**
+
+- `int[]`  **x** An array of length $m$ of integers
+- `int`  **n** The number of true values in `x`.
+
+**Return Value:** `int[]` An array of integers with elements having values between 1 and $m$.
+
+
+For an array of integers, `x`, return the indexes where
+the elements are true (`x[i] > 0`).
+The primary use of this function is where `x` represents
+indicators for non-missing values, and it is used to extract
+the indexes of non-missing values.
+
+
+
+
+```stan
+int[] select_indexes(int[] x, int n) {
+  int idx[n];
+  int j;
+  j = 1;
+  if (n > 0) {
+    for (i in 1:num_elements(x)) {
+      if (int_step(x[i]) && j <= n) {
+        idx[j] = i;
+        j = j + 1;
+      }
+    }
+  }
+  return idx;
+}
+
+
 ```
 
 
@@ -2940,21 +3151,25 @@ See @DurbinKoopman2012, Sec 5.6.2.
 ```stan
 matrix stationary_cov(matrix T, matrix RQR) {
   matrix[rows(T), cols(T)] P;
-  matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
-  vector[rows(T) * rows(T)] RQR_vec;
   int m;
-  int m2;
   m = rows(T);
-  m2 = m * m;
-  RQR_vec = to_vector(RQR);
-  # I - T x T
-  TT = - kronecker_prod(T, T);
-  print(to_vector(TT));
-  for (i in 1:m2) {
-    TT[i, i] = 1.0 + TT[i, i];
+  // m = 1 is an easy case, so treat it separately
+  // since it doesn't require inverting a matrix
+  if (m == 1) {
+    P[1, 1] = RQR[1, 1] / (1.0 - pow(T[1, 1], 2));
+  } else {
+    matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
+    vector[rows(T) * rows(T)] RQR_vec;
+    int m2;
+    m2 = m * m;
+    RQR_vec = to_vector(RQR);
+    # I_{m^2} - T \otimes T
+    TT = - kronecker_prod(T, T);
+    for (i in 1:m2) {
+      TT[i, i] = 1.0 + TT[i, i];
+    }
+    P = to_matrix_colwise(inverse(TT) * RQR_vec, m, m);
   }
-  print(to_vector(TT));
-  P = to_matrix_colwise(inverse(TT) * RQR_vec, m, m);
   return P;
 }
 ```

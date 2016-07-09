@@ -155,66 +155,66 @@ vector symmat_to_vector(matrix x) {
 
 /** fill_matrix
 
-Given a $p \times q$ matrix $A$, default value $x$, and indexes $I = i_1, ..., i_p$,
-and $J = j_1, ...j_q$, return a $m \times n$ matrix where $m \geq p$, $n \geq q$, where
+Given a $p \times q$ matrix $\mat{X}$, default value $a$, and indexes $\vec{I} = i_1, ..., i_p$,
+and $\vec{J} = j_1, ...j_q$, return a $m \times n$ matrix where $m \geq p$, $n \geq q$, where
 $$
-B_{k,l} =
+Y_{k, l} =
 \begin{cases}
-A_{i, j} & \text{if $k = i$, $l = j$, for some $i \in I$, $j \in J$,} \\
-x & \text{otherwise} .
+X_{i, j} & \text{if $k = i$, $l = j$, for some $i \in \vec{I}$, $j \in \vec{J}$,} \\
+a & \text{otherwise} .
 \end{cases}
 $$
 
+@param matrix x A $p \times q$, $p \leq m$, $\q \leq n$ matrix
 @param int m Number of rows in the returned matrix
 @param int n Number of columns in the returned matrix
-@param real x The default value in the returned matrix
-@param real A A $p \times q$, $p \leq m$, $\q \leq n$ matrix
 @param int i Indices mapping the rows of $A$ to the rows in the output matrix
 @param int j Indices mapping the columns of $A$ to the columns of the output matrix
+@param real a The default value in the returned matrix
 @return matrix A $m \times n$ matrix
 
 */
-matrix fill_matrix(int m, int n, real x, matrix A, int[] i, int[] j) {
+matrix fill_matrix(matrix x, int m, int n, int[] i, int[] j, real a) {
   matrix[m, n] ret;
-  ret = rep_matrix(m, n, x);
-  ret[i, j] = A;
+  ret = rep_matrix(a, m, n);
+  ret[i, j] = x;
   return ret;
 }
 
 /** fill_vector
 
-Given an $m \times 1$ vector $a$, an integer $n \geq m$, a default value $x$,
-and indexes $I = i_1, ..., i_m \in 1:n$, return a $n \times 1$ vector where
-b_{j} =
+Given an $m \times 1$ vector $\vec{x}$, an integer $n \geq m$, a default value $a$,
+and indexes $\vec{I} = i_1, ..., i_m \in 1:n$, return a $n \times 1$ vector where
+y_{j} =
 \begin{cases}
-a_{i} & \text{if $j = i$ for some $i \in I$,} \\
-x & \text{otherwise}
+x_{i} & \text{if $j = i$ for some $i \in \vec{I}$,} \\
+a & \text{otherwise}
 \end{cases} .
 $$
 
-@param int m Number of rows in the returned matrix
-@param int n Number of columns in the returned matrix
-@param real x The default value in the returned matrix
-@param real A A $p \times q$, $p \leq m$, $\q \leq n$ matrix
+@param vector x A $p \times q$, $p \leq m$, $\q \leq n$ matrix
+@param int n Number of elements in the returned vector
 @param int i Indices mapping the rows of $A$ to the rows in the output matrix
-@param int j Indices mapping the columns of $A$ to the columns of the output matrix
-@return matrix A $m \times n$ matrix
+@param real y The default value in the returned vector
+@return vector A $n \times 1$ matrix
 
 */
-vector fill_vector(int n, real x, vector a, int[] i) {
+vector fill_vector(vector x, int n, int[] i, real a) {
   vector[n] ret;
-  ret = rep_vector(n, x);
-  ret[i] = a;
+  ret = rep_vector(a, n);
+  ret[i] = x;
   return ret;
 }
 
-/**
+/** sum_int_true
 
 For an array of integers, return the indexes where it is greater than zero.
 
-@param int[] x
+@param int[] x An array of length $n$ of integers
+@return int An integer between 0 and $n$.
+
 */
-int sum_int_step(int[] x) {
+int int_sum_true(int[] x) {
   int n;
   n = 0;
   for (i in 1:num_elements(x)) {
@@ -222,19 +222,86 @@ int sum_int_step(int[] x) {
       n = n + 1;
     }
   }
+  return n;
 }
 
-int[] mask_to_indexes(int[] mask) {
-  int[num_elements(mask) - sum_int_step(x)] indexes;
-  int j;
-  j = 1;
-  for (i in 1:num_elements(mask)) {
+/** sum_int_false
+
+For an array of integers, return the indexes where it is less than or equal to zero.
+
+@param int[] x An array of length $n$ of integers
+@return int An integer between 0 and $n$.
+
+*/
+int int_sum_false(int[] x) {
+  int n;
+  n = 0;
+  for (i in 1:num_elements(x)) {
     if (! int_step(x[i])) {
-      indexes[j] = i;
+      n = n + 1;
     }
   }
-  return indexes;
+  return n;
 }
+
+
+/** mask_indexes
+
+For an array of integers, `x`, return the indexes where
+mask is not true (`x[i] <= 0`).
+The primary use of this function is where `x` represents
+indicators for missing values,  and it is used to extract
+the indexes of non-missing values.
+
+@param int[] x An array of length $n$ of integers
+@param int m The number of false values in `x`.
+@return int[] An array of integers with elements having values between 1 and $m$.
+
+*/
+int[] mask_indexes(int[] x, int n) {
+  int idx[n];
+  int j;
+  j = 1;
+  if (n > 0) {
+    for (i in 1:num_elements(x)) {
+      if (! int_step(x[i]) && j <= n) {
+        idx[j] = i;
+        j = j + 1;
+      }
+    }
+  }
+  return idx;
+}
+
+
+/** select_indexes
+
+For an array of integers, `x`, return the indexes where
+the elements are true (`x[i] > 0`).
+The primary use of this function is where `x` represents
+indicators for non-missing values, and it is used to extract
+the indexes of non-missing values.
+
+@param int[] x An array of length $m$ of integers
+@param int n The number of true values in `x`.
+@return int[] An array of integers with elements having values between 1 and $m$.
+
+*/
+int[] select_indexes(int[] x, int n) {
+  int idx[n];
+  int j;
+  j = 1;
+  if (n > 0) {
+    for (i in 1:num_elements(x)) {
+      if (int_step(x[i]) && j <= n) {
+        idx[j] = i;
+        j = j + 1;
+      }
+    }
+  }
+  return idx;
+}
+
 
 /**
 
@@ -2416,17 +2483,19 @@ See @DurbinKoopman2012, Sec 5.6.2.
 */
 matrix stationary_cov(matrix T, matrix RQR) {
   matrix[rows(T), cols(T)] P;
-  matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
-  vector[rows(T) * rows(T)] RQR_vec;
   int m;
-  int m2;
   m = rows(T);
+  // m = 1 is an easy case, so treat it separately
+  // since it doesn't require inverting a matrix
   if (m == 1) {
-    P[1, 1] = RQR[1, 1] / (1.0 - pow(TT[1, 1], 2));
+    P[1, 1] = RQR[1, 1] / (1.0 - pow(T[1, 1], 2));
   } else {
+    matrix[rows(T) * rows(T), rows(T) * rows(T)] TT;
+    vector[rows(T) * rows(T)] RQR_vec;
+    int m2;
     m2 = m * m;
     RQR_vec = to_vector(RQR);
-    # I - T x T
+    # I_{m^2} - T \otimes T
     TT = - kronecker_prod(T, T);
     for (i in 1:m2) {
       TT[i, i] = 1.0 + TT[i, i];

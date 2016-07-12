@@ -47,22 +47,55 @@ ssm_stan_model <- function(file, ...) {
 
 gen_ssm_extractor <- function(...) {
   params <- list(...)
-  ret <- list()
+  ret <- vector(length = length(params), mode = "list")
   start <- 0
   for (i in seq_along(params)) {
     x <- params[[i]]
     if (x[["type"]] == "symmetric_matrix") {
       n <- x[["dim"]][1]
       len <- n * (n + 1) / 2
+      parnames <- character(len)
+      idx_row <- integer(len)
+      idx_col <- integer(len)
+      .k <- 1
+      for (.j in 1:n) {
+        for (.i in .j:n) {
+          parnames[.k] <- sprintf("%s[%d,%d]", names(params)[i], .i, .j)
+          idx_row[.k] <- .i
+          idx_col[.k] <- .j
+        }
+      }
+    } else if (x[["type"]] == "vector") {
+      len <- x[["dim"]][1]
+      parnames <- sprintf("%s[%s]", names(params)[i], seq_len(len))
+      idx_row <- seq_len(len)
+      idx_col <- rep(1L, len)
+    } else if (x[["type"]] == "matrix") {
+      .rows <- x[["dim"]][1]
+      .cols <- x[["dim"]][2]
+      len <- .rows * .cols
+      parnames <- paste0(names(params)[i], "[",
+                         apply(expand.grid(seq_len(.rows), seq_len(.cols)), 1,
+                               paste0, collapse = ","), "]")
+      idx_row <- rep(seq_len(.rows), .cols)
+      idx_col <- rep(seq_len(.cols), each = .rows)
+    } else if (x[["type"]] == "real") {
+      len <- 1L
+      parnames <- names(params)[i]
+      idx_row <- NA_integer_
+      idx_col <- NA_integer_
     } else {
-      len <- prod(x[["dim"]])
+      stop("type = ", dQuote(x[["type"]]), " not recognized.")
     }
     ret[[names(params)[i]]] <-
       list(start = start + 1,
            end = start + len,
+           idx = start + seq_len(len),
            len = len,
            dim = x[["dim"]],
-           type = x[["type"]])
+           type = x[["type"]],
+           parindex = cbind(idx_row, idx_col),
+           parnames = parnames)
     start <- start + len
   }
   attr(ret, "vector_length") <- ret[[length(params)]][["end"]]
@@ -113,7 +146,7 @@ ssm_extract_param <- function(param, x) {
     iter <- dim(x)[1]
     time <- dim(x)[2]
     n <- floor(sqrt(2 * param[["len"]]))
-    k <- param[["start"]]:param[["end"]]
+    k <- param[["idx"]]
     ret <- array(NA_real_, c(iter, time, n, n))
     for (i in seq_len(iter)) {
       for (j in seq_len(time)) {
@@ -123,14 +156,14 @@ ssm_extract_param <- function(param, x) {
     ret
   } else {
     if (length(param[["dim"]]) == 1) {
-      x[ , , param[["start"]]:param[["end"]], drop = FALSE]
+      x[ , , param[["idx"]], drop = FALSE]
     } else {# length == 2
       iter <- dim(x)[1]
       time <- dim(x)[2]
       veclen <- dim(x)[3]
       m <- param[["dim"]][1]
       n <- param[["dim"]][2]
-      k <- param[["start"]]:param[["end"]]
+      k <- param[["idx"]]
       ret <- array(NA_real_, c(iter, time, m, n))
       for (i in seq_len(iter)) {
         for (j in seq_len(time)) {
@@ -211,4 +244,12 @@ ssm_extract <- function(x, m, p, q = m,
     extractor <- extractor[params]
   }
   map(extractor, ssm_extract_param, x = x)
+}
+
+
+ssm_extract_summary <- function(x, par, m, p, q = m, type = "filter") {
+  pattern <- sprintf("%s\\[(\\d+)\\]", par)
+  dat <- as.data.frame(x[[1]][str_detect(names(x[[1]]), par)])
+
+
 }

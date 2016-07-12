@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
   library("lubridate")
   library("rprojroot")
 })
-devtools::install("StanStateSpace")
+devtools::install("../StanStateSpace")
 
 set.seed(1014)
 options(digits = 3)

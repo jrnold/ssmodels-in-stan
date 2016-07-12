@@ -38,11 +38,10 @@ ssm_available_models <- function() {
 #' @rdname ssm_stan_include_path
 #' @export
 ssm_stan_model <- function(file, ...) {
-  if (!file.exists(file)) {
+  if (!exists(file)) {
     file <- file.path(ssm_stan_model_path(), file)
   }
-  model_code <- stanc_builder(file, isystem = ssm_stan_include_path())[["model_code"]]
-  stan(model_code = model_code,
+  stan(model_code = stanc_builder(file, isystem = ssm_stan_include_path()),
        model_name = gsub("\\.stan$", "", basename(file)), ...)
 }
 
@@ -66,82 +65,128 @@ gen_ssm_extractor <- function(...) {
            type = x[["type"]])
     start <- start + len
   }
+  attr(ret, "vector_length") <- ret[[length(params)]][["end"]]
   ret
 }
 
-gen_ssm_filter_extractor <- function(m, p) {
-  gen_ssm_extractor(loglik = list(dim = 1, type = "real"),
-                    v = list(dim = 1, type = "vector"),
-                    Finv = list(dim = c(p, p), type = "symmetric_matrix"),
-                    K = list(dim = c(m, p), type = "matrix"),
-                    a = list(dim = m, type = "vector"),
-                    P = list(dim = c(m, m), type = "symmetric_matrix"))
+ssm_extractors <- within(list(), {
+  filter <- function(m, p, q) {
+    gen_ssm_extractor(loglik = list(dim = 1, type = "real"),
+                      v = list(dim = 1, type = "vector"),
+                      Finv = list(dim = c(p, p), type = "symmetric_matrix"),
+                      K = list(dim = c(m, p), type = "matrix"),
+                      a = list(dim = m, type = "vector"),
+                      P = list(dim = c(m, m), type = "symmetric_matrix"))
+  }
+
+  filter_states <- function(m, p, q) {
+    gen_ssm_extractor(a = list(dim = m, type = "vector"),
+                      P = list(dim = c(m, m), type = "symmetric_matrix"))
+  }
+
+  smooth_state <- function(m, p, q) {
+    gen_ssm_extractor(alpha = list(dim = m, type = "vector"),
+                      V = list(dim = c(m, m), type = "symmetric_matrix"))
+  }
+
+  smooth_eps <- function(m, p, q) {
+    gen_ssm_extractor(mean = list(dim = p, type = "vector"),
+                      var = list(dim = c(p, p), type = "symmetric_matrix"))
+  }
+
+  smooth_eta <- function(m, p, q) {
+    gen_ssm_extractor(mean = list(dim = q, type = "vector"),
+                      var = list(dim = c(q, q), type = "symmetric_matrix"))
+  }
+
+  sim_rng <- function(m, p, q) {
+    gen_ssm_extractor(y = list(dim = p, type = "vector"),
+                      a = list(dim = m, type = "vector"),
+                      eps = list(dim = p, type = "vector"),
+                      eta = list(dim = q, type = "vector"))
+  }
+})
+
+ssm_extract_param <- function(param, x) {
+  # The dimensions of the array are (iteration, time, returndim)
+  if (param[["type"]] == "symmetric_matrix") {
+    NULL
+  } else {
+    if (length(param[["dim"]]) == 1) {
+      aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE])
+    } else {# length == 2
+      d <- dim(x)[1:2]
+      aperm(array(aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE]),
+                  c(param[["dim"]], rev(d))))
+    }
+  }
 }
 
-gen_ssm_filter_states_extractor <- function(m) {
-  gen_ssm_extractor(a = list(dim = m, type = "vector"),
-                    P = list(dim = c(m, m), type = "symmetric_matrix"))
-}
-
-gen_ssm_smooth_state_extractor <- function(m) {
-  gen_ssm_extractor(alpha = list(dim = m, type = "vector"),
-                    V = list(dim = c(m, m), type = "symmetric_matrix"))
-}
-
-gen_ssm_smooth_eps_extractor <- function(p) {
-  gen_ssm_extractor(mean = list(dim = p, type = "vector"),
-                    var = list(dim = c(p, p), type = "symmetric_matrix"))
-}
-
-gen_ssm_smooth_eta_extractor <- function(q) {
-  gen_ssm_extractor(mean = list(dim = q, type = "vector"),
-                    var = list(dim = c(q, q), type = "symmetric_matrix"))
-}
-
-gen_ssm_sim_rng_extractor <- function(m, p, q) {
-  gen_ssm_extractor(y = list(dim = p, type = "vector"),
-                    a = list(dim = m, type = "vector"),
-                    eps = list(dim = p, type = "vector"),
-                    eta = list(dim = q, type = "vector"))
-}
-
-# extract_ssm_param <- function(param, x) {
-#   # The dimensions of the array are (iteration, time, returndim)
-#   if (param[["type"]] == "symmetric_matrix") {
-#       x[ , , param[["start"]]:param[["end"]], drop = FALSE],
-#   } else {
-#     if (length(param[["dim"]]) == 1) {
-#       aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE])
-#     } else {# length == 2
-#       d <- dim(x)[1:2]
-#       aperm(array(aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE]),
-#                   c(param[["dim"]], rev(d))))
-#     }
-#   }
-# }
-
-#' extract_ssm_all_params <- function(extractor, params) {
-#'   if (!is.null(params)) {
-#'     extractor <- extractor[params]
-#'   }
-#'   #map(extractor, ~ f(.x, x))
-#' }
-#'
-#'
-#' #' Extract parameters from Stan State Space Model results
+#' Extract parameters from Stan State Space Model results
 #'
 #' Extract results from the output of the \code{ssm_filter} function
 #' in stan.
 #'
-#' @param x Array containing results from \code{ssm_filter} Stan function. This
-#'   is usually extracted from a \code{stanfit} object.
+#' @param x An array containing results from one of the "ssm" Stan functions:
+#'   \code{ssm_filter}, \code{ssm_filter_states}, \code{ssm_smooth_eta},
+#'   \code{ssm_smooth_eps}, \code{ssm_smooth_state}, or \code{ssm_sim_rng}.
+#'   This array is usually extracted from a \code{stanfit} object using
+#'   \code{\link[rstan]{extract}}.
 #' @param m Dimension of the state vector
 #' @param p Dimension of observation vector
 #' @param q Dimension of the state disturbance vector
-#' @param params Parameters to extract from the filter. One of
-#'   \code{"v"}, \code{"Finv"}, \code{"K"}, \code{"a"}, \code{"P"}.
-#'   If \code{NULL}, all values are extracted.
+#' @param type Character. The function which generated the vector.
+#' @param params Character. Then names of arameters to extract from the filter. See @details
+#'   for the available parameters for each type.
+#'   If \code{NULL}, then all parameters for that type are extracted.
 #' @return A named \code{list} of \code{array} objects, one for each parameter.
-# extract_from_ssm_filter <- function(x, m = NULL, p = NULL, q = NULL, params = NULL) {
-#   extractor <- gen_ssm_filter_extractor(m, p)
-# }
+#'
+#' @details
+#'
+#' The parameters returned by each \code{type} are:
+#' \describe{
+#' \item{\code{"filter"}}{\code{"v"}, \code{"Finv"}, \code{"K"}, \code{"a"}, \code{"P"}}
+#' \item{\code{"filter_states"}}{\code{"a"}, \code{"P"}}
+#' \item{\code{"smooth_state"}}{\code{"alpha"}, \code{"V"}}
+#' \item{\code{"smooth_eta"}}{\code{"mean"}, \code{"var"}}
+#' \item{\code{"smooth_eps"}}{\code{"mean"}, \code{"var"}}
+#' }
+#'
+#'
+#'
+#' @export
+ssm_extract <- function(x, m, p, q = m,
+                        type = c("filter", "filter_states",
+                                 "smooth_state", "smooth_eps",
+                                 "smooth_eta", "sim_rng"),
+                        params = NULL) {
+  # states must be integers >= 0
+  assert_that(is.count(m))
+  assert_that(is.count(p))
+  assert_that(is.count(q))
+  # the state innovations must be <= the number of states
+  assert_that(q <= m)
+  # x should be a numeric array with length 3
+  assert_that(is.numeric(x))
+  assert_that(length(dim(x)) == 3L)
+  # Check that type is one of the supported types
+  # It would be better if this was directly tied to ssm_extractor names
+  type <- match.arg(type)
+  extractor <- ssm_extractors[[type]](m, p, q)
+  # Check that vector length is the one expected by the
+  # extractor
+  assert_that(dim(x)[3] == attr(extractor, "vector_length"))
+  bad_params <- setdiff(params, names(extractor))
+  if (length(bad_params) > 0) {
+    stop(sQuote("param"), " value(s) ",
+         paste(dQuote(bad_params), collapse = ", "),
+         " are invalid.",
+         sQuote("param"), " for type ", dQuote(type),
+         " must be one of ",
+         paste(dQuote(names(extractor)), collapse = ", "))
+  }
+  if (!is.null(params)) {
+    extractor <- extractor[params]
+  }
+  map(extractor, ssm_extract_param, x = x)
+}

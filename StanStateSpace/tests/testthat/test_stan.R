@@ -1,6 +1,6 @@
 context("Stan models")
 
-if (interactive()) {
+if (FALSE) {
   test_that("ssm.stan parses and compiles", {
     isystem <- system.file("stan/include", package = "StanStateSpace")
     tf <- tempfile(fileext = ".stan")

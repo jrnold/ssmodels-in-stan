@@ -2,6 +2,7 @@
 #' @import stats
 #' @import lubridate
 #' @import rstan
+#' @import assertthat
 NULL
 
 

@@ -72,7 +72,7 @@ gen_ssm_extractor <- function(...) {
 ssm_extractors <- within(list(), {
   filter <- function(m, p, q) {
     gen_ssm_extractor(loglik = list(dim = 1, type = "real"),
-                      v = list(dim = 1, type = "vector"),
+                      v = list(dim = p, type = "vector"),
                       Finv = list(dim = c(p, p), type = "symmetric_matrix"),
                       K = list(dim = c(m, p), type = "matrix"),
                       a = list(dim = m, type = "vector"),
@@ -110,14 +110,34 @@ ssm_extractors <- within(list(), {
 ssm_extract_param <- function(param, x) {
   # The dimensions of the array are (iteration, time, returndim)
   if (param[["type"]] == "symmetric_matrix") {
-    NULL
+    iter <- dim(x)[1]
+    time <- dim(x)[2]
+    n <- floor(sqrt(2 * param[["len"]]))
+    k <- param[["start"]]:param[["end"]]
+    ret <- array(NA_real_, c(iter, time, n, n))
+    for (i in seq_len(iter)) {
+      for (j in seq_len(time)) {
+        ret[i, j, , ] <- vector_to_symmat(as.numeric(x[i, j, k]))
+      }
+    }
+    ret
   } else {
     if (length(param[["dim"]]) == 1) {
-      aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE])
+      x[ , , param[["start"]]:param[["end"]], drop = FALSE]
     } else {# length == 2
-      d <- dim(x)[1:2]
-      aperm(array(aperm(x[ , , param[["start"]]:param[["end"]], drop = FALSE]),
-                  c(param[["dim"]], rev(d))))
+      iter <- dim(x)[1]
+      time <- dim(x)[2]
+      veclen <- dim(x)[3]
+      m <- param[["dim"]][1]
+      n <- param[["dim"]][2]
+      k <- param[["start"]]:param[["end"]]
+      ret <- array(NA_real_, c(iter, time, m, n))
+      for (i in seq_len(iter)) {
+        for (j in seq_len(time)) {
+          ret[i, j, , ] <- matrix(x[i, j, k], m, n)
+        }
+      }
+      ret
     }
   }
 }
@@ -152,8 +172,6 @@ ssm_extract_param <- function(param, x) {
 #' \item{\code{"smooth_eps"}}{\code{"mean"}, \code{"var"}}
 #' }
 #'
-#'
-#'
 #' @export
 ssm_extract <- function(x, m, p, q = m,
                         type = c("filter", "filter_states",
@@ -175,7 +193,11 @@ ssm_extract <- function(x, m, p, q = m,
   extractor <- ssm_extractors[[type]](m, p, q)
   # Check that vector length is the one expected by the
   # extractor
-  assert_that(dim(x)[3] == attr(extractor, "vector_length"))
+  nx = attr(extractor, "vector_length")
+  if (dim(x)[3] != nx) {
+    stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected dim(x)[3] == %d",
+                 m, p, q, type, nx))
+  }
   bad_params <- setdiff(params, names(extractor))
   if (length(bad_params) > 0) {
     stop(sQuote("param"), " value(s) ",

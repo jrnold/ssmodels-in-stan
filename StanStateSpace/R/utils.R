@@ -91,12 +91,12 @@ vector_to_symmat <- function(x) {
   # This should be rewritten in RCpp. It is not very
   # idiomatic at the moment.
   num_el <- length(x)
-  mat_rows <- floor(sqrt(2 * num_el))
+  n <- floor(sqrt(2 * num_el))
   # use x[1] to ensure newmat has the same type as x
-  newmat <- matrix(x[1], mat_rows, mat_rows)
+  newmat <- matrix(x[1], n, n)
   k <- 1
-  for (i in 1:mat_rows) {
-    for (j in 1:i) {
+  for (j in 1:n) {
+    for (i in j:n) {
       newmat[i, j] <- x[k]
       if (i != j) {
         newmat[j, i] <- x[k]

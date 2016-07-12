@@ -5,8 +5,11 @@ test_that("vector to symmat produces symmetric matrices", {
   expect_equal(structure(c(1L), .Dim = c(1L, 1L)),
                vector_to_symmat(1L))
   # 3 x 3
-  expect_equal(structure(c(1L, 2L, 4L, 2L, 3L, 5L, 4L, 5L, 6L), .Dim = c(3L, 3L)),
-               vector_to_symmat(1:6))
+  expect_equal(vector_to_symmat(1:6),
+               matrix(c(1, 2, 3,
+                      2, 4, 5,
+                      3, 5, 6), 3, 3))
+
 })
 
 test_that("vector_to_symmat produces matrices of the correct type", {

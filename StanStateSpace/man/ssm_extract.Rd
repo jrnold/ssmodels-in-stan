@@ -34,8 +34,7 @@ Extract results from the output of the \code{ssm_filter} function
 in stan.
 }
 \details{
-The parameters that can be extracted are
-
+The parameters returned by each \code{type} are:
 \describe{
 \item{\code{"filter"}}{\code{"v"}, \code{"Finv"}, \code{"K"}, \code{"a"}, \code{"P"}}
 \item{\code{"filter_states"}}{\code{"a"}, \code{"P"}}

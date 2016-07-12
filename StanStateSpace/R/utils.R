@@ -1,8 +1,13 @@
-#' @importFrom purrr map array_tree
+#' @importFrom purrr map map_df
+#' @importFrom stringr str_detect
+#' @importFrom tibble rownames_to_column as_data_frame
+#' @importFrom dplyr data_frame left_join
+#'
 #' @import stats
+#'
+#' @import assertthat
 #' @import lubridate
 #' @import rstan
-#' @import assertthat
 NULL
 
 

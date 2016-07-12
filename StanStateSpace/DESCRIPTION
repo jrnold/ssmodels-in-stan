@@ -12,8 +12,11 @@ Depends:
   rstan (>= 2.10.1)
 Imports:
   assertthat,
+  dplyr,
   lubridate,
-  purrr
+  purrr,
+  stringr,
+  tibble
 Suggests:
   KFAS,
   testthat

@@ -48,9 +48,13 @@ ssm_stan_model <- function(file, ...) {
 gen_ssm_extractor <- function(...) {
   params <- list(...)
   ret <- vector(length = length(params), mode = "list")
+  names(ret) <- names(params)
+  # This needs to be done in a loop and sequentially in order to
+  # keep track of the start index for each parameter
   start <- 0
   for (i in seq_along(params)) {
     x <- params[[i]]
+    par_name <- names(params)[i]
     if (x[["type"]] == "symmetric_matrix") {
       n <- x[["dim"]][1]
       len <- n * (n + 1) / 2
@@ -60,21 +64,22 @@ gen_ssm_extractor <- function(...) {
       .k <- 1
       for (.j in 1:n) {
         for (.i in .j:n) {
-          parnames[.k] <- sprintf("%s[%d,%d]", names(params)[i], .i, .j)
+          parnames[.k] <- sprintf("%s[%d,%d]", par_name, .i, .j)
           idx_row[.k] <- .i
           idx_col[.k] <- .j
+          .k <- .k + 1
         }
       }
     } else if (x[["type"]] == "vector") {
       len <- x[["dim"]][1]
-      parnames <- sprintf("%s[%s]", names(params)[i], seq_len(len))
+      parnames <- sprintf("%s[%s]", par_name, seq_len(len))
       idx_row <- seq_len(len)
       idx_col <- rep(1L, len)
     } else if (x[["type"]] == "matrix") {
       .rows <- x[["dim"]][1]
       .cols <- x[["dim"]][2]
       len <- .rows * .cols
-      parnames <- paste0(names(params)[i], "[",
+      parnames <- paste0(par_name, "[",
                          apply(expand.grid(seq_len(.rows), seq_len(.cols)), 1,
                                paste0, collapse = ","), "]")
       idx_row <- rep(seq_len(.rows), .cols)
@@ -87,7 +92,7 @@ gen_ssm_extractor <- function(...) {
     } else {
       stop("type = ", dQuote(x[["type"]]), " not recognized.")
     }
-    ret[[names(params)[i]]] <-
+    ret[[par_name]] <-
       list(start = start + 1,
            end = start + len,
            idx = start + seq_len(len),
@@ -160,7 +165,6 @@ ssm_extract_param <- function(param, x) {
     } else {# length == 2
       iter <- dim(x)[1]
       time <- dim(x)[2]
-      veclen <- dim(x)[3]
       m <- param[["dim"]][1]
       n <- param[["dim"]][2]
       k <- param[["idx"]]
@@ -246,10 +250,59 @@ ssm_extract <- function(x, m, p, q = m,
   map(extractor, ssm_extract_param, x = x)
 }
 
-
-ssm_extract_summary <- function(x, par, m, p, q = m, type = "filter") {
-  pattern <- sprintf("%s\\[(\\d+)\\]", par)
-  dat <- as.data.frame(x[[1]][str_detect(names(x[[1]]), par)])
-
-
+#' Extract State Space Parameters from a Stanfit summary
+#'
+#' @param x Result of the \code{\link[rstan:summary,stanfit-method]{summary}} method for a \code{\link[rstan]{stanfit}} object.
+#' @param par Name of the parameter containing state space parameters
+#' @param m Number of states
+#' @param p Size of observation vector in the state space model
+#' @param q Size of the state disturbance vector in the state space model
+#' @param type The name of the state space function which generated the vector.
+#' @return A \code{data_frame} with parameters as rows, and summary statistics and metadata about the parameters in the columns:
+#'    \describe{
+#'      \item{\code{par_id}}{Parameter identifier, e.g. \code{"Finv[1,2]"}}
+#'      \item{\code{parameter}}{Parameter name, e.g. \code{"Finv"}}
+#'      \item{\code{index}}{Index number in the original vector.}
+#'      \item{\code{index_row}}{Row index of this element within the parameter}
+#'      \item{\code{index_col}}{Column index of this element within the parameter}
+#'      \item{\code{mean}}{Mean}
+#'      \item{\code{se_mean}}{Standard error of the mean}
+#'      \item{\code{sd}}{Standard deviation}
+#'      \item{\code{10\%}}{10th percentile}
+#'      \item{\code{90\%}}{90th percentile}
+#'      \item{\code{n_eff}}{Number of effective samples}
+#'      \item{\code{Rhat}}{R-hat}
+#'    }
+#'
+#' @export
+ssm_extract_summary <- function(x, par, m, p, q = m,
+                                type = c("filter", "filter_states",
+                                         "smooth_state", "smooth_eps",
+                                         "smooth_eta", "sim_rng")) {
+  # states must be integers >= 0
+  assert_that(is.count(m))
+  assert_that(is.count(p))
+  assert_that(is.count(q))
+  # the state innovations must be <= the number of states
+  assert_that(q <= m)
+  # Check that type is one of the supported types
+  # It would be better if this was directly tied to ssm_extractor names
+  type <- match.arg(type)
+  pattern <- sprintf("^%s\\[(\\d+)\\]$", par)
+  param_rows <- str_detect(rownames(x[["summary"]]), pattern)
+  dat <- as_data_frame(x[["summary"]][param_rows, ])
+  dat <- rownames_to_column(dat, "par_id")
+  extractor <- ssm_extractors[[type]](m, p, q)
+  nx = attr(extractor, "vector_length")
+  if (nrow(dat) != nx) {
+    stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected the number of parameters to equal %d",
+                 m, p, q, type, nx))
+  }
+  parameters <- map_df(extractor, function(.) {
+    data_frame(parameter = .[["parnames"]],
+               index = .[["idx"]],
+               index_row = .[["parindex"]][ , 1],
+               index_col = .[["parindex"]][ , 2])
+  }, .id = "par_id")
+  left_join(parameters, dat, by = "par_id")
 }

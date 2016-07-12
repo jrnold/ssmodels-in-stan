@@ -34,7 +34,7 @@ test_that("ssm_extract throws errors for invalid p, q, m arguments", {
                regexp = "expected dim\\(x\\)\\[3\\]")
   expect_error(ssm_extract(x, m = m, p = p, q = q,
                            params = c("zzz")),
-               regexp = "‘param’ value.*are invalid")
+               regexp = "param.*value.*are invalid")
 
 })
 
@@ -60,6 +60,8 @@ test_that("ssm_extract works for filter", {
 
 test_that("ssm_extract works for filter_states", {
   m <- 4
+  p <- 2
+  q <- 3
   # v, Finv, K, a, P
   veclen <- m + m * (m + 1) / 2
   time <- 5
@@ -75,6 +77,8 @@ test_that("ssm_extract works for filter_states", {
 
 test_that("ssm_extract works for smooth_states", {
   m <- 4
+  p <- 2
+  q <- 3
   veclen <- m + m * (m + 1) / 2
   time <- 5
   iter <- 6
@@ -128,4 +132,19 @@ test_that("ssm_extract works for sim_rng", {
   expect_equal(out$a[1, 1, ], 3:6)
   expect_equal(out$eps[1, 1, ], 7:8)
   expect_equal(out$eta[1, 1, ], 9:11)
+})
+
+test_that("ssm_extract param option works", {
+  m <- 4
+  p <- 2
+  # v, Finv, K, a, P
+  veclen <- 1 + p + p * (p + 1) / 2 + m * p + m + m * (m + 1) / 2
+  time <- 5
+  iter <- 6
+  x <- array(rep(seq_len(veclen), each = time * iter), c(iter, time, veclen))
+  out <- ssm_extract(x, m, p, type = "filter", params = c("v", "K"))
+  expect_length(out, 2)
+  expect_named(out, c("v", "K"))
+  expect_equal(out$v[1, 1, ], c(2, 3))
+  expect_equal(out$K[1, 1, , ], matrix(6 + seq_len(m * p), m, p))
 })

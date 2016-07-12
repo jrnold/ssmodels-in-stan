@@ -5,8 +5,9 @@
 #' value-weighted average returns for all stocks listed on the New York and American Stock Exchanges as a proxy for
 #' market returns.
 #'
+#'
+#' @format A data frame
 #' @source \url{https://www.jstatsoft.org/index.php/jss/article/downloadSuppFile/v041i04/P.txt}
 #' @references Petris, G., & Petrone, S. (2011). \dQuote{State Space Models in R.} \emph{Journal of Statistical Software}, 41(4), 1 - 25.
 #'    \href{http://dx.doi.org/10.18637/jss.v041.i04}{doi:10.18637/jss.v041.i04}
-#'
 "capm"

@@ -10,8 +10,9 @@ run_if_not_exists <- function(obj, expr) {
   envir <- parent.frame()
   dest <- file.path("data", paste0(obj, ".rda"))
   if (!file.exists(dest)) {
-    assign(obj, eval(expr, envir = envir))
-    save(obj, file = dest)
+    e <- new.env()
+    e[[obj]] <- eval(expr, envir = envir)
+    save(list = obj, file = dest, envir = e)
     message("Created ", dest)
   } else {
     message(dest, " already exists. Nothing done.")
@@ -21,19 +22,19 @@ run_if_not_exists <- function(obj, expr) {
 #' Tussell (2011)
 #'
 #' Download Tussell data divsas.rda and save as a data frame
-#'
 get_divisas <- function() {
   run_if_not_exists("divisas", {
     con <- url("https://www.jstatsoft.org/index.php/jss/article/downloadSuppFile/v039i02/divisas.rda")
     load(con)
     close(con)
-    colnames(divisas) <- c("AUD","BEF","CHF","DEM",
-                           "DKK","ESP","FRF","GBP","ITL",
-                           "JPY","NGL","SEK")
-    as.data.frame(divisas) %>%
-      rownames_to_column(var = "date") %>%
-      mutate(date = as.Date(date, "%Y-%m-%d")) %>%
-      gather(currency, fxrate, -date)
+    colnames(divisas) <- c("AUD", "BEF", "CHF", "DEM",
+                           "DKK", "ESP", "FRF", "GBP", "ITL",
+                           "JPY", "NGL", "SEK")
+    x <- as.data.frame(divisas) %>%
+      tibble::rownames_to_column("date") %>%
+      dplyr::mutate(date = as.Date(date, "%Y-%m-%d")) %>%
+      tidyr::gather(currency, fxrate, -date)
+    x
   })
 }
 

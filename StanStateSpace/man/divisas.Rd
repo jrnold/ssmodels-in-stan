@@ -13,7 +13,7 @@ divisas
 }
 \description{
 Data consists of N = 2465 daily observations of the exchange rate
-(against the US dollar, USD) of four currencies (AUD, BEF, CHF and DEM), for the period
+(against the US dollar, USD) of twelve currencies for the period
 from 1988-01-04 to 1997-08-15.
 }
 \references{

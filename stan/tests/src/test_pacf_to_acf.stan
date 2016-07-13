@@ -1,4 +1,4 @@
-rfunctions {
+functions {
   #include ssm.stan
 }
 data {

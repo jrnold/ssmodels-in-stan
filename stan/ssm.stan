@@ -1662,7 +1662,9 @@ vector[] ssm_smooth_eta(vector[] filter,
   }
   return res;
 }
-/** ssm_smooth_faststate
+
+
+/** ssm_smooth_state_mean
 
 The fast state smoother
 
@@ -1690,7 +1692,7 @@ if it is time varying.
 See [@DurbinKoopman2012, Sec 4.5.3 (eq 4.69)]
 
 */
-vector[] ssm_smooth_faststate(vector[] filter,
+vector[] ssm_smooth_state_mean(vector[] filter,
                               vector[] c, matrix[] Z, matrix[] T,
                               matrix[] R, matrix[] Q) {
   vector[dims(Z)[3]] alpha[size(filter)];
@@ -2085,7 +2087,7 @@ State simulation smoother
 Draw samples from the posterior distribution of the states,
 $\tilde{\vec{\alpha}}_{1:n} \sim p(\vec{\alpha}_{1:n} | \vec{y}_{1:n})$.
 
-@param vector[] alpha An of size $n$ of $m \times 1$ vectors containing the smoothed expected values of the states, $\E(\vec{\alpha}_{1:n} | \vec{y}_{1:n})$. These are returned by `sim_smooth_faststates`. If `sim_smooth_state` was used, then the expected values need to first be extracted using `sim_smooth_state_get_mean`.
+@param vector[] filter A length $n$ array with results from `ssm_filter`.
 @param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
 @param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
 @param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
@@ -2105,37 +2107,40 @@ This draws samples using mean-correction simulation smoother of [@DurbinKoopman2
 See [@DurbinKoopman2012, Sec 4.9].
 
 */
-vector[] ssm_simsmo_states_rng(vector[] alpha,
+vector[] ssm_simsmo_states_rng(vector[] filter,
                       vector[] d, matrix[] Z, matrix[] H,
                       vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                       vector a1, matrix P1) {
-    vector[dims(Z)[2]] draws[size(alpha)];
+    vector[dims(Z)[2]] draws[size(filter)];
     int n;
     int p;
     int m;
     int q;
-    n = size(alpha);
+    n = size(filter);
     p = dims(Z)[2];
     m = dims(Z)[3];
     q = dims(Q)[2];
     {
-      vector[ssm_filter_size(m, p)] filter[n];
+      vector[ssm_filter_size(m, p)] filter_plus[n];
       vector[ssm_sim_size(m, p, q)] sims[n];
       vector[p] y[n];
       vector[m] alpha_hat_plus[n];
+      vector[m] alpha_hat[n];
+      // Smooth states
+      alpha_hat = ssm_smooth_state_mean(filter, c, Z, T, R, Q);
       // simulate unconditional disturbances and observations
       sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
       for (i in 1:n) {
         y[i] = ssm_sim_get_y(sims[i], m, p, q);
       }
       // filter with simulated y's
-      filter = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      filter_plus = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
       // mean correct epsilon samples
-      alpha_hat_plus = ssm_smooth_faststate(filter, c, Z, T, R, Q);
+      alpha_hat_plus = ssm_smooth_state_mean(filter, c, Z, T, R, Q);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_a(sims[i], m, p, q)
                     - alpha_hat_plus[i]
-                    + alpha[i]);
+                    + alpha_hat[i]);
       }
     }
     return draws;
@@ -2148,7 +2153,7 @@ State disturbance simulation smoother
 Draw samples from the posterior distribution of the observation disturbances,
 $\tilde{\vec{\eta}}_{1:n} \sim p(\vec{\eta}_{1:n} | \vec{y}_{1:n})$.
 
-@param vector[] eta Values returned by `sim_smooth_eta`
+@param vector[] filter A length $n$ array with results from `ssm_filter`.
 @param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
 @param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
 @param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
@@ -2168,37 +2173,40 @@ This draws samples using mean-correction simulation smoother of [@DurbinKoopman2
 See [@DurbinKoopman2012, Sec 4.9].
 
 */
-vector[] ssm_simsmo_eta_rng(vector[] eta,
+vector[] ssm_simsmo_eta_rng(vector[] filter,
                             vector[] d, matrix[] Z, matrix[] H,
                             vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                             vector a1, matrix P1) {
-    vector[dims(Q)[2]] draws[size(eta)];
+    vector[dims(Q)[2]] draws[size(filter)];
     int n;
     int p;
     int m;
     int q;
-    n = size(eta);
+    n = size(filter);
     p = dims(Z)[2];
     m = dims(Z)[3];
     q = dims(Q)[2];
     {
-      vector[ssm_filter_size(m, p)] filter[n];
+      vector[ssm_filter_size(m, p)] filter_plus[n];
       vector[p] y[n];
       vector[ssm_sim_size(m, p, q)] sims[n];
-      vector[ssm_smooth_eta_size(q)] etahat_plus[n];
+      vector[ssm_smooth_eta_size(q)] eta_hat[n];
+      vector[ssm_smooth_eta_size(q)] eta_hat_plus[n];
+      // get smoothed etas
+      eta_hat = ssm_smooth_eta(filter, Z, T, R, Q);
       // simulate unconditional disturbances and observations
       sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
       for (i in 1:n) {
         y[i] = ssm_sim_get_y(sims[i], m, p, q);
       }
       // filter simulated y's
-      filter = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      filter_plus = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
       // mean correct eta samples
-      etahat_plus = ssm_smooth_eta(filter, Z, T, R, Q);
+      eta_hat_plus = ssm_smooth_eta(filter, Z, T, R, Q);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_eta(sims[i], m, p, q)
-                                    - ssm_smooth_eta_get_mean(etahat_plus[i], q)
-                                    + ssm_smooth_eta_get_mean(eta[i], q));
+                    - ssm_smooth_eta_get_mean(eta_hat_plus[i], q)
+                    + ssm_smooth_eta_get_mean(eta_hat[i], q));
       }
     }
     return draws;
@@ -2211,7 +2219,7 @@ Observation disturbance simulation smoother
 Draw samples from the posterior distribution of the observation disturbances,
 $\tilde{\vec{\varepsilon}}_{1:n} \sim p(\vec{\varepsilon}_{1:n} | \vec{y}_{1:n})$.
 
-@param vector[] eps Values returned by `sim_smooth_eps`
+@param vector[] filter A length $n$ array with results from `ssm_filter`.
 @param vector[] d Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
 @param matrix[] Z Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
 @param matrix[] H Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
@@ -2231,37 +2239,41 @@ This draws samples using mean-correction simulation smoother of [@DurbinKoopman2
 See [@DurbinKoopman2012, Sec 4.9].
 
 */
-vector[] ssm_simsmo_eps_rng(vector[] eps,
+vector[] ssm_simsmo_eps_rng(vector[] filter,
                       vector[] d, matrix[] Z, matrix[] H,
                       vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                       vector a1, matrix P1) {
-    vector[dims(Z)[2]] draws[size(eps)];
+    vector[dims(Z)[2]] draws[size(filter)];
     int n;
     int p;
     int m;
     int q;
-    n = size(eps);
+    n = size(filter);
     p = dims(Z)[2];
     m = dims(Z)[3];
     q = dims(Q)[2];
     {
-      vector[ssm_filter_size(m, p)] filter[n];
+      vector[ssm_filter_size(m, p)] filter_plus[n];
       vector[p] y[n];
       vector[ssm_sim_size(m, p, q)] sims[n];
-      vector[ssm_smooth_eta_size(p)] epshat_plus[n];
+      vector[ssm_smooth_eps_size(p)] eps_hat_plus[n];
+      vector[ssm_smooth_eps_size(p)] eps_hat[n];
+
+      // get smoothed values of epsilon
+      eps_hat = ssm_smooth_eps(filter, Z, H, T);
       // simulate unconditional disturbances and observations
       sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
       for (i in 1:n) {
         y[i] = ssm_sim_get_y(sims[i], m, p, q);
       }
       // filter simulated y's
-      filter = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
+      filter_plus = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
       // mean correct epsilon samples
-      epshat_plus = ssm_smooth_eps(filter, Z, H, T);
+      eps_hat_plus = ssm_smooth_eps(filter, Z, H, T);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_eps(sims[i], m, p, q)
-                    - ssm_smooth_eps_get_mean(epshat_plus[i], p)
-                    + ssm_smooth_eps_get_mean(eps[i], p));
+                    - ssm_smooth_eps_get_mean(eps_hat_plus[i], p)
+                    + ssm_smooth_eps_get_mean(eps_hat[i], p));
       }
     }
     return draws;

@@ -1,11 +1,14 @@
+devtools::install("../StanStateSpace")
 suppressPackageStartupMessages({
   library("ggplot2")
   library("rstan")
   library("dplyr")
   library("lubridate")
   library("rprojroot")
+  library("StanStateSpace")
 })
-devtools::install("../StanStateSpace")
+
+
 
 set.seed(1014)
 options(digits = 3)

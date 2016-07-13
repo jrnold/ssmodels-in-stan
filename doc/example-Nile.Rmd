@@ -30,22 +30,11 @@ y_t &= \mu_t + \varepsilon_t & \varepsilon_t & \sim N(0, \sigma_{\varepsilon}^2)
 \eta_t & \sim N(0, \sigma^2_{\eta})
 \end{aligned}
 $$
-This is a time-invariant SSM with $m = 1$ states, $p = 1$
-observations at each time period, and $r = 1$ system disturbances,
-$$
-\begin{aligned}[t]
-\mat{T} = \mat{Z} = \mat{R} &= \begin{bmatrix} 1 \end{bmatrix} \\
-\mat{c} = \mat{Q} &= \begin{bmatrix} 0 \end{bmatrix} \\
-\mat{H} &= \begin{bmatrix} \sigma_{\varepsilon}^2 \end{bmatrix} \\
-\mat{Q} &= \begin{bmatrix} \sigma_{\eta}^2 \end{bmatrix}
-\end{aligned}
-$$
 
 ```{r engine = 'cat', file = system.file("stan/models/local_level.stan", package = "StanStateSpace"), lang = 'stan'}
 ```
 
 ```{r Nile-Model, message=FALSE, warning=FALSE, eval=FALSE}
-devtools::install("StanStateSpace")
 STAN_SSM_MODELS <- system.file("stan/models", package = "StanStateSpace")
 STAN_SSM_INCLUDE <- system.file("stan/include", package = "StanStateSpace")
 local_level_code <-
@@ -61,6 +50,7 @@ nile_data <- within(list(), {
   n <- nrow(y)
   a1 <- array(0, 1)
   P1 <- matrix(10 ^ 7)
+  y_scale <- sd(Nile_$flow)
 })
 nile_ll_sample <- sampling(local_level_mod,
                           chains = 4,

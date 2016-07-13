@@ -5,7 +5,7 @@
 \title{Extract State Space Parameters from a Stanfit summary}
 \usage{
 ssm_extract_summary(x, par, m, p, q = m, type = c("filter", "filter_states",
-  "smooth_state", "smooth_eps", "smooth_eta", "sim_rng"))
+  "smooth_state", "smooth_eps", "smooth_eta", "sim_rng"), chains = FALSE)
 }
 \arguments{
 \item{x}{Result of the \code{\link[rstan:summary,stanfit-method]{summary}} method for a \code{\link[rstan]{stanfit}} object.}
@@ -19,6 +19,8 @@ ssm_extract_summary(x, par, m, p, q = m, type = c("filter", "filter_states",
 \item{q}{Size of the state disturbance vector in the state space model}
 
 \item{type}{The name of the state space function which generated the vector.}
+
+\item{chains}{If \code{FALSE}, then use the summary over all chains. If \code{TRUE}, then use the individual chain summaries.}
 }
 \value{
 A \code{data_frame} with parameters as rows, and summary statistics and metadata about the parameters in the columns:
@@ -29,12 +31,12 @@ A \code{data_frame} with parameters as rows, and summary statistics and metadata
      \item{\code{index_row}}{Row index of this element within the parameter}
      \item{\code{index_col}}{Column index of this element within the parameter}
      \item{\code{mean}}{Mean}
-     \item{\code{se_mean}}{Standard error of the mean}
+     \item{\code{se_mean}}{Standard error of the mean.  Only if \code{chains = FALSE}}
      \item{\code{sd}}{Standard deviation}
      \item{\code{10\%}}{10th percentile}
      \item{\code{90\%}}{90th percentile}
-     \item{\code{n_eff}}{Number of effective samples}
-     \item{\code{Rhat}}{R-hat}
+     \item{\code{n_eff}}{Number of effective samples.  Only if \code{chains = FALSE}}
+     \item{\code{Rhat}}{R-hat. Only if \code{chains = FALSE}}
    }
 }
 \description{

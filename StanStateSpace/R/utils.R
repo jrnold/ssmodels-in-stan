@@ -1,4 +1,4 @@
-#' @importFrom purrr map map_df
+#' @importFrom purrr map map_df array_branch
 #' @importFrom stringr str_detect
 #' @importFrom tibble rownames_to_column as_data_frame
 #' @importFrom dplyr data_frame left_join

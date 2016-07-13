@@ -258,6 +258,7 @@ ssm_extract <- function(x, m, p, q = m,
 #' @param p Size of observation vector in the state space model
 #' @param q Size of the state disturbance vector in the state space model
 #' @param type The name of the state space function which generated the vector.
+#' @param chains If \code{FALSE}, then use the summary over all chains. If \code{TRUE}, then use the individual chain summaries.
 #' @return A \code{data_frame} with parameters as rows, and summary statistics and metadata about the parameters in the columns:
 #'    \describe{
 #'      \item{\code{par_id}}{Parameter identifier, e.g. \code{"Finv[1,2]"}}
@@ -266,19 +267,19 @@ ssm_extract <- function(x, m, p, q = m,
 #'      \item{\code{index_row}}{Row index of this element within the parameter}
 #'      \item{\code{index_col}}{Column index of this element within the parameter}
 #'      \item{\code{mean}}{Mean}
-#'      \item{\code{se_mean}}{Standard error of the mean}
+#'      \item{\code{se_mean}}{Standard error of the mean.  Only if \code{chains = FALSE}}
 #'      \item{\code{sd}}{Standard deviation}
 #'      \item{\code{10\%}}{10th percentile}
 #'      \item{\code{90\%}}{90th percentile}
-#'      \item{\code{n_eff}}{Number of effective samples}
-#'      \item{\code{Rhat}}{R-hat}
+#'      \item{\code{n_eff}}{Number of effective samples.  Only if \code{chains = FALSE}}
+#'      \item{\code{Rhat}}{R-hat. Only if \code{chains = FALSE}}
 #'    }
 #'
 #' @export
 ssm_extract_summary <- function(x, par, m, p, q = m,
                                 type = c("filter", "filter_states",
                                          "smooth_state", "smooth_eps",
-                                         "smooth_eta", "sim_rng")) {
+                                         "smooth_eta", "sim_rng"), chains = FALSE) {
   # states must be integers >= 0
   assert_that(is.count(m))
   assert_that(is.count(p))
@@ -289,20 +290,35 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
   # It would be better if this was directly tied to ssm_extractor names
   type <- match.arg(type)
   pattern <- sprintf("^%s\\[(\\d+)\\]$", par)
-  param_rows <- str_detect(rownames(x[["summary"]]), pattern)
-  dat <- as_data_frame(x[["summary"]][param_rows, ])
-  dat <- rownames_to_column(dat, "par_id")
   extractor <- ssm_extractors[[type]](m, p, q)
-  nx = attr(extractor, "vector_length")
-  if (nrow(dat) != nx) {
-    stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected the number of parameters to equal %d",
-                 m, p, q, type, nx))
-  }
   parameters <- map_df(extractor, function(.) {
     data_frame(parameter = .[["parnames"]],
                index = .[["idx"]],
                index_row = .[["parindex"]][ , 1],
                index_col = .[["parindex"]][ , 2])
   }, .id = "par_id")
+  if (!chains) {
+    param_rows <- str_detect(rownames(x[["summary"]]), pattern)
+    dat <- as_data_frame(x[["summary"]][param_rows, ])
+    dat <- rownames_to_column(dat, "par_id")
+    nx = attr(extractor, "vector_length")
+    if (nrow(dat) != nx) {
+      stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected the number of parameters to equal %d",
+                   m, p, q, type, nx))
+    }
+  } else {
+    parnames <- dimnames(x[["c_summary"]])[1]
+    variables <- dimnames(x[["c_summary"]])[2]
+    rows_touse <- str_detect(parnames, pattern)
+    f <- function(.x, i, parnames, variables) {
+      .df <- as_data_frame(.x[i, ])
+      .df[["par_id"]] <- parnames
+      colnames(.df) <- variables
+      .df
+    }
+    dat <- map_df(array_branch(x[["c_summary"]], 3),
+           f, i = rows_touse, parnames = parnames, variables = variables,
+           .id = "chain")
+  }
   left_join(parameters, dat, by = "par_id")
 }

@@ -6,7 +6,7 @@ data {
   vector[1] y[n];
   vector<lower = 0.0>[1] a1;
   cov_matrix[1] P1;
-  real<lower = 0.0> sigma_epsilon_prior;
+  real<lower = 0.0> y_scale;
 }
 transformed data {
   // system matrices
@@ -18,6 +18,7 @@ transformed data {
   int m;
   int p;
   int q;
+  int filter_sz;
   m = 1;
   p = 1;
   q = 1;
@@ -26,6 +27,7 @@ transformed data {
   R[1, 1] = 1.0;
   c[1] = 0.0;
   d[1] = 0.0;
+  filter_sz = ssm_filter_size(m, p);
 }
 parameters {
   real<lower = 0.0> sigma_eta;
@@ -39,11 +41,11 @@ transformed parameters {
 }
 model {
   y ~ ssm_constant_lpdf(d, Z, H, c, T, R, Q, a1, P1);
-  sigma_epsilon ~ cauchy(0.0, simga_epsilon_prior);
+  sigma_epsilon ~ cauchy(0.0, y_scale);
   sigma_eta ~ cauchy(0.0, 1.0);
 }
 generated quantities {
-  vector[ssm_filer_size(m, p, q)] filtered[n];
+  vector[filter_sz] filtered[n];
   vector[1] eta[n];
   vector[1] eps[n];
   vector[1] alpha[n];
@@ -53,17 +55,17 @@ generated quantities {
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1),
                         rep_array(Q, 1), a1, P1);
   // sampling states
-  alpha = ssm_simsmo_states_rng(filter,
+  alpha = ssm_simsmo_states_rng(filtered,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);
   // sampling state disturbances
-  eta = ssm_simsmo_eta_rng(filter,
+  eta = ssm_simsmo_eta_rng(filtered,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);
   // sampling observation disturbances
-  eps = ssm_simsmo_eps_rng(filter,
+  eps = ssm_simsmo_eps_rng(filtered,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);

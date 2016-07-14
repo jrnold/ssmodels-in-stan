@@ -2034,41 +2034,34 @@ vector[] ssm_sim_rng(int n,
         if (size(H) > 1) {
           H_t = H[t];
         }
-        // system matrices are n - 1 length
-        if (t < n) {
-          if (size(c) > 1) {
-            c_t = c[t];
-          }
-          if (size(T) > 1) {
-            T_t = T[t];
-          }
-          if (size(R) > 1) {
-            R_t = R[t];
-          }
-          if (size(Q) > 1) {
-            Q_t = Q[t];
-          }
-        }
       }
       // draw forecast error
       eps = multi_normal_rng(zero_p, H_t);
       // draw observed value
       y = d_t + Z_t * a + eps;
-      // since eta_t is for alpha_{t + 1}, we don't
-      // draw it for t == n
-      if (t == n) {
-        eta = zero_q;
-      } else {
-        eta = multi_normal_rng(zero_q, Q_t);
-      }
       // save
-      ret[t, idx[1, 2]:idx[1, 3]] = y;
       ret[t, idx[2, 2]:idx[2, 3]] = a;
+      ret[t, idx[1, 2]:idx[1, 3]] = y;
       ret[t, idx[3, 2]:idx[3, 3]] = eps;
-      ret[t, idx[4, 2]:idx[4, 3]] = eta;
-      // a_{t + 1}
+      // calculate eta_{t} and a_{t + 1}
       if (t < n) {
+        if (size(c) > 1) {
+          c_t = c[t];
+        }
+        if (size(T) > 1) {
+          T_t = T[t];
+        }
+        if (size(R) > 1) {
+          R_t = R[t];
+        }
+        if (size(Q) > 1) {
+          Q_t = Q[t];
+        }
+        eta = multi_normal_rng(zero_q, Q_t);
         a = c_t + T_t * a + R_t * eta;
+        ret[t, idx[4, 2]:idx[4, 3]] = eta;
+      } else {
+        ret[t, idx[4, 2]:idx[4, 3]] = zero_q;
       }
     }
   }

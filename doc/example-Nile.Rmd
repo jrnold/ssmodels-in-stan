@@ -52,8 +52,93 @@ nile_data <- within(list(), {
   P1 <- matrix(10 ^ 7)
   y_scale <- sd(Nile_$flow)
 })
-nile_ll_sample <- sampling(local_level_mod,
+nile_1_samples <- 
+  sampling(local_level_mod,
                           chains = 4,
                           iter = 1000,
                           data = nile_data)
+nile_1_summary <- summary(nile_1_samples)
 ```
+
+```{r}
+summary(nile_1_samples, par = c("H", "Q"))[["summary"]]
+```
+which is similar to the MLE results ,
+```{r}
+StructTS(Nile_$flow, type = "level")
+```
+
+```{r}
+nile_1_filter <- ssm_extract_summary(nile_1_summary, "filtered", 1, 1)
+ggplot(dplyr::filter(alpha, parameter == "a[1]", time > 1),
+       aes(x = time, y = mean, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_ribbon(alpha = 0.3) +
+  geom_line()
+
+```
+
+```{r nile_1_states}
+str_keep <- function(string, pattern) {
+  string[str_detect(string, pattern)]
+}
+
+nile_1_states <-
+  as_data_frame(nile_1_summary[["summary"]]) %>%
+  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
+  inner_join(
+    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^alpha\\["), "^alpha\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
+    by = "par_id"
+  ) %>%
+  mutate(time = as.integer(time), index = as.integer(index))
+
+ggplot(dplyr::filter(nile_1_states, index == 1),
+       aes(x = time, y = mean, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_ribbon(alpha = 0.3) +
+  geom_line()
+
+```
+
+```{r nile_1_eps}
+nile_1_eps <-
+  as_data_frame(nile_1_summary[["summary"]]) %>%
+  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
+  inner_join(
+    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^eps\\["), "^eps\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
+    by = "par_id"
+  ) %>%
+  mutate(time = as.integer(time), index = as.integer(index))
+
+ggplot(dplyr::filter(nile_1_eps, index == 1),
+       aes(x = time, y = mean, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_ribbon(alpha = 0.3) +
+  geom_line()
+
+```
+
+```{r nile_1_eta}
+nile_1_eta <-
+  as_data_frame(nile_1_summary[["summary"]]) %>%
+  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
+  inner_join(
+    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^eta\\["), "^eta\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
+    by = "par_id"
+  ) %>%
+  mutate(time = as.integer(time), index = as.integer(index))
+
+ggplot(dplyr::filter(nile_1_eta, index == 1),
+       aes(x = time, y = mean, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_ribbon(alpha = 0.3) +
+  geom_line()
+
+```
+```
+
+

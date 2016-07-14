@@ -289,7 +289,7 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
   # Check that type is one of the supported types
   # It would be better if this was directly tied to ssm_extractor names
   type <- match.arg(type)
-  pattern <- sprintf("^%s\\[(\\d+)\\]$", par)
+  pattern <- sprintf("^%s\\[(\\d+),(\\d+)\\]$", par)
   extractor <- ssm_extractors[[type]](m, p, q)
   parameters <- map_df(extractor, function(.) {
     data_frame(parameter = .[["parnames"]],
@@ -299,26 +299,33 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
   }, .id = "par_id")
   if (!chains) {
     param_rows <- str_detect(rownames(x[["summary"]]), pattern)
+    parnames <- rownames(x[["summary"]])[param_rows]
     dat <- as_data_frame(x[["summary"]][param_rows, ])
-    dat <- rownames_to_column(dat, "par_id")
-    nx = attr(extractor, "vector_length")
-    if (nrow(dat) != nx) {
-      stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected the number of parameters to equal %d",
-                   m, p, q, type, nx))
-    }
+    dat[["par_id"]] <- parnames
+    dat <- separate(dat, par_id, c(".orig", "time", "index"),
+                    remove = FALSE, extra = "drop", convert = TRUE)
+    dat <- select(dat, -.orig, -par_id)
   } else {
     parnames <- dimnames(x[["c_summary"]])[1]
     variables <- dimnames(x[["c_summary"]])[2]
-    rows_touse <- str_detect(parnames, pattern)
+    param_rows <- str_detect(parnames, pattern)
     f <- function(.x, i, parnames, variables) {
       .df <- as_data_frame(.x[i, ])
-      .df[["par_id"]] <- parnames
       colnames(.df) <- variables
+      .df[["par_id"]] <- parnames
+      .df <- separate(.df, par_id, c(".orig", "time", "index"),
+                      remove = FALSE, extra = "drop", convert = TRUE)
+      .df <- select(.df, -.orig, -par_id)
       .df
     }
     dat <- map_df(array_branch(x[["c_summary"]], 3),
            f, i = rows_touse, parnames = parnames, variables = variables,
            .id = "chain")
   }
-  left_join(parameters, dat, by = "par_id")
+  nx = attr(extractor, "vector_length")
+  if (max(dat[["index"]]) != nx) {
+    stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected the number of parameters to equal %d",
+                 m, p, q, type, nx))
+  }
+  left_join(parameters, dat, by = "index")
 }

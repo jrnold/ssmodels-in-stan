@@ -1693,7 +1693,7 @@ See [@DurbinKoopman2012, Sec 4.5.3 (eq 4.69)]
 
 */
 vector[] ssm_smooth_state_mean(vector[] filter,
-                              vector[] c, matrix[] Z, matrix[] T,
+                              matrix[] Z, vector[] c, matrix[] T,
                               matrix[] R, matrix[] Q) {
   vector[dims(Z)[3]] alpha[size(filter)];
   int n;
@@ -1993,11 +1993,12 @@ vector[] ssm_sim_rng(int n,
     vector[p] d_t;
     matrix[p, m] Z_t;
     matrix[p, p] H_t;
+    matrix[p, p] HL;
     vector[m] c_t;
     matrix[m, m] T_t;
     matrix[m, q] R_t;
     matrix[q, q] Q_t;
-    matrix[m, m] RQR;
+    matrix[q, q] QL;
     // outputs
     vector[p] y;
     vector[p] eps;
@@ -2012,10 +2013,12 @@ vector[] ssm_sim_rng(int n,
     d_t = d[1];
     Z_t = Z[1];
     H_t = H[1];
+    HL = cholesky_decompose(H_t);
     c_t = c[1];
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
+    QL = cholesky_decompose(Q_t);
 
     idx = ssm_sim_idx(m, p, q);
     zero_p = rep_vector(0.0, p);
@@ -2023,6 +2026,8 @@ vector[] ssm_sim_rng(int n,
     zero_m = rep_vector(0.0, m);
     a = multi_normal_rng(a1, P1);
     for (t in 1:n) {
+      // save alpha
+      ret[t, idx[2, 2]:idx[2, 3]] = a;
       // set system matrices
       if (t > 1) {
         if (size(d) > 1) {
@@ -2033,14 +2038,13 @@ vector[] ssm_sim_rng(int n,
         }
         if (size(H) > 1) {
           H_t = H[t];
+          HL = cholesky_decompose(H_t);
         }
       }
-      // draw forecast error
-      eps = multi_normal_rng(zero_p, H_t);
-      // draw observed value
+      // draw forecast error and observed value
+      eps = multi_normal_cholesky_rng(zero_p, HL);
       y = d_t + Z_t * a + eps;
       // save
-      ret[t, idx[2, 2]:idx[2, 3]] = a;
       ret[t, idx[1, 2]:idx[1, 3]] = y;
       ret[t, idx[3, 2]:idx[3, 3]] = eps;
       // calculate eta_{t} and a_{t + 1}
@@ -2056,13 +2060,16 @@ vector[] ssm_sim_rng(int n,
         }
         if (size(Q) > 1) {
           Q_t = Q[t];
+          QL = cholesky_decompose(Q_t);
         }
-        eta = multi_normal_rng(zero_q, Q_t);
+        eta = multi_normal_cholesky_rng(zero_q, QL);
         a = c_t + T_t * a + R_t * eta;
-        ret[t, idx[4, 2]:idx[4, 3]] = eta;
       } else {
-        ret[t, idx[4, 2]:idx[4, 3]] = zero_q;
+        // don't forecast alpha_{t + 1}, so don't draw eta_t
+        eta = zero_q;
       }
+      // save eta_t; alpha is saved at the start of the loop.
+      ret[t, idx[4, 2]:idx[4, 3]] = eta;
     }
   }
   return ret;
@@ -2120,7 +2127,7 @@ vector[] ssm_simsmo_states_rng(vector[] filter,
       vector[m] alpha_hat_plus[n];
       vector[m] alpha_hat[n];
       // Smooth states
-      alpha_hat = ssm_smooth_state_mean(filter, c, Z, T, R, Q);
+      alpha_hat = ssm_smooth_state_mean(filter, Z, c, T, R, Q);
       // simulate unconditional disturbances and observations
       sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
       for (i in 1:n) {
@@ -2129,7 +2136,7 @@ vector[] ssm_simsmo_states_rng(vector[] filter,
       // filter with simulated y's
       filter_plus = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
       // mean correct epsilon samples
-      alpha_hat_plus = ssm_smooth_state_mean(filter, c, Z, T, R, Q);
+      alpha_hat_plus = ssm_smooth_state_mean(filter_plus, Z, c, T, R, Q);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_a(sims[i], m, p, q)
                     - alpha_hat_plus[i]
@@ -2195,7 +2202,7 @@ vector[] ssm_simsmo_eta_rng(vector[] filter,
       // filter simulated y's
       filter_plus = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
       // mean correct eta samples
-      eta_hat_plus = ssm_smooth_eta(filter, Z, T, R, Q);
+      eta_hat_plus = ssm_smooth_eta(filter_plus, Z, T, R, Q);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_eta(sims[i], m, p, q)
                     - ssm_smooth_eta_get_mean(eta_hat_plus[i], q)
@@ -2262,7 +2269,7 @@ vector[] ssm_simsmo_eps_rng(vector[] filter,
       // filter simulated y's
       filter_plus = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
       // mean correct epsilon samples
-      eps_hat_plus = ssm_smooth_eps(filter, Z, H, T);
+      eps_hat_plus = ssm_smooth_eps(filter_plus, Z, H, T);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_eps(sims[i], m, p, q)
                     - ssm_smooth_eps_get_mean(eps_hat_plus[i], p)

@@ -40,32 +40,47 @@ transformed parameters {
   Q = rep_matrix(pow(sigma_eta * sigma_epsilon, 2), 1, 1);
 }
 model {
-  y ~ ssm_constant_lpdf(d, Z, H, c, T, R, Q, a1, P1);
+  y ~ ssm_lpdf(rep_array(d, 1), rep_array(Z, 1),
+               rep_array(H, 1), rep_array(c, 1),
+               rep_array(T, 1), rep_array(R, 1),
+               rep_array(Q, 1), a1, P1);
   sigma_epsilon ~ cauchy(0.0, y_scale);
   sigma_eta ~ cauchy(0.0, 1.0);
 }
 generated quantities {
   vector[filter_sz] filtered[n];
-  vector[1] eta[n];
-  vector[1] eps[n];
-  vector[1] alpha[n];
+  vector[2] eta[n];
+  vector[2] eps[n];
+  vector[2] alpha[n];
+  vector[1] alpha2[n];
+  vector[1] alphar[n];
+  vector[1] etar[n];
+  vector[1] epsr[n];
   // Filtered data
   filtered = ssm_filter(y,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1),
                         rep_array(Q, 1), a1, P1);
+  // smoothed values
+  alpha = ssm_smooth_state(filtered, rep_array(Z, 1), rep_array(T, 1));
+  eps = ssm_smooth_eps(filtered, rep_array(Z, 1), rep_array(H, 1),
+                         rep_array(T, 1));
+  eta = ssm_smooth_eta(filtered, rep_array(Z, 1), rep_array(T, 1),
+                       rep_array(R, 1), rep_array(Q, 1));
+  alpha2 = ssm_smooth_state_mean(filtered, rep_array(Z, 1), rep_array(c, 1),
+    rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1));
   // sampling states
-  alpha = ssm_simsmo_states_rng(filtered,
+  alphar = ssm_simsmo_states_rng(filtered,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);
   // sampling state disturbances
-  eta = ssm_simsmo_eta_rng(filtered,
+  etar = ssm_simsmo_eta_rng(filtered,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);
   // sampling observation disturbances
-  eps = ssm_simsmo_eps_rng(filtered,
+  epsr = ssm_simsmo_eps_rng(filtered,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);

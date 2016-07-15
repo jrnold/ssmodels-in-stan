@@ -113,31 +113,12 @@ ggplot(dplyr::filter(nile_1_states, index == 1),
 
 ```
 
-```{r nile_1_states2}
-nile_1_states2 <-
-  as_data_frame(nile_1_summary[["summary"]]) %>%
-  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
-  inner_join(
-    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^alphar\\["), "^alphar\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
-    by = "par_id"
-  ) %>%
-  mutate(time = as.integer(time), index = as.integer(index))
-
-ggplot(dplyr::filter(nile_1_states2, index == 1),
-       aes(x = time, y = mean, 
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_ribbon(alpha = 0.3) +
-  geom_line()
-
-```
-
 ```{r nile_1_eps}
 nile_1_eps <-
   as_data_frame(nile_1_summary[["summary"]]) %>%
   mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
   inner_join(
-    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^epsr\\["), "^epsr\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
+    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^eps\\["), "^eps\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
     by = "par_id"
   ) %>%
   mutate(time = as.integer(time), index = as.integer(index))
@@ -146,8 +127,7 @@ ggplot(dplyr::filter(nile_1_eps, index == 1),
        aes(x = time, y = mean, 
            ymin = mean - 2 * sd,
            ymax = mean + 2 * sd)) +
-  geom_ribbon(alpha = 0.3) +
-  geom_line()
+  geom_pointrange()
 
 ```
 
@@ -156,7 +136,7 @@ nile_1_eta <-
   as_data_frame(nile_1_summary[["summary"]]) %>%
   mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
   inner_join(
-    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^etar\\["), "^etar\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
+    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^eta\\["), "^eta\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
     by = "par_id"
   ) %>%
   mutate(time = as.integer(time), index = as.integer(index))
@@ -168,6 +148,23 @@ ggplot(dplyr::filter(nile_1_eta, index == 1),
   geom_pointrange()
 
 ```
+
+```{r}
+foo <- "data{
+int n;
+matrix[n, n] a;
+}
+model {}
+generated quantities {
+  matrix[n, n] output;
+  output = cholesky_decompose(a);
+}
+"
+stan(model_code = foo, data = list(n = 1, a = matrix(0, 1, 1)),
+    chains = 1, 
+    algorithm = "Fixed_param")
+```
+
 
 ```{r nile_1_eps}
 nile_1_eps <-

@@ -302,7 +302,6 @@ int[] select_indexes(int[] x, int n) {
   return idx;
 }
 
-
 /**
 
 @section Filtering

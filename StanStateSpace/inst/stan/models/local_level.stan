@@ -10,11 +10,10 @@ data {
 }
 transformed data {
   // system matrices
-  matrix[1, 1] T;
-  matrix[1, 1] Z;
-  matrix[1, 1] R;
-  vector[1] c;
-  vector[1] d;
+  matrix[1, 1] T[1];
+  matrix[1, 1] Z[1];
+  matrix[1, 1] R[1];
+  vector[1] c[1];
   int m;
   int p;
   int q;
@@ -22,16 +21,16 @@ transformed data {
   m = 1;
   p = 1;
   q = 1;
-  T[1, 1] = 1.0;
-  Z[1, 1] = 1.0;
-  R[1, 1] = 1.0;
-  c[1] = 0.0;
-  d[1] = 0.0;
+  T[1, 1, 1] = 1.0;
+  Z[1, 1, 1] = 1.0;
+  R[1, 1, 1] = 1.0;
+  c[1, 1] = 0.0;
   filter_sz = ssm_filter_size(m, p);
 }
 parameters {
   real<lower = 0.0> sigma_eta;
   real<lower = 0.0> sigma_epsilon;
+  real beta;
 }
 transformed parameters {
   matrix[1, 1] H;
@@ -40,11 +39,7 @@ transformed parameters {
   Q = rep_matrix(pow(sigma_eta * sigma_epsilon, 2), 1, 1);
 }
 model {
-  y ~ ssm_constant_lpdf(d, Z, H, c, T, R, Q, a1, P1);
-  // y ~ ssm_lpdf(rep_array(d, 1), rep_array(Z, 1),
-  //              rep_array(H, 1), rep_array(c, 1),
-  //              rep_array(T, 1), rep_array(R, 1),
-  //              rep_array(Q, 1), a1, P1);
+  y ~ ssm_lpdf(d, array(Z, H, c, T, R, Q, a1, P1);
   sigma_epsilon ~ cauchy(0.0, y_scale);
   sigma_eta ~ cauchy(0.0, 1.0);
 }
@@ -68,19 +63,10 @@ generated quantities {
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);
-  // these could be calculated from diff
-  // for (t in 1:(n - 1)) {
-  //   eta[t] = alpha[t + 1] - alpha[t]
-  // }
-  // eta[n] = rep_vector(0.0, 1);
   // sampling observation disturbances
   eps = ssm_simsmo_eps_rng(filtered,
                         rep_array(d, 1), rep_array(Z, 1), rep_array(H, 1),
                         rep_array(c, 1), rep_array(T, 1), rep_array(R, 1), rep_array(Q, 1),
                         a1, P1);
-  // these could also be calculated directly
-  // for (t in 1:n) {
-  //   eps[t] = y[t] - alpha[t];
-  // }
 
 }

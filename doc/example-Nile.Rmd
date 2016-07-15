@@ -149,22 +149,6 @@ ggplot(dplyr::filter(nile_1_eta, index == 1),
 
 ```
 
-```{r}
-foo <- "data{
-int n;
-matrix[n, n] a;
-}
-model {}
-generated quantities {
-  matrix[n, n] output;
-  output = cholesky_decompose(a);
-}
-"
-stan(model_code = foo, data = list(n = 1, a = matrix(0, 1, 1)),
-    chains = 1, 
-    algorithm = "Fixed_param")
-```
-
 
 ```{r nile_1_eps}
 nile_1_eps <-
@@ -184,4 +168,8 @@ ggplot(dplyr::filter(nile_1_eps, index == 1),
 
 ```
 
+## Nile with intervention (covariate)
 
+
+
+## Nile with intervention (variance)

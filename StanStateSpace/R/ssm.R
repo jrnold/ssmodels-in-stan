@@ -332,3 +332,24 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
   }
   left_join(parameters, dat, by = "index")
 }
+
+#' Tidy the results of Stanfit summary objects
+#'
+#' @param x The list returned by calling \code{summary} on a \code{Stanfit} object.
+#' @return A list with two elements,
+#' \describe{
+#' \item{all}{A data frame with summary statistics for all the chains combined.}
+#' \item{chains}{A data frame with summary statistics for each chain.}
+#' }
+#'
+#' @export
+tidy_stan_summary <- function(x) {
+  params <- parse_stan_parnames(rownames(x[["summary"]]))
+  ret <- list()
+  ret[["all"]] <- bind_cols(params, as_data_frame(x[["summary"]]))
+  ret[["chains"]] <-
+    map_df(array_branch(x[["c_summary"]], 3),
+           function(.data) bind_cols(params, as_data_frame(.data)),
+           .id = "chain")
+  ret
+}

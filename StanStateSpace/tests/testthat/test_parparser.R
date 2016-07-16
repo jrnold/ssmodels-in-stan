@@ -1,45 +1,37 @@
 context("MCMC Paramter parsers")
 
-test_that("mcmc_parnames_stan works as expected", {
-  expect_equal(mcmc_parnames_stan("alpha", 1L), "alpha")
-  expect_equal(mcmc_parnames_stan("alpha", 2L), c("alpha.1", "alpha.2"))
-  expect_equal(mcmc_parnames_stan("alpha", c(2L, 2L)),
-               c("alpha.1.1", "alpha.2.1", "alpha.1.2", "alpha.2.2"))
+
+test_that("expand_grid_dim works", {
+  output <- StanStateSpace:::expand_grid_dim(c(2, 3, 4))
+  expected <- data_frame(dim_1 = rep(1:2, times = 12),
+                         dim_2 = rep(1:3, each = 2, times = 4),
+                         dim_3 = rep(1:4, each = 6, times = 1))
+  expect_equivalent(output, expected)
 })
 
-test_that("mcmc_parnames_bugs works as expected", {
-  expect_equal(mcmc_parnames_bugs("alpha", 1L), "alpha")
-  expect_equal(mcmc_parnames_bugs("alpha", 2L), c("alpha[1]", "alpha[2]"))
-  expect_equal(mcmc_parnames_bugs("alpha", c(2L, 2L)),
+test_that("expand_grid_dim works with colwise = FALSE", {
+  output <- StanStateSpace:::expand_grid_dim(c(2, 3, 4), colmajor = FALSE)
+  expected <- data_frame(dim_1 = rep(1:2, each = 12, times = 1),
+                         dim_2 = rep(1:3, each = 4, times = 2),
+                         dim_3 = rep(1:4, times = 6))
+  expect_equivalent(output, expected)
+})
+
+test_that("create_stan_parnames works as expected", {
+  expect_equal(create_stan_parnames("alpha", NA), "alpha")
+  expect_equal(create_stan_parnames("alpha", NULL), "alpha")
+  expect_equal(create_stan_parnames("alpha", 0L), "alpha")
+  expect_equal(create_stan_parnames("alpha", 1L), "alpha[1]")
+  expect_equal(create_stan_parnames("alpha", 2L), c("alpha[1]", "alpha[2]"))
+  expect_equal(create_stan_parnames("alpha", c(2L, 2L)),
                c("alpha[1,1]", "alpha[2,1]", "alpha[1,2]", "alpha[2,2]"))
 })
 
-test_that("mcmc_parnames_underscore works as expected", {
-  expect_equal(mcmc_parnames_underscore("alpha", 1L), "alpha")
-  expect_equal(mcmc_parnames_underscore("alpha", 2L), c("alpha_1", "alpha_2"))
-  expect_equal(mcmc_parnames_underscore("alpha", c(2L, 2L)),
-               c("alpha_1_1", "alpha_2_1", "alpha_1_2", "alpha_2_2"))
-})
-
-test_that("mcmc_parnames_pattern works as expected", {
-  expect_equal(mcmc_parnames_pattern("alpha", 1L, "<", ";", ">"), "alpha")
-  expect_equal(mcmc_parnames_pattern("alpha", 2L, "<", ";", ">"),
+test_that("create_parnames works as expected", {
+  expect_equal(create_parnames("alpha", 0L, "<", ";", ">"), "alpha")
+  expect_equal(create_parnames("alpha", 1L, "<", ";", ">"), "alpha<1>")
+  expect_equal(create_parnames("alpha", 2L, "<", ";", ">"),
                c("alpha<1>", "alpha<2>"))
-  expect_equal(mcmc_parnames_pattern("alpha", c(2L, 2L), "<", ";", ">"),
+  expect_equal(create_parnames("alpha", c(2L, 2L), "<", ";", ">"),
                c("alpha<1;1>", "alpha<2;1>", "alpha<1;2>", "alpha<2;2>"))
-})
-
-test_that("mcmc_parnames_pattern works with colmajor = FALSE", {
-  expect_equal(mcmc_parnames_underscore("alpha", 1L, colmajor = FALSE),
-               "alpha")
-  expect_equal(mcmc_parnames_underscore("alpha", 2L, colmajor = FALSE),
-               c("alpha_1", "alpha_2"))
-  expect_equal(mcmc_parnames_underscore("alpha", c(2L, 2L), colmajor=FALSE),
-               c("alpha_1_1", "alpha_1_2", "alpha_2_1", "alpha_2_2"))
-})
-
-test_that("mcmc_parnames_pattern_idx works with matrix idx", {
-  foo <- mcmc_parnames_pattern_idx("alpha", as.matrix(expand.grid(1:2, 1:2)))
-  expected <- c("alpha.1.1", "alpha.2.1", "alpha.1.2", "alpha.2.2")
-  expect_equal(foo, expected)
 })

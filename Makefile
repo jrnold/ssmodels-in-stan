@@ -36,7 +36,7 @@ cmdstan-build:
 watch:
 	watchman watch .
 	watchman -- trigger . buildssm 'stan/*.stan' -- make build
-	watchman -- trigger . tests $(SSM_STAN_CLEAN) 'stan/*.stan' 'stan/tests/src/*.stan' 'stan/tests/Makefile' 'stan/tests/*.R' -- make test
+	#watchman -- trigger . tests $(SSM_STAN_CLEAN) 'stan/*.stan' 'stan/tests/src/*.stan' 'stan/tests/Makefile' 'stan/tests/*.R' -- make test
 
 unwatch:
 	watchman watch-del .

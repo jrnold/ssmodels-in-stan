@@ -121,6 +121,87 @@ int[] select_indexes(int[] x, int n) {
   }
   return idx;
 }
+real normal2_rng(real mu, real sigma) {
+  real y;
+  if (sigma <= 0) {
+    y = mu;
+  } else {
+    y = normal_rng(mu, sigma);
+  }
+  return y;
+}
+matrix cholesky_decompose2(matrix A) {
+  matrix[rows(A), cols(A)] L;
+  int n;
+  int nonzero[rows(A)];
+  int num_nonzero;
+  n = rows(A);
+  for (i in 1:n) {
+    nonzero[i] = (A[i, i] > 0);
+  }
+  num_nonzero = sum(nonzero);
+  if (num_nonzero == n) {
+    L = cholesky_decompose(A);
+  } else if (num_nonzero == 0) {
+    L = rep_matrix(0.0, n, n);
+  } else {
+    int idx[num_nonzero];
+    vector[n] eps;
+    idx = select_indexes(nonzero, num_nonzero);
+    L = rep_matrix(0.0, n, n);
+    L[idx, idx] = cholesky_decompose(A[idx, idx]);
+  }
+  return L;
+}
+vector multi_normal2_rng(vector mu, matrix Sigma) {
+  vector[num_elements(mu)] y;
+  int n;
+  int nonzero[num_elements(mu)];
+  int num_nonzero;
+  n = num_elements(mu);
+  for (i in 1:n) {
+    nonzero[i] = (Sigma[i, i] > 0);
+  }
+  num_nonzero = sum(nonzero);
+  if (num_nonzero == n) {
+    y = multi_normal_rng(mu, Sigma);
+  } else if (num_nonzero == 0) {
+    y = mu;
+  } else {
+    int idx[num_nonzero];
+    vector[n] eps;
+    idx = select_indexes(nonzero, num_nonzero);
+    eps = rep_vector(0.0, n);
+    eps[idx] = multi_normal_rng(rep_vector(0.0, num_nonzero), Sigma[idx, idx]);
+    y = mu + eps;
+  }
+  return y;
+}
+vector multi_normal_cholesky2_rng(vector mu, matrix L) {
+  vector[num_elements(mu)] y;
+  int n;
+  int nonzero[num_elements(mu)];
+  int num_nonzero;
+  n = num_elements(mu);
+  for (i in 1:n) {
+    nonzero[i] = (L[i, i] > 0);
+  }
+  num_nonzero = sum(nonzero);
+  if (num_nonzero == n) {
+    y = multi_normal_cholesky_rng(mu, L);
+  } else if (num_nonzero == 0) {
+    y = mu;
+  } else {
+    int idx[num_nonzero];
+    vector[n] eps;
+    idx = select_indexes(nonzero, num_nonzero);
+    eps = rep_vector(0.0, n);
+    eps[idx] = multi_normal_cholesky_rng(rep_vector(0.0, num_nonzero),
+                                                    L[idx, idx]);
+    y = mu + eps;
+  }
+  return y;
+}
 vector ssm_filter_update_a(vector a, vector c, matrix T, vector v, matrix K) {
   vector[num_elements(a)] a_new;
   a_new = T * a + K * v + c;
@@ -932,17 +1013,17 @@ vector[] ssm_sim_rng(int n,
     d_t = d[1];
     Z_t = Z[1];
     H_t = H[1];
-    HL = cholesky_decompose(H_t);
+    HL = cholesky_decompose2(H_t);
     c_t = c[1];
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    QL = cholesky_decompose(Q_t);
+    QL = cholesky_decompose2(Q_t);
     idx = ssm_sim_idx(m, p, q);
     zero_p = rep_vector(0.0, p);
     zero_q = rep_vector(0.0, q);
     zero_m = rep_vector(0.0, m);
-    a = multi_normal_rng(a1, P1);
+    a = multi_normal2_rng(a1, P1);
     for (t in 1:n) {
       ret[t, idx[2, 2]:idx[2, 3]] = a;
       if (t > 1) {
@@ -954,10 +1035,10 @@ vector[] ssm_sim_rng(int n,
         }
         if (size(H) > 1) {
           H_t = H[t];
-          HL = cholesky_decompose(H_t);
+          HL = cholesky_decompose2(H_t);
         }
       }
-      eps = multi_normal_cholesky_rng(zero_p, HL);
+      eps = multi_normal_cholesky2_rng(zero_p, HL);
       y = d_t + Z_t * a + eps;
       ret[t, idx[1, 2]:idx[1, 3]] = y;
       ret[t, idx[3, 2]:idx[3, 3]] = eps;
@@ -973,9 +1054,9 @@ vector[] ssm_sim_rng(int n,
         }
         if (size(Q) > 1) {
           Q_t = Q[t];
-          QL = cholesky_decompose(Q_t);
+          QL = cholesky_decompose2(Q_t);
         }
-        eta = multi_normal_cholesky_rng(zero_q, QL);
+        eta = multi_normal_cholesky2_rng(zero_q, QL);
         a = c_t + T_t * a + R_t * eta;
       } else {
         eta = zero_q;

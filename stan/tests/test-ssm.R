@@ -816,3 +816,83 @@ test_that("Stan function select_indexes works", {
 
 })
 
+
+test_that("Stan function cholesky_decompose2 works", {
+  f <- function(A) {
+    n <- nrow(A)
+    modfit <- test_stan_function("cholesky_decompose2",
+                                 data = list(n = n, A = A))
+    rstan::extract(modfit)[["output"]][1, , ]
+  }
+  A <- rand_pdmat(2)
+  cholA <- t(chol(A))
+  expect_equal(f(A), cholA, tolerance = 1e-5)
+  A1 <- A[1, 1]
+  cholA1 <- cholA[1, 1]
+  expect_equal(f(matrix(c(A1, 0, 0, 0), 0, 0)),
+                 matrix(c(cholA[1, 1], 0, 0, 0), 2, 2), tolerance = 1e-5)
+  expect_equal(f(matrix(0, 2, 2)), matrix(0, 2, 2), tolerance = 1e-5)
+})
+
+test_that("Stan function normal2_rng works", {
+  f <- function(n, mu, Sigma) {
+    modfit <- test_stan_function("normal2_rng",
+                                 data = list(n = n, mu = mu, Sigma = Sigma))
+    output <- as.numeric(rstan::extract(modfit)[["output"]])
+    if (Sigma == 0) {
+      expect_true(all(output == mu))
+    } else {
+      expect_true(sd(output) > 0)
+      expect_true(abs(mean(output) / Sigma / sqrt(n)) < 4)
+      expect_true(abs(sd(output) / Sigma / sqrt(2 * (n - 1))) < 4)
+    }
+  }
+  f(1000, 1, 2)
+  f(10, 1, 0)
+})
+
+test_that("Stan function multi_normal2_rng works", {
+  f <- function(n, mu, Sigma) {
+    m <- length(mu)
+    modfit <- test_stan_function("multi_normal2_rng",
+                                 data = list(n = n, m = m,
+                                             mu = mu, Sigma = Sigma))
+    output <- rstan::extract(modfit)[["output"]][1, , ]
+    Sigma_zero <- (Sigma == 0)
+    for (i in 1:m) {
+      if (Sigma_zero[i, i]) {
+        expect_true(all(output[, i] == mu[i]))
+      } else {
+        expect_true(sd(output[, i]) > 0)
+        expect_true(abs(mean(output[ , i]) / sqrt(Sigma[i, i] / n)) < 4)
+      }
+    }
+  }
+  f(1000, c(1, 2), rand_pdmat(2))
+  f(1000, c(1, 2), matrix(c(1, 0, 0, 0), 2, 2))
+  f(1000, c(1, 2), matrix(0, 2, 2))
+})
+
+test_that("Stan function multi_normal_cholesky2_rng works", {
+  f <- function(n, mu, L) {
+    m <- length(mu)
+    modfit <- test_stan_function("multi_normal_cholesky2_rng",
+                                 data = list(n = n, m = m,
+                                             mu = mu, L = L))
+    output <- rstan::extract(modfit)[["output"]][1, , ]
+    Sigma <- L %*% t(L)
+    Sigma_zero <- (Sigma == 0)
+    for (i in 1:m) {
+      if (Sigma_zero[i, i]) {
+        expect_true(all(output[, i] == mu[i]))
+      } else {
+        expect_true(sd(output[, i]) > 0)
+        expect_true(abs(mean(output[ , i]) / sqrt(Sigma[i, i] / sqrt(n))) < 4)
+      }
+    }
+  }
+  f(1000, c(1, 2), t(chol(rand_pdmat(2))))
+  f(1000, c(1, 2), matrix(c(1, 0, 0, 0), 2, 2))
+  f(1000, c(1, 2), matrix(0, 2, 2))
+})
+

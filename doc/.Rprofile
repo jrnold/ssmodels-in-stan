@@ -8,8 +8,6 @@ suppressPackageStartupMessages({
   library("StanStateSpace")
 })
 
-
-
 set.seed(1014)
 options(digits = 3)
 

@@ -31,7 +31,8 @@ y_t &= \mu_t + \varepsilon_t & \varepsilon_t & \sim N(0, \sigma_{\varepsilon}^2)
 \end{aligned}
 $$
 
-```{r engine = 'cat', file = system.file("stan/models/local_level.stan", package = "StanStateSpace"), lang = 'stan'}
+```{r local_level_stan_code}
+cat(paste(readLines(system.file("stan/models/local_level.stan", package = "StanStateSpace")), collapse = "\n"))
 ```
 
 ```{r Nile-Model, message=FALSE, warning=FALSE, eval=FALSE}
@@ -60,15 +61,15 @@ nile_1_samples <-
 nile_1_summary <- summary(nile_1_samples)
 ```
 
-```{r}
+```{r summary_nile_1_samples_HQ}
 summary(nile_1_samples, par = c("H", "Q"))[["summary"]]
 ```
 which is similar to the MLE results ,
-```{r}
+```{r nile_1_StructTS}
 StructTS(Nile_$flow, type = "level")
 ```
 
-```{r}
+```{r nile_1_filter}
 nile_1_filter <- ssm_extract_summary(nile_1_summary, "filtered", 1, 1)
 ggplot(dplyr::filter(nile_1_filter, parameter == "a[1]", time > 1),
        aes(x = time, y = mean, 
@@ -78,17 +79,6 @@ ggplot(dplyr::filter(nile_1_filter, parameter == "a[1]", time > 1),
   geom_line()
 
 ```
-
-```{r}
-ggplot(dplyr::filter(nile_1_filter, parameter == "P[1,1]", time > 1),
-       aes(x = time, y = mean, 
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_ribbon(alpha = 0.3) +
-  geom_line()
-
-```
-
 
 ```{r nile_1_states}
 str_keep <- function(string, pattern) {
@@ -150,28 +140,39 @@ ggplot(dplyr::filter(nile_1_eta, index == 1),
 ```
 
 
-```{r nile_1_eps}
-nile_1_eps <-
-  as_data_frame(nile_1_summary[["summary"]]) %>%
-  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
-  inner_join(
-    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^eps\\["), "^eps\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
-    by = "par_id"
-  ) %>%
-  mutate(time = as.integer(time), index = as.integer(index))
 
-ggplot(dplyr::filter(nile_1_eps, index == 1),
-       aes(x = time, y = mean, 
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_pointrange()
+## Nile with intervention (intercept)
 
+```{r}
+local_level_reg_code <-
+  stanc_builder(file.path(STAN_SSM_MODELS, "local_level_reg.stan"),
+                isystem = STAN_SSM_INCLUDE)
+local_level_reg_mod <-
+  stan_model(model_code = local_level_reg_code[["model_code"]],
+                              model_name = local_level_reg_code[["model_name"]])
 ```
 
-## Nile with intervention (covariate)
 
 
+## local level with known intervention
 
+```{r}
+local_level_interven_code <-
+  stanc_builder(file.path(STAN_SSM_MODELS, "local_level_interven.stan"),
+                isystem = STAN_SSM_INCLUDE)
+local_level_inverven_mod <-
+  stan_model(model_code = local_level_interven_code[["model_code"]],
+             model_name = local_level_interven_code[["model_name"]])
+```
 
+## local level with time-varying variances
 
-## Nile with intervention (variance)
+```{r}
+local_level_tvvar_code <-
+  stanc_builder(file.path(STAN_SSM_MODELS, "local_level_tvvar.stan"),
+                isystem = STAN_SSM_INCLUDE)
+local_level_tvvar_mod <-
+  stan_model(model_code = local_level_tvvar_code[["model_code"]],
+             model_name = local_level_tvvar_code[["model_name"]])
+```
+

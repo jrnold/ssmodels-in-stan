@@ -10,7 +10,6 @@
 #'
 #' \code{ssm_available_models} lists the names of the stan models
 #' provided by this package.
-#'
 #' \code{ssm_stan_model} runs a Stan model included in this package.
 #' This function is a wrapper for \code{\link[rstan]{stan}}, that
 #' sets the correct path to the model and includes the functions provided
@@ -232,7 +231,8 @@ ssm_extract <- function(x, m, p, q = m,
   # extractor
   nx = attr(extractor, "vector_length")
   if (dim(x)[3] != nx) {
-    stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected dim(x)[3] == %d",
+    stop(sprintf(paste0("For m = %d, p = %d, q = %d and type = %s,",
+                        "expected dim(x)[3] == %d"),
                  m, p, q, type, nx))
   }
   bad_params <- setdiff(params, names(extractor))
@@ -279,8 +279,10 @@ ssm_extract <- function(x, m, p, q = m,
 ssm_extract_summary <- function(x, par, m, p, q = m,
                                 type = c("filter", "filter_states",
                                          "smooth_state", "smooth_eps",
-                                         "smooth_eta", "sim_rng"), chains = FALSE) {
+                                         "smooth_eta", "sim_rng"),
+                                chains = FALSE) {
   # states must be integers >= 0
+  one_of <- NULL
   assert_that(is.count(m))
   assert_that(is.count(p))
   assert_that(is.count(q))
@@ -302,9 +304,9 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
     parnames <- rownames(x[["summary"]])[param_rows]
     dat <- as_data_frame(x[["summary"]][param_rows, ])
     dat[["par_id"]] <- parnames
-    dat <- separate(dat, par_id, c(".orig", "time", "index"),
+    dat <- separate_(dat, "par_id", c(".orig", "time", "index"),
                     remove = FALSE, extra = "drop", convert = TRUE)
-    dat <- select(dat, -.orig, -par_id)
+    dat <- select(dat, -one_of(c(".orig", "par_id")))
   } else {
     parnames <- dimnames(x[["c_summary"]])[1]
     variables <- dimnames(x[["c_summary"]])[2]
@@ -313,18 +315,19 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
       .df <- as_data_frame(.x[i, ])
       colnames(.df) <- variables
       .df[["par_id"]] <- parnames
-      .df <- separate(.df, par_id, c(".orig", "time", "index"),
+      .df <- separate_(.df, "par_id", c(".orig", "time", "index"),
                       remove = FALSE, extra = "drop", convert = TRUE)
-      .df <- select(.df, -.orig, -par_id)
+      .df <- select(.df, -one_of(c(".orig", "par_id")))
       .df
     }
     dat <- map_df(array_branch(x[["c_summary"]], 3),
-           f, i = rows_touse, parnames = parnames, variables = variables,
+           f, i = param_rows, parnames = parnames, variables = variables,
            .id = "chain")
   }
   nx = attr(extractor, "vector_length")
   if (max(dat[["index"]]) != nx) {
-    stop(sprintf("For m = %d, p = %d, q = %d and type = %s, expected the number of parameters to equal %d",
+    stop(sprintf(paste("For m = %d, p = %d, q = %d and type = %s,",
+                       "expected the number of parameters to equal %d"),
                  m, p, q, type, nx))
   }
   left_join(parameters, dat, by = "index")

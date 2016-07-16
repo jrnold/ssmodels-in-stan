@@ -32,7 +32,6 @@ the directory containing the models provided by this package.
 
 \code{ssm_available_models} lists the names of the stan models
 provided by this package.
-
 \code{ssm_stan_model} runs a Stan model included in this package.
 This function is a wrapper for \code{\link[rstan]{stan}}, that
 sets the correct path to the model and includes the functions provided

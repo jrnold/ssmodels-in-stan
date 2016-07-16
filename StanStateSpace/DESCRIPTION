@@ -16,7 +16,8 @@ Imports:
   lubridate,
   purrr,
   stringr,
-  tibble
+  tibble,
+  tidyr
 Suggests:
   KFAS,
   testthat

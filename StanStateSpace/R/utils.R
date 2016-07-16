@@ -1,16 +1,3 @@
-#' @importFrom purrr map map_df array_branch
-#' @importFrom stringr str_detect
-#' @importFrom tibble rownames_to_column as_data_frame
-#' @importFrom dplyr data_frame left_join
-#'
-#' @import stats
-#'
-#' @import assertthat
-#' @import lubridate
-#' @import rstan
-NULL
-
-
 #' Upper and lower unit triangle matrices
 #'
 #' Some useful functions for generating matrices commonly encountered
@@ -142,3 +129,4 @@ as.Date.ts <- function(x, ...) {
   }
   dates
 }
+

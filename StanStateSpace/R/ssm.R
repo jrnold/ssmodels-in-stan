@@ -22,8 +22,12 @@ ssm_stan_include_path <- function() {
 
 #' @rdname ssm_stan_include_path
 #' @export
-ssm_stan_model_path <- function() {
-  system.file("stan/models", package = "StanStaceSpace")
+ssm_stan_model_path <- function(file = NULL) {
+  pth <- system.file(file.path("stan", "models"), package = "StanStateSpace")
+  if (!is.null(file)) {
+    pth <- file.path(pth, file)
+  }
+  pth
 }
 
 #' @rdname ssm_stan_include_path
@@ -38,10 +42,11 @@ ssm_available_models <- function() {
 #' @export
 ssm_stan_model <- function(file, ...) {
   if (!exists(file)) {
-    file <- file.path(ssm_stan_model_path(), file)
+    file <- ssm_stan_model_path(file)
   }
-  stan(model_code = stanc_builder(file, isystem = ssm_stan_include_path()),
-       model_name = gsub("\\.stan$", "", basename(file)), ...)
+  model_name <- gsub("\\.stan$", "", basename(file))
+  model_code <- stanc_builder(file, isystem = ssm_stan_include_path())[["model_code"]]
+  stan_model(model_code = model_code, model_name = model_name, ...)
 }
 
 gen_ssm_extractor <- function(...) {

@@ -1,5 +1,4 @@
 context("Stan models")
-
 set.seed(60322390);
 
 #' Tolerance needs to be a little lower due to round tripping.

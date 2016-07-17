@@ -375,7 +375,7 @@ vector[] ssm_filter(vector[] y,
         if (size(Q) > 1) {
           Q_t = Q[t];
         }
-        if (size(R) > 1 && size(Q) > 1) {
+        if (size(R) > 1 || size(Q) > 1) {
           RQR = quad_form(Q_t, R_t);
         }
       }
@@ -519,7 +519,7 @@ real ssm_lpdf(vector[] y,
         if (size(Q) > 1) {
           Q_t = Q[t];
         }
-        if (size(R) > 1 && size(Q) > 1) {
+        if (size(R) > 1 || size(Q) > 1) {
           RQR = quad_form(Q_t, R_t);
         }
       }

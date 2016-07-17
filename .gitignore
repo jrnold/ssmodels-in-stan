@@ -20,3 +20,6 @@ auto/
 /doc/libs/
 lib/cmdstan-*
 stan/tests/build/
+*.utf8.md
+doc/*.rds
+*.knit.md

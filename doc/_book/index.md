@@ -1,7 +1,8 @@
+
 ---
 title: "State Space Models in Stan"
 author: "Jeffrey B. Arnold"
-date: "`r Sys.Date()`"
+date: "2016-07-16"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book

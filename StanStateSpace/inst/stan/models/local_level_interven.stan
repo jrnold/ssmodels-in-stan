@@ -40,7 +40,7 @@ transformed parameters {
   matrix[1, 1] Q[n];
   H[1, 1, 1] = pow(sigma_epsilon, 2);
   for (t in 1:n) {
-    Q[t, 1, 1] = pow(sigma_epsilon * sigma_eta * s[t], 2);
+    Q[t] = rep_matrix(pow(sigma_epsilon * sigma_eta * s[t], 2), 1, 1);
   }
 }
 model {

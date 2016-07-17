@@ -4,8 +4,6 @@ functions {
 data {
   int<lower = 1> n;
   vector[1] y[n];
-  vector[n] x;
-
   vector<lower = 0.0>[1] a1;
   cov_matrix[1] P1;
   real<lower = 0.0> y_scale;
@@ -34,7 +32,6 @@ transformed data {
 parameters {
   real<lower = 0.0> sigma_eta;
   real<lower = 0.0> sigma_epsilon;
-  real beta;
 }
 transformed parameters {
   matrix[1, 1] H;

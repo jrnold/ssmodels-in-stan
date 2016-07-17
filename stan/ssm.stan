@@ -877,7 +877,7 @@ vector[] ssm_filter(vector[] y,
         if (size(Q) > 1) {
           Q_t = Q[t];
         }
-        if (size(R) > 1 && size(Q) > 1) {
+        if (size(R) > 1 || size(Q) > 1) {
           RQR = quad_form(Q_t, R_t);
         }
       }
@@ -1149,7 +1149,7 @@ real ssm_lpdf(vector[] y,
         if (size(Q) > 1) {
           Q_t = Q[t];
         }
-        if (size(R) > 1 && size(Q) > 1) {
+        if (size(R) > 1 || size(Q) > 1) {
           RQR = quad_form(Q_t, R_t);
         }
       }
@@ -1437,7 +1437,7 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
     matrix[m, m] L;
     vector[m] alpha;
     matrix[m, m] V;
-    // filter results
+    // results
     vector[p] v;
     matrix[m, p] K;
     matrix[p, p] Finv;

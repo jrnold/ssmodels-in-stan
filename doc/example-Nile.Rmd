@@ -10,7 +10,8 @@ A notable feature of the series is a seeming structural break in 1899, around th
 ```{r Nile}
 data("Nile", package = "datasets")
 Nile_ <- data_frame(year = year(as.Date(Nile)),
-                    flow = as.numeric(Nile))
+                    flow = as.numeric(Nile),
+                    obs = seq_along(Nile))
 ```
 
 ```{r Nile_plot}
@@ -35,18 +36,19 @@ $$
 cat(paste(readLines(system.file("stan/models/local_level.stan", package = "StanStateSpace")), collapse = "\n"))
 ```
 
-```{r Nile-Model, message=FALSE, warning=FALSE, eval=FALSE}
-STAN_SSM_MODELS <- system.file("stan/models", package = "StanStateSpace")
-STAN_SSM_INCLUDE <- system.file("stan/include", package = "StanStateSpace")
-local_level_code <-
-  stanc_builder(file.path(STAN_SSM_MODELS, "local_level.stan"),
-                isystem = STAN_SSM_INCLUDE)
-local_level_mod <- stan_model(model_code = local_level_code[["model_code"]],
-                              model_name = local_level_code[["model_name"]])
+```{r Nile-Model, message=FALSE, warning=FALSE}
+local_level_mod <- ssm_stan_model("local_level.stan")
 ```
 
-```{r Nile-Local-Level-Sampling, eval = FALSE}
-nile_data <- within(list(), {
+The function 
+```r
+model_code <- stanc_builder(ssm_stan_model_path("local_level_stan"),
+                            isystem = ssm_stan_include_path())
+mod <- ssm_model(model_code = model_code[["model_code"]], ...)
+```
+
+```{r Nile-Local-Level-Sampling}
+nile_1_data <- within(list(), {
   y <- matrix(Nile_$flow)
   n <- nrow(y)
   a1 <- array(0, 1)
@@ -55,124 +57,169 @@ nile_data <- within(list(), {
 })
 nile_1_samples <- 
   sampling(local_level_mod,
-                          chains = 1,
-                          iter = 500,
-                          data = nile_data)
-nile_1_summary <- summary(nile_1_samples)
+           chains = 1,
+           iter = 500,
+           data = nile_data)
+
 ```
 
-```{r summary_nile_1_samples_HQ}
-summary(nile_1_samples, par = c("H", "Q"))[["summary"]]
+Now, summarize the MCMC samples using the `summary` function on the `stanfit` object.
+Additionally, I use the `tidy_stan_summary` function to make the results of `summary` easier to work with.
+This converts the results of `summary` from a list of matrices to a list of data frames, and also parses the parameter names so that it is easier to select particular parameter values by name. I also will only use only the summary statistics for the combined chains.
+```{r nile_1_summary}
+nile_1_summary <- tidy_stan_summary(summary(nile_1_samples))[["all"]] %>%
+  left_join(Nile_, by = c("dim_1" = "obs"))
 ```
-which is similar to the MLE results ,
+The estimated variances of the observation and state variances,
+```{r summary_nile_1_samples_HQ}
+filter(nile_1_summary, parameter %in% c("H", "Q")) %>%
+  select(parname, mean, se_mean, `2.5%`, `97.5%`, n_eff, Rhat)
+```
+are similar to the MLE estimates producted by `StructTS`,
 ```{r nile_1_StructTS}
 StructTS(Nile_$flow, type = "level")
 ```
+However, since the Bayesian estimates are means, the MLE estimates are modes,
+and the posterior distribution of the variances are right skewed, the means are 
+larger than the posterior modes.
 
-```{r nile_1_filter}
-nile_1_filter <- ssm_extract_summary(nile_1_summary, "filtered", 1, 1)
-ggplot(dplyr::filter(nile_1_filter, parameter == "a[1]", time > 1),
-       aes(x = time, y = mean, 
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_ribbon(alpha = 0.3) +
-  geom_line()
-
-```
 
 ```{r nile_1_states}
 str_keep <- function(string, pattern) {
   string[str_detect(string, pattern)]
 }
 
-nile_1_states <-
-  as_data_frame(nile_1_summary[["summary"]]) %>%
-  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
-  inner_join(
-    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^alpha\\["), "^alpha\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
-    by = "par_id"
-  ) %>%
-  mutate(time = as.integer(time), index = as.integer(index))
-
-ggplot(dplyr::filter(nile_1_states, index == 1),
-       aes(x = time, y = mean,
+ggplot(filter(nile_1_summary, parameter == "alpha"),
+       aes(x = year, 
            ymin = mean - 2 * sd,
            ymax = mean + 2 * sd)) +
   geom_ribbon(alpha = 0.3) +
-  geom_line()
-
-```
-
-```{r nile_1_eps}
-nile_1_eps <-
-  as_data_frame(nile_1_summary[["summary"]]) %>%
-  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
-  inner_join(
-    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^eps\\["), "^eps\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
-    by = "par_id"
-  ) %>%
-  mutate(time = as.integer(time), index = as.integer(index))
-
-ggplot(dplyr::filter(nile_1_eps, index == 1),
-       aes(x = time, y = mean, 
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_pointrange()
+  geom_line(aes(y = mean)) +
+  geom_point(aes(y = flow)) +
+  ylab("Annual river flow") +
+  xlab("Observation") + 
+  theme_minimal()
 
 ```
 
 ```{r nile_1_eta}
-nile_1_eta <-
-  as_data_frame(nile_1_summary[["summary"]]) %>%
-  mutate(par_id = rownames(nile_1_summary[["summary"]])) %>%
-  inner_join(
-    `colnames<-`(as_data_frame(str_match(str_keep(rownames(nile_1_summary[["summary"]]), "^eta\\["), "^eta\\[(\\d+),(\\d+)\\]")), c("par_id", "time", "index")),
-    by = "par_id"
-  ) %>%
-  mutate(time = as.integer(time), index = as.integer(index))
-
-ggplot(dplyr::filter(nile_1_eta, index == 1),
-       aes(x = time, y = mean, 
+ggplot(filter(nile_1_summary, parameter == "eta"),
+       aes(x = year, y = mean, 
            ymin = mean - 2 * sd,
            ymax = mean + 2 * sd)) +
   geom_pointrange()
-
 ```
 
+```{r nile_1_eps}
+ggplot(filter(nile_1_summary, parameter == "eps"),
+       aes(x = year, y = mean, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_pointrange()
+```
+
+**TODO** Diagnostics. What are the relevant Bayesian analogs?
 
 
 ## Nile with intervention (intercept)
 
-```{r}
-local_level_reg_code <-
-  stanc_builder(file.path(STAN_SSM_MODELS, "local_level_reg.stan"),
-                isystem = STAN_SSM_INCLUDE)
-local_level_reg_mod <-
-  stan_model(model_code = local_level_reg_code[["model_code"]],
-                              model_name = local_level_reg_code[["model_name"]])
+```{r Nile-2-mod}
+nile_2_mod <- ssm_stan_model("local_level_reg.stan")
 ```
 
+```{r Nile-2-run}
+nile_2_data <- nile_1_data
+nile_2_data[["x"]] <- matrix(as.integer(Nile_$year > 1899))
+nile_2_data[["k"]] <- ncol(nile_2_data[["x"]])
+nile_2_samples <- sampling(nile_2_mod, chains = 1, iter = 500,
+                           data = nile_2_data)
+```
+
+```{r Nile-2-summary}
+nile_2_summary <- tidy_stan_summary(summary(nile_2_samples))[["all"]] %>%
+  left_join(Nile_, by = c("dim_1" = "obs"))
+```
+
+
+```{r nile_2_states}
+ggplot(filter(nile_2_summary, parameter == "mu"),
+       aes(x = year, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_ribbon(alpha = 0.3) +
+  geom_line(aes(y = mean)) +
+  geom_point(aes(y = flow)) +
+  ylab("Annual river flow") +
+  xlab("Observation") + 
+  theme_minimal()
+
+```
 
 
 ## local level with known intervention
 
-```{r}
-local_level_interven_code <-
-  stanc_builder(file.path(STAN_SSM_MODELS, "local_level_interven.stan"),
-                isystem = STAN_SSM_INCLUDE)
-local_level_inverven_mod <-
-  stan_model(model_code = local_level_interven_code[["model_code"]],
-             model_name = local_level_interven_code[["model_name"]])
+```{r Nile-local-level-interven}
+nile_3_mod <- ssm_stan_model("local_level_interven.stan")
+```
+
+```{r Nile-3-run}
+nile_3_data <- nile_1_data
+nile_3_data[["s"]] <- ifelse(Nile_$year == 1899, 10, 1)
+nile_3_samples <- sampling(nile_3_mod, chains = 1, iter = 500,
+                           data = nile_3_data)
+```
+
+```{r Nile-3-summary}
+nile_3_summary <- tidy_stan_summary(summary(nile_3_samples))[["all"]] %>%
+  left_join(Nile_, by = c("dim_1" = "obs"))
+```
+
+
+```{r nile_3_states}
+ggplot(filter(nile_3_summary, parameter == "alpha"), 
+       aes(x = year, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_ribbon(alpha = 0.3) +
+  geom_line(aes(y = mean)) +
+  geom_point(aes(y = flow)) +
+  ylab("Annual river flow") +
+  xlab("Observation") + 
+  theme_minimal()
+
 ```
 
 ## local level with time-varying variances
 
-```{r}
-local_level_tvvar_code <-
-  stanc_builder(file.path(STAN_SSM_MODELS, "local_level_tvvar.stan"),
-                isystem = STAN_SSM_INCLUDE)
-local_level_tvvar_mod <-
-  stan_model(model_code = local_level_tvvar_code[["model_code"]],
-             model_name = local_level_tvvar_code[["model_name"]])
+```{r Nile-local-level-tvvar}
+nile_4_mod <- ssm_stan_model("local_level_tvvar.stan")
 ```
+
+```{r Nile-4-run}
+nile_4_data <- nile_1_data
+nile_4_data[["s"]] <- 1 / nrow(Nile_)
+nile_4_samples <- sampling(nile_4_mod, chains = 1, iter = 500,
+                           data = nile_4_data)
+                           
+```
+
+```{r Nile-4-summary}
+nile_4_summary <- tidy_stan_summary(summary(nile_4_samples))[["all"]] %>%
+  left_join(Nile_, by = c("dim_1" = "obs"))
+```
+
+
+```{r nile_4_states}
+ggplot(filter(nile_4_summary, parameter == "alpha"), 
+       aes(x = year, 
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_ribbon(alpha = 0.3) +
+  geom_line(aes(y = mean)) +
+  geom_point(aes(y = flow)) +
+  ylab("Annual river flow") +
+  xlab("Observation") + 
+  theme_minimal()
+```
+
 

@@ -5,6 +5,8 @@ This is a simplified example of CAPM model from Petris (2011) using data from Be
 A simplified capital-asset pricicing model (CAPM) model is a model of the excess 
 return (return relative to a risk-free asset) of stocks. In this example,
 the excess return of a stock is proportional to the market return (return of a portfolio of stocks representing the whole market). 
+
+
 Let $y_{j,t}$ be the excess return of stock $j$ in period $t$.
 The model that we will estimate is,
 $$
@@ -16,8 +18,7 @@ $$
 The proportionality constants of the stocks are stock- and time-specific, with 
 each $\vec{\beta}_j$ following a random walk.[^alpha]
 However, both the observation disturbances ($\mat{\Sigma}_{\varepsilon}$ and state disturbances ($\mat{\Sigma}_{\eta}$) allow for correlation between the stocks.
-
-[^alpha]: In the model estimated here, the intercepts for each stock, $\alpha_{j}$ are assumed to be zero.
+In the model estimated here, the intercepts for each stock are assumed to be zero.
 
 The data, originally from Berndt (1991), are the monthly returns of four stocks
 (Mobil, IBM, Weyer, and Citicorp) from January 1978 to December 1987.
@@ -58,8 +59,6 @@ capm_data <-
 capm_samples <- sampling(capm_mod, chains = 1, iter = 1000,
                          data = capm_data)
 ```
-
-Note: there tend to be a lot of divergences in this
 
 ```{r capm-state-plot}
 capm_samples <- tidy_stan_summary(summary(capm_samples))[["all"]] %>%

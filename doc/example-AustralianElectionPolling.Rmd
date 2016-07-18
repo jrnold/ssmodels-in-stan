@@ -1,0 +1,52 @@
+---
+title: "Austrialian Voting Example"
+output: html_document
+---
+
+## Australian Election Polling
+
+Example from Simon Jackman's textbook (Ex 9.3) and 2005 paper.
+
+The data consist of 239 polls by the Australian pollsters (Newspoll, Nielsen, Morgan, and Galaxy) betwen the October 9, 2004, and November 24, 2007 Australian Federal elections.
+```{r}
+data("AustralianElectionPolling", package = "pscl")
+glimpse(AustralianElectionPolling)
+```
+
+We will estimate the the proportion of the population that will vote the Australian Labor Party (ALP) in a House of Representatives election for each day between the elections. 
+We model this as 
+
+$$
+\begin{aligned}[t]
+y_{j,t} &= \delta_{j} + \xi_t + \varepsilon_{j,t} & \varepsilon_{j,t} & \sim N\left(0, \frac{y_{j,t} (1 - y_{j,t})}{r_{j,t}} \right) \\
+\xi_t & \xi_{t - 1} + \omega_t & \omega_{t} & \sim N(0, \sigma_{\omega})
+\end{aligned}
+$$
+The observation variances are treated as known, and derived from the sample size and results of the poll.
+Jackman 2012 (p. 475) puts a prior on the state variance to ensure that the daily changes in thestate are not too large, with a 95% interval of $\pm 2%$, implying $\sigma_{\omega} = 0.01$.
+
+Polls have between 500 to 2,600 respondents, with a median of 1,156.
+While most of the polls use complex survey methods such as post-stratification weights to adjust for non-response, for the purposes of this analysis we will use the stated sample size of the poll as its effective size, and use that to construct the measurement error. There are 1,142 days in the period under consideration.
+
+The unique polling firms and number of polls are,
+```{r}
+AustralianElectionPolling %>% group_by(org) %>% tally()
+```
+The face-to-face and phone polls by Morgan are treated separately.
+Each polling firm will be given it's own "house effect" term to allow them to 
+be systematically biased.
+However, we will require that the average of the house effects is zero; 
+meaning that while each polling firm may be biased, on average they are not.
+$$
+\delta_j \sim N(0, d)
+$$
+Jackman uses a fixed value of $d$ that gives a 95% interval spanning from -0.15 to .15. This corresponds to $d = 0.075$.
+
+In the 2004 election the Australian Labor Party (ALP) won 37.6% percent of
+first preferences, and in 2007 they won 43.4%.
+These will be treated as coming from a source with no house effect and an infinitely large sample size.
+
+**TODO** Add Stan model and estimate
+
+- local level as in Jackman's text.
+- trend filtering with Horseshoe priors.

@@ -1,5 +1,6 @@
 library("rstan")
 devtools::install("../../StanStateSpace")
+library("StanStateSpace")
 
 # Run a stan test
 # @param file name of function. The file is "stan/test_{file}.stan"
@@ -40,6 +41,6 @@ test_stan_function <- function(FUN, data = NULL, init = NULL,
     # IF output, then return data
     rstan::read_stan_csv(out_tmpfile)
   } else {
-    # else return the return code
+
   }
 }

@@ -218,14 +218,60 @@ vector ssm_filter_update_v(vector y, vector a, vector d, matrix Z) {
   v = y - Z * a - d;
   return v;
 }
+vector ssm_filter_update_v_miss(vector y, vector a, vector d, matrix Z,
+                                int p_t, int[] y_idx) {
+  vector[num_elements(y)] v;
+  int p;
+  p = num_elements(y);
+  if (p_t < p) {
+    v = rep_vector(0., p);
+    if (p_t > 0) {
+      int idx[p_t];
+      vector[p_t] y_star;
+      vector[p_t] d_star;
+      matrix[p_t, cols(Z)] Z_star;
+      idx = y_idx[1:p_t];
+      y_star = y[idx];
+      d_star = d[idx];
+      Z_star = Z[idx, :];
+      v[idx] = ssm_filter_update_v(y_star, a, d_star, Z_star);
+    }
+  } else {
+    v = ssm_filter_update_v(y, a, d, Z);
+  }
+  return v;
+}
 matrix ssm_filter_update_F(matrix P, matrix Z, matrix H) {
   matrix[rows(H), cols(H)] F;
-  F = quad_form(P, Z') + H;
+  F = to_symmetric_matrix(quad_form(P, Z') + H);
   return F;
 }
 matrix ssm_filter_update_Finv(matrix P, matrix Z, matrix H) {
   matrix[rows(H), cols(H)] Finv;
-  Finv = inverse(ssm_filter_update_F(P, Z, H));
+  Finv = inverse_spd(to_symmetric_matrix(quad_form(P, Z') + H));
+  return Finv;
+}
+matrix ssm_filter_update_Finv_miss(matrix P, matrix Z, matrix H,
+                                   int p_t, int[] y_idx) {
+  matrix[rows(H), cols(H)] Finv;
+  int p;
+  int m;
+  p = rows(H);
+  m = cols(Z);
+  if (p_t < p) {
+    Finv = rep_matrix(0., p, p);
+    if (p_t > 0) {
+      matrix[p_t, m] Z_star;
+      matrix[p_t, p_t] H_star;
+      int idx[p_t];
+      idx = y_idx[1:p_t];
+      Z_star = Z[idx, :];
+      H_star = H[idx, idx];
+      Finv[idx, idx] = ssm_filter_update_Finv(P, Z_star, H_star);
+    }
+  } else {
+    Finv = ssm_filter_update_Finv(P, Z, H);
+  }
   return Finv;
 }
 matrix ssm_filter_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
@@ -245,8 +291,27 @@ real ssm_filter_update_ll(vector v, matrix Finv) {
   ll = (- 0.5 *
         (p * log(2 * pi())
          - log_determinant(Finv)
-         + quad_form(Finv, v)
+         + quad_form_sym(Finv, v)
        ));
+  return ll;
+}
+real ssm_filter_update_ll_miss(vector v, matrix Finv, int p_t, int[] y_idx) {
+  real ll;
+  int p;
+  p = num_elements(v);
+  if (p_t == 0) {
+    ll = 0.;
+  } else if (p_t == p) {
+    ll = ssm_filter_update_ll(v, Finv);
+  } else {
+    int idx[p_t];
+    matrix[p_t, p_t] Finv_star;
+    vector[p_t] v_star;
+    idx = y_idx[1:p_t];
+    Finv_star = Finv[idx, idx];
+    v_star = v[idx];
+    ll = ssm_filter_update_ll(v_star, Finv_star);
+  }
   return ll;
 }
 int[,] ssm_filter_idx(int m, int p) {
@@ -349,7 +414,7 @@ vector[] ssm_filter(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t);
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -376,13 +441,98 @@ vector[] ssm_filter(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t);
         }
       }
       v = ssm_filter_update_v(y[t], a, d_t, Z_t);
       Finv = ssm_filter_update_Finv(P, Z_t, H_t);
       K = ssm_filter_update_K(P, T_t, Z_t, Finv);
       ll = ssm_filter_update_ll(v, Finv);
+      res[t, 1] = ll;
+      res[t, idx[2, 2]:idx[2, 3]] = v;
+      res[t, idx[3, 2]:idx[3, 3]] = symmat_to_vector(Finv);
+      res[t, idx[4, 2]:idx[4, 3]] = to_vector(K);
+      res[t, idx[5, 2]:idx[5, 3]] = a;
+      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
+      if (t < n) {
+        a = ssm_filter_update_a(a, c_t, T_t, v, K);
+        P = ssm_filter_update_P(P, Z_t, T_t, RQR, K);
+      }
+    }
+  }
+  return res;
+}
+vector[] ssm_filter_miss(vector[] y,
+                          vector[] d, matrix[] Z, matrix[] H,
+                          vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                          vector a1, matrix P1, int[] p_t, int[,] y_idx) {
+  vector[ssm_filter_size(dims(Z)[3], dims(Z)[2])] res[size(y)];
+  int q;
+  int n;
+  int p;
+  int m;
+  n = size(y);
+  p = dims(Z)[2];
+  m = dims(Z)[3];
+  q = dims(Q)[2];
+  {
+    vector[p] d_t;
+    matrix[p, m] Z_t;
+    matrix[p, p] H_t;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    matrix[p, p] Finv;
+    matrix[m, p] K;
+    real ll;
+    int idx[6, 3];
+    idx = ssm_filter_idx(m, p);
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t);
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (size(c) > 1) {
+          c_t = c[t];
+        }
+        if (size(T) > 1) {
+          T_t = T[t];
+        }
+        if (size(R) > 1) {
+          R_t = R[t];
+        }
+        if (size(Q) > 1) {
+          Q_t = Q[t];
+        }
+        if (size(R) > 1 || size(Q) > 1) {
+          RQR = quad_form_sym(Q_t, R_t);
+        }
+      }
+      v = ssm_filter_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
+      Finv = ssm_filter_update_Finv_miss(P, Z_t, H_t, p_t[t], y_idx[t]);
+      K = ssm_filter_update_K(P, T_t, Z_t, Finv);
+      ll = ssm_filter_update_ll_miss(v, Finv, p_t[t], y_idx[t]);
       res[t, 1] = ll;
       res[t, idx[2, 2]:idx[2, 3]] = v;
       res[t, idx[3, 2]:idx[3, 3]] = symmat_to_vector(Finv);
@@ -420,7 +570,7 @@ vector ssm_filter_states_update_a(vector a, matrix P, matrix Z,
 }
 matrix ssm_filter_states_update_P(matrix P, matrix Z, matrix Finv) {
   matrix[rows(P), cols(P)] PP;
-  PP = to_symmetric_matrix(P - P * quad_form(Finv, Z) * P);
+  PP = to_symmetric_matrix(P - P * quad_form_sym(Finv, Z) * P);
   return PP;
 }
 vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
@@ -493,7 +643,7 @@ real ssm_lpdf(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t);
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -520,13 +670,91 @@ real ssm_lpdf(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t);
         }
       }
       v = ssm_filter_update_v(y[t], a, d_t, Z_t);
       Finv = ssm_filter_update_Finv(P, Z_t, H_t);
       K = ssm_filter_update_K(P, Z_t, T_t, Finv);
       ll_obs[t] = ssm_filter_update_ll(v, Finv);
+      if (t < n) {
+        a = ssm_filter_update_a(a, c_t, T_t, v, K);
+        P = ssm_filter_update_P(P, Z_t, T_t, RQR, K);
+      }
+    }
+    ll = sum(ll_obs);
+  }
+  return ll;
+}
+real ssm_miss_lpdf(vector[] y,
+                   vector[] d, matrix[] Z, matrix[] H,
+                   vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                   vector a1, matrix P1, int[] p_t, int[,] y_idx) {
+  real ll;
+  int n;
+  int m;
+  int p;
+  int q;
+  n = size(y);
+  m = dims(Z)[2];
+  p = dims(Z)[3];
+  q = dims(Q)[2];
+  {
+    vector[p] d_t;
+    matrix[p, m] Z_t;
+    matrix[p, p] H_t;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    vector[n] ll_obs;
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    matrix[p, p] Finv;
+    matrix[m, p] K;
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t);
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (size(c) > 1) {
+          c_t = c[t];
+        }
+        if (size(T) > 1) {
+          T_t = T[t];
+        }
+        if (size(R) > 1) {
+          R_t = R[t];
+        }
+        if (size(Q) > 1) {
+          Q_t = Q[t];
+        }
+        if (size(R) > 1 || size(Q) > 1) {
+          RQR = quad_form_sym(Q_t, R_t);
+        }
+      }
+      v = ssm_filter_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
+      Finv = ssm_filter_update_Finv_miss(P, Z_t, H_t, p_t[t], y_idx[t]);
+      K = ssm_filter_update_K(P, T_t, Z_t, Finv);
+      ll = ssm_filter_update_ll_miss(v, Finv, p_t[t], y_idx[t]);
       if (t < n) {
         a = ssm_filter_update_a(a, c_t, T_t, v, K);
         P = ssm_filter_update_P(P, Z_t, T_t, RQR, K);
@@ -589,7 +817,7 @@ real ssm_constant_lpdf(vector[] y,
     real matdiff;
     converged = 0;
     tol = 1e-7;
-    RQR = quad_form(Q, R);
+    RQR = quad_form_sym(Q, R);
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -623,7 +851,7 @@ vector ssm_smooth_update_r(vector r, matrix Z, vector v, matrix Finv,
 }
 matrix ssm_smooth_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   matrix[rows(N), cols(N)] N_new;
-  N_new = to_symmetric_matrix(quad_form(Finv, Z) + quad_form(N, L));
+  N_new = quad_form_sym(Finv, Z) + quad_form_sym(N, L);
   return N_new;
 }
 int ssm_smooth_state_size(int m) {
@@ -760,7 +988,7 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       r = ssm_smooth_update_r(r, Z_t, v, Finv, L);
       N = ssm_smooth_update_N(N, Z_t, Finv, L);
       eps = H_t * (Finv * v - K ' * r);
-      var_eps = to_symmetric_matrix(H_t - H_t * (Finv + quad_form(N, K)) * H_t);
+      var_eps = to_symmetric_matrix(H_t - H_t * (Finv + quad_form_sym(N, K)) * H_t);
       res[t, :p] = eps;
       res[t, (p + 1): ] = symmat_to_vector(var_eps);
     }
@@ -843,7 +1071,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       r = ssm_smooth_update_r(r, Z_t, v, Finv, L);
       N = ssm_smooth_update_N(N, Z_t, Finv, L);
       eta = Q_t * R_t ' * r;
-      var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form(N, R_t) * Q_t);
+      var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form_sym(N, R_t) * Q_t);
       res[t, :q] = eta;
       res[t, (q + 1): ] = symmat_to_vector(var_eta);
     }
@@ -892,7 +1120,7 @@ vector[] ssm_smooth_state_mean(vector[] filter,
       Q_t = Q[1];
     }
     if (size(Q) == 1 && size(R) == 1) {
-      RQR = quad_form(Q[1], R[1]');
+      RQR = quad_form_sym(Q[1], R[1]');
     }
     r[n + 1] = rep_vector(0.0, m);
     for (i in 0:(n - 1)) {
@@ -927,7 +1155,7 @@ vector[] ssm_smooth_state_mean(vector[] filter,
         R_t = R[t];
       }
       if (size(Q) > 1 || size(R) > 1) {
-        RQR = quad_form(Q_t, R_t');
+        RQR = quad_form_sym(Q_t, R_t');
       }
       alpha[t + 1] = c_t + T_t * alpha[t] + RQR * r[t + 1];
     }

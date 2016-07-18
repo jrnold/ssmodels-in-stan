@@ -482,12 +482,11 @@ matrix ssm_filter_update_P(matrix P, matrix Z, matrix T,
 /** ssm_filter_update_v
 Update the forcast error, $\vec{v}_t = \vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}})$
 
-@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
+@param matrix y A $p \times 1$ vector of the observations, $\vec{y}_t$.
+@param vector a A $m \times 1$ vector of the states, $\vec{a}_t$.
+@param matrix d A $p \times 1$ vector with the observation intercept, $\vec{d}_t$.
 @param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
-@param matrix T An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
-@param matrix RQR An $m \times m$ matrix with the system covariance matrix, $\mat{R}_t \mat{Q}_t \mat{R}_t'$.
-@param matrix K An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
-@return vector An $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
+@return vector A $p \times 1$ vector of the forecast errors, $\vec{v}_t$.
 
 The forecast error $\vec{v}_t$ is
 $$
@@ -498,6 +497,52 @@ $$
 vector ssm_filter_update_v(vector y, vector a, vector d, matrix Z) {
   vector[num_elements(y)] v;
   v = y - Z * a - d;
+  return v;
+}
+
+/** ssm_filter_update_v_miss
+
+Update the forcast error, but unlike `ssm_filter_update_v`, allow for missing
+values in $\vec{y}_t$.
+
+@param matrix y A $p \times 1$ vector of the observations, $\vec{y}_t$.
+@param vector a A $m \times 1$ vector of the states, $\vec{a}_t$.
+@param matrix d A $p \times 1$ vector with the observation intercept, $\vec{d}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param int[] y_idx A length $p$ array of integers indexes with the indexes of the *non*-missing values of $y$. Elements $1:p_t$ should be between $1$ and $p$; elements $p_t:p$ are zero, and are not used.
+@return vector A $p \times 1$ vector of the forecast errors, $\vec{v}_t$.
+
+The elements of the forecast error $\vec{v}_t$ is
+$$
+\vec{v}_t =
+\begin{cases}
+  y_{j,t} - \vec{Z}_{j,.,t} \vec{a}_t - d_{j,t} & \text{if $y_{j,t} not missing.} \\
+  0 & \text{if $y_{j,t}$ is missing.}
+\end{cases}
+$$
+
+*/
+vector ssm_filter_update_v_miss(vector y, vector a, vector d, matrix Z,
+                                int p_t, int[] y_idx) {
+  vector[num_elements(y)] v;
+  int p;
+  p = num_elements(y);
+  if (p_t < p) {
+    v = rep_vector(0., p);
+    if (p_t > 0) {
+      int idx[p_t];
+      vector[p_t] y_star;
+      vector[p_t] d_star;
+      matrix[p_t, cols(Z)] Z_star;
+      idx = y_idx[1:p_t];
+      y_star = y[idx];
+      d_star = d[idx];
+      Z_star = Z[idx, :];
+      v[idx] = ssm_filter_update_v(y_star, a, d_star, Z_star);
+    }
+  } else {
+    v = ssm_filter_update_v(y, a, d, Z);
+  }
   return v;
 }
 
@@ -517,7 +562,7 @@ $$
 */
 matrix ssm_filter_update_F(matrix P, matrix Z, matrix H) {
   matrix[rows(H), cols(H)] F;
-  F = quad_form(P, Z') + H;
+  F = to_symmetric_matrix(quad_form(P, Z') + H);
   return F;
 }
 
@@ -534,7 +579,50 @@ This is the inverse of $\mat{F}_t$.
 */
 matrix ssm_filter_update_Finv(matrix P, matrix Z, matrix H) {
   matrix[rows(H), cols(H)] Finv;
-  Finv = inverse(ssm_filter_update_F(P, Z, H));
+  // if can guarantee that F is spd, then take spd inverse.
+  Finv = inverse_spd(to_symmetric_matrix(quad_form(P, Z') + H));
+  // Finv = inverse(quad_form(P, Z') + H);
+  return Finv;
+}
+
+/** ssm_filter_update_Finv_miss
+
+Update the precision of the forcast error.
+Unlike `ssm_filter_update_Finv`, this allows for missing values in `\vec{y}_{t}`.
+If $y_{k,t}$ is missing, then $F^{-1}_{i,j,t} = 0$ for any $i = k$ or $j = k$,
+otherwise it is the same as $\mat{F}^{-1}$ calculated after removing missing values.
+
+@param matrix P An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
+@param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+@param matrix H A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
+@param int p The number of non-missing observations in $\vec{y}_t$.
+@param int[] y_idx A length $p$ array of integers. The first $p_t$ elments of this array indexes of the *non*-missing values of $y$. Elements $1:p_t$ should be between $1$ and $p$; elements $p_t:p$ are zero, and are not used.
+@return matrix A $p \times p$ vector with $\mat{F}^{-1}_t$.
+
+This is the inverse of $\mat{F}_t$.
+
+*/
+matrix ssm_filter_update_Finv_miss(matrix P, matrix Z, matrix H,
+                                   int p_t, int[] y_idx) {
+  matrix[rows(H), cols(H)] Finv;
+  int p;
+  int m;
+  p = rows(H);
+  m = cols(Z);
+  if (p_t < p) {
+    Finv = rep_matrix(0., p, p);
+    if (p_t > 0) {
+      matrix[p_t, m] Z_star;
+      matrix[p_t, p_t] H_star;
+      int idx[p_t];
+      idx = y_idx[1:p_t];
+      Z_star = Z[idx, :];
+      H_star = H[idx, idx];
+      Finv[idx, idx] = ssm_filter_update_Finv(P, Z_star, H_star);
+    }
+  } else {
+    Finv = ssm_filter_update_Finv(P, Z, H);
+  }
   return Finv;
 }
 
@@ -579,11 +667,12 @@ matrix ssm_filter_update_L(matrix Z, matrix T, matrix K) {
 }
 
 /** ssm_filter_update_ll
-Calculate the log-likelihood for a period
+
+Calculate the log-likelihood of a single observation in a State-space model
 
 @param vector v A $p \times 1$ matrix with the forecast error, $\vec{v}_t$.
 @param matrix Finv A $p \times p$ matrix with variance of the forecast error, $\mat{F}^{-1}_t$.
-@return real An $m \times m$ matrix, $L_t$.
+@return real The log-likelihood
 
 The log-likehood of a single observation in a state-space model is
 $$
@@ -598,8 +687,41 @@ real ssm_filter_update_ll(vector v, matrix Finv) {
   ll = (- 0.5 *
         (p * log(2 * pi())
          - log_determinant(Finv)
-         + quad_form(Finv, v)
+         + quad_form_sym(Finv, v)
        ));
+  return ll;
+}
+
+/** ssm_filter_update_ll_miss
+
+Calculate the log-likelihood of a single observation in a State-space model
+
+Unlike `ssm_filter_update_ll`, this allows for missing values.
+
+@param vector v A $p \times 1$ matrix with the forecast error, $\vec{v}_t$.
+@param matrix Finv A $p \times p$ matrix with variance of the forecast error, $\mat{F}^{-1}_t$.
+@param int p_t The number of non-missing observations in $\vec{y}_t$.
+@param int[] y_idx A length $p$ array of integers with the indexes of the nom-missing values in $\vec{y}_t$. Elements $1:p_t$ should be values between $1$ and $p$; elements $p_t:p$ are zero and are not used.
+@return real The log-likelihood
+
+*/
+real ssm_filter_update_ll_miss(vector v, matrix Finv, int p_t, int[] y_idx) {
+  real ll;
+  int p;
+  p = num_elements(v);
+  if (p_t == 0) {
+    ll = 0.;
+  } else if (p_t == p) {
+    ll = ssm_filter_update_ll(v, Finv);
+  } else {
+    int idx[p_t];
+    matrix[p_t, p_t] Finv_star;
+    vector[p_t] v_star;
+    idx = y_idx[1:p_t];
+    Finv_star = Finv[idx, idx];
+    v_star = v[idx];
+    ll = ssm_filter_update_ll(v_star, Finv_star);
+  }
   return ll;
 }
 
@@ -851,7 +973,7 @@ vector[] ssm_filter(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t);
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -878,7 +1000,7 @@ vector[] ssm_filter(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t);
         }
       }
       // updating
@@ -886,6 +1008,106 @@ vector[] ssm_filter(vector[] y,
       Finv = ssm_filter_update_Finv(P, Z_t, H_t);
       K = ssm_filter_update_K(P, T_t, Z_t, Finv);
       ll = ssm_filter_update_ll(v, Finv);
+      // saving
+      res[t, 1] = ll;
+      res[t, idx[2, 2]:idx[2, 3]] = v;
+      res[t, idx[3, 2]:idx[3, 3]] = symmat_to_vector(Finv);
+      res[t, idx[4, 2]:idx[4, 3]] = to_vector(K);
+      res[t, idx[5, 2]:idx[5, 3]] = a;
+      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
+      // predict a_{t + 1}, P_{t + 1}
+      if (t < n) {
+        a = ssm_filter_update_a(a, c_t, T_t, v, K);
+        P = ssm_filter_update_P(P, Z_t, T_t, RQR, K);
+      }
+    }
+  }
+  return res;
+}
+
+/** ssm_filter_miss
+
+*/
+vector[] ssm_filter_miss(vector[] y,
+                          vector[] d, matrix[] Z, matrix[] H,
+                          vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                          vector a1, matrix P1, int[] p_t, int[,] y_idx) {
+
+  // returned data
+  vector[ssm_filter_size(dims(Z)[3], dims(Z)[2])] res[size(y)];
+  int q;
+  int n;
+  int p;
+  int m;
+
+  // sizes
+  n = size(y); // number of obs
+  p = dims(Z)[2]; // obs size
+  m = dims(Z)[3]; // number of states
+  q = dims(Q)[2]; // number of state disturbances
+
+  //print("Sizes: n = ", m, ", p = ", n, ", m = ", m, ", q = ", q);
+  {
+    // system matrices for current iteration
+    vector[p] d_t;
+    matrix[p, m] Z_t;
+    matrix[p, p] H_t;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    // result matricees for each iteration
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    matrix[p, p] Finv;
+    matrix[m, p] K;
+    real ll;
+    int idx[6, 3];
+    idx = ssm_filter_idx(m, p);
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t);
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (size(c) > 1) {
+          c_t = c[t];
+        }
+        if (size(T) > 1) {
+          T_t = T[t];
+        }
+        if (size(R) > 1) {
+          R_t = R[t];
+        }
+        if (size(Q) > 1) {
+          Q_t = Q[t];
+        }
+        if (size(R) > 1 || size(Q) > 1) {
+          RQR = quad_form_sym(Q_t, R_t);
+        }
+      }
+      // updating
+      v = ssm_filter_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
+      Finv = ssm_filter_update_Finv_miss(P, Z_t, H_t, p_t[t], y_idx[t]);
+      K = ssm_filter_update_K(P, T_t, Z_t, Finv);
+      ll = ssm_filter_update_ll_miss(v, Finv, p_t[t], y_idx[t]);
       // saving
       res[t, 1] = ll;
       res[t, idx[2, 2]:idx[2, 3]] = v;
@@ -982,7 +1204,7 @@ $$
 */
 matrix ssm_filter_states_update_P(matrix P, matrix Z, matrix Finv) {
   matrix[rows(P), cols(P)] PP;
-  PP = to_symmetric_matrix(P - P * quad_form(Finv, Z) * P);
+  PP = to_symmetric_matrix(P - P * quad_form_sym(Finv, Z) * P);
   return PP;
 }
 
@@ -1122,7 +1344,7 @@ real ssm_lpdf(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t);
 
     a = a1;
     P = P1;
@@ -1150,7 +1372,7 @@ real ssm_lpdf(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t);
         }
       }
       v = ssm_filter_update_v(y[t], a, d_t, Z_t);
@@ -1167,6 +1389,95 @@ real ssm_lpdf(vector[] y,
   }
   return ll;
 }
+
+/** ssm_miss_lpdf
+
+
+*/
+real ssm_miss_lpdf(vector[] y,
+                   vector[] d, matrix[] Z, matrix[] H,
+                   vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                   vector a1, matrix P1, int[] p_t, int[,] y_idx) {
+  real ll;
+  int n;
+  int m;
+  int p;
+  int q;
+  n = size(y); // number of obs
+  m = dims(Z)[2];
+  p = dims(Z)[3];
+  q = dims(Q)[2];
+  {
+    // system matrices for current iteration
+    vector[p] d_t;
+    matrix[p, m] Z_t;
+    matrix[p, p] H_t;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    // result matricees for each iteration
+    vector[n] ll_obs;
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    matrix[p, p] Finv;
+    matrix[m, p] K;
+
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t);
+
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (size(c) > 1) {
+          c_t = c[t];
+        }
+        if (size(T) > 1) {
+          T_t = T[t];
+        }
+        if (size(R) > 1) {
+          R_t = R[t];
+        }
+        if (size(Q) > 1) {
+          Q_t = Q[t];
+        }
+        if (size(R) > 1 || size(Q) > 1) {
+          RQR = quad_form_sym(Q_t, R_t);
+        }
+      }
+      v = ssm_filter_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
+      Finv = ssm_filter_update_Finv_miss(P, Z_t, H_t, p_t[t], y_idx[t]);
+      K = ssm_filter_update_K(P, T_t, Z_t, Finv);
+      ll = ssm_filter_update_ll_miss(v, Finv, p_t[t], y_idx[t]);
+      // don't save a, P for last iteration
+      if (t < n) {
+        a = ssm_filter_update_a(a, c_t, T_t, v, K);
+        P = ssm_filter_update_P(P, Z_t, T_t, RQR, K);
+      }
+    }
+    ll = sum(ll_obs);
+  }
+  return ll;
+}
+
 
 /**
 
@@ -1266,7 +1577,7 @@ real ssm_constant_lpdf(vector[] y,
     converged = 0;
     tol = 1e-7;
 
-    RQR = quad_form(Q, R);
+    RQR = quad_form_sym(Q, R);
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -1346,7 +1657,7 @@ See [@DurbinKoopman2012, Sec 4.4.4, p. 91]
 matrix ssm_smooth_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   matrix[rows(N), cols(N)] N_new;
   # may not need this to_symmetric_matrix
-  N_new = to_symmetric_matrix(quad_form(Finv, Z) + quad_form(N, L));
+  N_new = quad_form_sym(Finv, Z) + quad_form_sym(N, L);
   return N_new;
 }
 
@@ -1627,7 +1938,7 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       N = ssm_smooth_update_N(N, Z_t, Finv, L);
       // eps_t and V(eps_t|y)
       eps = H_t * (Finv * v - K ' * r);
-      var_eps = to_symmetric_matrix(H_t - H_t * (Finv + quad_form(N, K)) * H_t);
+      var_eps = to_symmetric_matrix(H_t - H_t * (Finv + quad_form_sym(N, K)) * H_t);
       // saving
       res[t, :p] = eps;
       res[t, (p + 1): ] = symmat_to_vector(var_eps);
@@ -1779,7 +2090,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       r = ssm_smooth_update_r(r, Z_t, v, Finv, L);
       N = ssm_smooth_update_N(N, Z_t, Finv, L);
       eta = Q_t * R_t ' * r;
-      var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form(N, R_t) * Q_t);
+      var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form_sym(N, R_t) * Q_t);
       // saving
       res[t, :q] = eta;
       res[t, (q + 1): ] = symmat_to_vector(var_eta);
@@ -1863,7 +2174,7 @@ vector[] ssm_smooth_state_mean(vector[] filter,
       Q_t = Q[1];
     }
     if (size(Q) == 1 && size(R) == 1) {
-      RQR = quad_form(Q[1], R[1]');
+      RQR = quad_form_sym(Q[1], R[1]');
     }
     // find smoothed state disturbances
     // Since I don't need to calculate the
@@ -1913,7 +2224,7 @@ vector[] ssm_smooth_state_mean(vector[] filter,
         R_t = R[t];
       }
       if (size(Q) > 1 || size(R) > 1) {
-        RQR = quad_form(Q_t, R_t');
+        RQR = quad_form_sym(Q_t, R_t');
       }
       // `r[t + 1]` = $r_{t}$
       // alpha_{t + 1} = c_t + T_t * \alpha_t + R_t Q_t R'_t r_t

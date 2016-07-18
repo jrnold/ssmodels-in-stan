@@ -245,6 +245,112 @@ test_that("Stan function ssm_filter_update_Finv works", {
   expect_equal(output, expected, tolerance = 10e-5)
 })
 
+test_that("Stan function ssm_filter_update_Finv_miss works", {
+  f <- function(m, p, p_t, Z, P, H, y_idx) {
+    modfit <- test_stan_function("ssm_filter_update_Finv_miss",
+                                 data = list(m = m, p = p, p_t = p_t,
+                                   Z = Z, P = P,
+                                   H = H, y_idx = y_idx))
+    if (p_t == 0) {
+      expected <- matrix(0, p, p)
+    } else if (p_t == p) {
+      expected <- solve(Z %*% P %*% t(Z) + H)
+    } else {
+      idx <- y_idx[1:p_t]
+      Z_star <- Z[idx, , drop = FALSE]
+      H_star <- H[idx, idx, drop = FALSE]
+      expected <- matrix(0, p, p)
+      Finv_star <- solve(Z_star %*% P %*% t(Z_star) + H_star)
+      for (i in seq_along(idx)) {
+        for (j in seq_along(idx)) {
+          expected[idx[i], idx[j]] <- Finv_star[i, j]
+        }
+      }
+    }
+    output <- rstan::extract(modfit, "output")[[1]][1, , ]
+    expect_length(output, p * p)
+    expect_equal(output, expected, tolerance = 10e-5)
+  }
+
+  # No missing values
+  m <- 3L
+  p <- 4L
+  p_t <- p
+  Z <- matrix(rnorm(m * p), p, m)
+  P <- rand_pdmat(m)
+  H <- rand_pdmat(p)
+  f(m, p, p_t, Z, P, H, y_idx = seq_len(p_t))
+
+  # Some missing values
+  p_t <- 2
+  f(m, p, p_t, Z, P, H, y_idx = c(1, 3, 0, 0))
+
+  # All missing values
+  p_t <- 0
+  f(m, p, p_t, Z, P, H, y_idx = rep(0, p))
+
+})
+
+test_that("Stan function ssm_filter_update_v works", {
+  f <- function(m, p, y, a, d, Z) {
+    modfit <- test_stan_function("ssm_filter_update_v",
+                                 data = list(m = m, p = p,
+                                   a = array(a), d = array(d), y = array(y),
+                                   Z = Z))
+
+    expected <- as.numeric(y - d - Z %*% matrix(a))
+    output <- as.numeric(rstan::extract(modfit, "output")[[1]][1, ])
+    expect_length(output, p)
+    expect_equal(output, expected, tolerance = 10e-5)
+  }
+  p <- 4L
+  m <- 3L
+  y <- rnorm(p)
+  a <- rnorm(m)
+  Z <- matrix(rnorm(m * p), p, m)
+  d <- rnorm(p)
+  f(m, p, y, a, d, Z)
+})
+
+test_that("Stan function ssm_filter_update_v_miss works", {
+  f <- function(m, p, y, a, d, Z, p_t, y_idx) {
+    modfit <- test_stan_function("ssm_filter_update_v_miss",
+                                 data = list(m = m, p = p, p_t = p_t,
+                                   a = array(a),  d = array(d), y = array(y),
+                                   Z = Z, y_idx = y_idx))
+    expected <- rep(0, p)
+    for (i in seq_len(p)) {
+      if (i %in% y_idx) {
+        expected[i] <- as.numeric(y[i] - d[i] - Z[i, ] %*% matrix(a))
+      }
+    }
+    output <- as.numeric(rstan::extract(modfit, "output")[[1]][1, ])
+    print(output)
+    print(expected)
+    expect_length(output, p)
+    expect_equal(output, expected, tolerance = 10e-5)
+  }
+
+  # No missing values
+  m <- 3L
+  p <- 4L
+  p_t <- p
+  y <- rnorm(p)
+  a <- rnorm(m)
+  Z <- matrix(rnorm(m * p), p, m)
+  d <- rnorm(p)
+  f(m, p, y, a, d, Z, p_t, y_idx = seq_len(p))
+
+  # Some missing values
+  p_t <- 2
+  f(m, p, y, a, d, Z, p_t, y_idx = c(1, 3, 0, 0))
+
+  # All missing values
+  p_t <- 0
+  f(m, p, y, a, d, Z, p_t, y_idx = rep(0, p))
+
+})
+
 #' Update of K should calculate (DK, Sec 4.3.2)
 #' $$
 #' K = T * P * Z' * F^{-1}
@@ -828,22 +934,23 @@ test_that("Stan function cholesky_decompose2 works", {
   expect_equal(f(A), cholA, tolerance = 1e-5)
   A1 <- A[1, 1]
   cholA1 <- cholA[1, 1]
-  expect_equal(f(matrix(c(A1, 0, 0, 0), 0, 0)),
+  expect_equal(f(matrix(c(A1, 0, 0, 0), 2, 2)),
                  matrix(c(cholA[1, 1], 0, 0, 0), 2, 2), tolerance = 1e-5)
   expect_equal(f(matrix(0, 2, 2)), matrix(0, 2, 2), tolerance = 1e-5)
 })
 
 test_that("Stan function normal2_rng works", {
-  f <- function(n, mu, Sigma) {
+  f <- function(n, mu, sigma) {
     modfit <- test_stan_function("normal2_rng",
-                                 data = list(n = n, mu = mu, Sigma = Sigma))
+                                 data = list(n = n, mu = mu, sigma = sigma))
     output <- as.numeric(rstan::extract(modfit)[["output"]])
-    if (Sigma == 0) {
+    if (sigma == 0) {
       expect_true(all(output == mu))
     } else {
       expect_true(sd(output) > 0)
-      expect_true(abs(mean(output) / Sigma / sqrt(n)) < 4)
-      expect_true(abs(sd(output) / Sigma / sqrt(2 * (n - 1))) < 4)
+      z <- (mu - mean(output)) / (sigma / sqrt(n))
+      expect_true(abs(z) < 4)
+      expect_true(abs(sd(output) / sigma / sqrt(2 * (n - 1))) < 4)
     }
   }
   f(1000, 1, 2)
@@ -857,13 +964,16 @@ test_that("Stan function multi_normal2_rng works", {
                                  data = list(n = n, m = m,
                                              mu = mu, Sigma = Sigma))
     output <- rstan::extract(modfit)[["output"]][1, , ]
+    print(dim(output))
     Sigma_zero <- (Sigma == 0)
     for (i in 1:m) {
       if (Sigma_zero[i, i]) {
         expect_true(all(output[, i] == mu[i]))
       } else {
         expect_true(sd(output[, i]) > 0)
-        expect_true(abs(mean(output[ , i]) / sqrt(Sigma[i, i] / n)) < 4)
+        z <- (mu[i] - mean(output[ , i])) / (sqrt(Sigma[i, i] / sqrt(n)))
+        print(z)
+        expect_true(abs(z) < 4)
       }
     }
   }
@@ -886,7 +996,9 @@ test_that("Stan function multi_normal_cholesky2_rng works", {
         expect_true(all(output[, i] == mu[i]))
       } else {
         expect_true(sd(output[, i]) > 0)
-        expect_true(abs(mean(output[ , i]) / sqrt(Sigma[i, i] / sqrt(n))) < 4)
+        z <- (mu[i] - mean(output[ , i])) / (sqrt(Sigma[i, i] / sqrt(n)))
+        print(z)
+        expect_true(abs(z) < 4)
       }
     }
   }
@@ -894,4 +1006,3 @@ test_that("Stan function multi_normal_cholesky2_rng works", {
   f(1000, c(1, 2), matrix(c(1, 0, 0, 0), 2, 2))
   f(1000, c(1, 2), matrix(0, 2, 2))
 })
-

@@ -13,15 +13,15 @@ matrix to_matrix_colwise(vector v, int m, int n) {
   }
   return res;
 }
-matrix matrix_pow(matrix x, int y) {
-  matrix[rows(x), cols(x)] z;
-  z = x;
-  if (y > 2) {
-    for (i in 2:y) {
-      z = z * x;
+matrix matrix_pow(matrix A, int n) {
+  matrix[rows(A), cols(A)] B;
+  B = A;
+  if (n > 2) {
+    for (i in 2:n) {
+      B = B * A;
     }
   }
-  return z;
+  return B;
 }
 int symmat_size(int n) {
   int sz;
@@ -424,7 +424,7 @@ vector[] ssm_filter(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form_sym(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t ');
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -451,7 +451,7 @@ vector[] ssm_filter(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t ');
         }
       }
       v = ssm_update_v(y[t], a, d_t, Z_t);
@@ -509,7 +509,7 @@ vector[] ssm_filter_miss(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form_sym(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t ');
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -536,7 +536,7 @@ vector[] ssm_filter_miss(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t ');
         }
       }
       v = ssm_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
@@ -653,7 +653,7 @@ real ssm_lpdf(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form_sym(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t ');
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -680,7 +680,7 @@ real ssm_lpdf(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t ');
         }
       }
       v = ssm_update_v(y[t], a, d_t, Z_t);
@@ -731,7 +731,7 @@ real ssm_miss_lpdf(vector[] y,
     T_t = T[1];
     R_t = R[1];
     Q_t = Q[1];
-    RQR = quad_form_sym(Q_t, R_t);
+    RQR = quad_form_sym(Q_t, R_t ');
     a = a1;
     P = P1;
     for (t in 1:n) {
@@ -758,7 +758,7 @@ real ssm_miss_lpdf(vector[] y,
           Q_t = Q[t];
         }
         if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t);
+          RQR = quad_form_sym(Q_t, R_t ');
         }
       }
       v = ssm_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
@@ -827,7 +827,7 @@ real ssm_constant_lpdf(vector[] y,
     real matdiff;
     converged = 0;
     tol = 1e-7;
-    RQR = quad_form_sym(Q, R);
+    RQR = quad_form_sym(Q, R ');
     a = a1;
     P = P1;
     for (t in 1:n) {

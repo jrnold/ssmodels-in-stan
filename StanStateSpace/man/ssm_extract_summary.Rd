@@ -2,13 +2,22 @@
 % Please edit documentation in R/ssm.R
 \name{ssm_extract_summary}
 \alias{ssm_extract_summary}
+\alias{ssm_extract_summary.list}
+\alias{ssm_extract_summary.stan_tidy_summary}
 \title{Extract State Space Parameters from a Stanfit summary}
 \usage{
-ssm_extract_summary(x, par, m, p, q = m, type = c("filter", "filter_states",
-  "smooth_state", "smooth_eps", "smooth_eta", "sim_rng"), chains = FALSE)
+ssm_extract_summary(x, ...)
+
+ssm_extract_summary.list(x, ...)
+
+ssm_extract_summary.stan_tidy_summary(x, par, m, p, q = m,
+  type = c("filter", "filter_states", "smooth_state", "smooth_eps",
+  "smooth_eta", "sim_rng"), chains = FALSE)
 }
 \arguments{
 \item{x}{Result of the \code{\link[rstan:summary,stanfit-method]{summary}} method for a \code{\link[rstan]{stanfit}} object.}
+
+\item{...}{Other arguments}
 
 \item{par}{Name of the parameter containing state space parameters}
 

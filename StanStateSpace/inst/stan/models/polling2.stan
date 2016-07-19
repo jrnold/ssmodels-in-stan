@@ -5,12 +5,15 @@ data {
   int<lower = 1> n;
   int<lower = 1> p;
   vector<lower = 0., upper = 1.>[p] y[n];
-  vector<lower = 0.> d[n - 1];
+  vector<lower = 1.> d[n - 1];
   vector<lower = 0., upper = 0.25>[p] sigma_eps[n];
-  int p_t[n];
-  int y_idx[n, p];
+  int<lower = 0, upper = p> p_t[n];
+  int<lower = 0, upper = p> y_idx[n, p];
+  int<lower = 1, upper = n>  y_nonmiss;
+  int<lower = 1, upper = n> y_nonmiss_t;
 
-  vector<lower = 0.>[1] a1;
+
+  vector<lower = 0.0, uppper = 0.5>[1] a1;
   cov_matrix[1] P1;
   real<lower = 0.> zeta;
   real<lower = 0.> sigma_delta;
@@ -47,7 +50,7 @@ transformed data {
 }
 parameters {
   real<lower = 0.> sigma_eta;
-  vector<lower = 0.> lambda;
+  vector<lower = 0.>[y_nonmiss] lambda;
   vector[p - 1] delta;
 }
 transformed parameters {
@@ -55,8 +58,10 @@ transformed parameters {
   matrix[1, 1] Q[t];
   d[1, 1] = 0.;
   d[1, 2:p] = delta;
-  for (i in 1:n) {
-    Q[t] = rep_matrix(pow(sigma_eta * lambda[t], 2), 1, 1);
+  // only have positive errors on days with observations
+  Q[t] = rep_array(rep_matrix(0., 1, 1), n);
+  for (i in 1:y_nonmiss) {
+    Q[y_nonomiss_t[i], 1, 1] = pow(sigma_eta * lambda[i], 2);
   }
 }
 model {

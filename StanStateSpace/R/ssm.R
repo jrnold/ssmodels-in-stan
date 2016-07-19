@@ -281,11 +281,20 @@ ssm_extract <- function(x, m, p, q = m,
 #'    }
 #'
 #' @export
-ssm_extract_summary <- function(x, par, m, p, q = m,
-                                type = c("filter", "filter_states",
-                                         "smooth_state", "smooth_eps",
-                                         "smooth_eta", "sim_rng"),
-                                chains = FALSE) {
+ssm_extract_summary <- function(x, ...) {
+  standardGeneric("ssm_extract_summary")
+}
+
+ssm_extract_summary.list <- function(x, ...) {
+  ssm_extract_summary(stan_tidy_summary(x), ...)
+}
+
+ssm_extract_summary.stan_tidy_summary <-
+  function(x, par, m, p, q = m,
+           type = c("filter", "filter_states",
+                    "smooth_state", "smooth_eps",
+                    "smooth_eta", "sim_rng"),
+           chains = FALSE) {
   # states must be integers >= 0
   one_of <- NULL
   assert_that(is.count(m))
@@ -296,7 +305,6 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
   # Check that type is one of the supported types
   # It would be better if this was directly tied to ssm_extractor names
   type <- match.arg(type)
-  pattern <- sprintf("^%s\\[(\\d+),(\\d+)\\]$", par)
   extractor <- ssm_extractors[[type]](m, p, q)
   parameters <- map_df(extractor, function(.) {
     data_frame(parameter = .[["parnames"]],
@@ -304,6 +312,7 @@ ssm_extract_summary <- function(x, par, m, p, q = m,
                index_row = .[["parindex"]][ , 1],
                index_col = .[["parindex"]][ , 2])
   }, .id = "par_id")
+  pattern <- sprintf("^%s\\[(\\d+),(\\d+)\\]$", par)
   if (!chains) {
     param_rows <- str_detect(rownames(x[["summary"]]), pattern)
     parnames <- rownames(x[["summary"]])[param_rows]
@@ -356,5 +365,28 @@ tidy_stan_summary <- function(x) {
     map_df(array_branch(x[["c_summary"]], 3),
            function(.data) bind_cols(params, as_data_frame(.data)),
            .id = "chain")
+  class(ret) <- c("tidy_stan_summary")
   ret
+}
+
+#' Process missing values for Stan functions
+#'
+#' Process a matrix with missing values into the inputs that the
+#' Stan functions require for missing values.
+#'
+#' @param x A matrix possibly containing missing values.
+#' @return A list with elements:
+#' \describe{
+#' \item{n}{an integer array of the number of non-missing values}
+#' \item{idx}{and an 2-dimensional integer array of the indexes of the non-missing values (padded with zeros)}
+#' }
+#' @export
+ssm_process_na <- function(x) {
+  nonmiss <- !is.na(x)
+  num_nonmiss <- apply(nonmiss, 1, function(.x) sum(.x))
+  idx_nonmiss <- t(apply(nonmiss, 1, function(.x) {
+    idx <- which(.x)
+    c(idx, rep(0, length(.x) - length(idx)))
+  }))
+  list(n = num_nonmiss, idx = idx_nonmiss)
 }

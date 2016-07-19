@@ -9,7 +9,7 @@
 \usage{
 ssm_stan_include_path()
 
-ssm_stan_model_path()
+ssm_stan_model_path(file = NULL)
 
 ssm_available_models()
 

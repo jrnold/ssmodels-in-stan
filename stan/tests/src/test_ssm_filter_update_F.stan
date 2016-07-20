@@ -11,5 +11,5 @@ data {
 model {}
 generated quantities {
   matrix[p, p] output;
-  output = ssm_filter_update_F(P, Z, H);
+  output = ssm_update_F(P, Z, H);
 }

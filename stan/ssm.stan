@@ -22,25 +22,32 @@ stan(model_code = model$model_code)
 @section Utility Functions
 
 */
-/** to_symmetric_matrix
-Ensure a matrix is symmetrix.
-
-@param x An $n \times n$ matrix.
-@return An $n \times n$ symmetric matrix: $0.5 (x + x')$.
+/** function
+name: to_symmetric_matrix
+param:
+  - name: x
+    description: "An $n \times n$ matrix"
+description: >
+  Ensure a matrix is symmetric
+return: An $n \times n$ symmetric matrix: $0.5 (x + x')$.
 
 */
 matrix to_symmetric_matrix(matrix x) {
   return 0.5 * (x + x ');
 }
 
-/** to_matrix_colwise
-
-Convert vector to a matrix (column-major).
-
-@param vector v An $n \times m$ vector.
-@param int m Number of rows in the vector
-@param int n Number of columns in the vector
-@return matrix A $m \times n$ matrix containting the elements from `v`
+/** function
+name: to_matrix_colwise
+description: >
+  Convert vector to a matrix (column-major).
+args:
+  - name: v
+    description: An $n \times m$ vector.
+  - name: m
+    description: Number of rows in the vector
+  - name: n
+    description: Number of columns in the vector
+return: A $m \times n$ matrix containting the elements from `v`
 
 */
 matrix to_matrix_colwise(vector v, int m, int n) {
@@ -58,12 +65,16 @@ matrix to_matrix_colwise(vector v, int m, int n) {
   return res;
 }
 
-/** matrix_pow
+/** function
 
-Calculate the power of a matrix, $\mat{A}^n$.
-
-@param matrix A square matrix.
-@param int n
+name: matrix_pow
+description:  >
+  Calculate the power of a matrix, $\mat{A}^n$.
+args:
+  - name: A
+    description: The matrix to take the power of
+  - name: n
+    description: The order of the power
 
 */
 matrix matrix_pow(matrix A, int n) {
@@ -89,8 +100,8 @@ $(m \times (m + 1)) / 2$.
 */
 int symmat_size(int n) {
   int sz;
-  // This calculates it iteratively because Stan gives a warning
-  // with integer division.
+  // This is calculated iteratively to avoid the Stan warning for
+  // integer division
   sz = 0;
   for (i in 1:n) {
     sz = sz + i;
@@ -122,6 +133,7 @@ int find_symmat_dim(int n) {
 }
 
 /** vector_to_symmat
+
 Convert a vector to a symmetric matrix
 
 @param vector x The vector with the unique elements
@@ -148,6 +160,7 @@ matrix vector_to_symmat(vector x, int n) {
 }
 
 /** symmat_to_vector
+
 Convert an $n \times n$ symmetric matrix to a length $n (n + 1) / 2$ vector
 containing its unique elements.
 
@@ -751,7 +764,7 @@ matrix ssm_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
   return K;
 }
 
-/** ssm_filter_update_L
+/** ssm_update_L
 Update $L_t$
 
 @param matrix Z A $p \times m$ matrix with the design matrix, $\mat{Z}_t$
@@ -764,7 +777,7 @@ $$
 $$
 
 */
-matrix ssm_filter_update_L(matrix Z, matrix T, matrix K) {
+matrix ssm_update_L(matrix Z, matrix T, matrix K) {
   matrix[rows(T), cols(T)] L;
   L = T - K * Z;
   return L;
@@ -1889,7 +1902,7 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
       P = ssm_filter_get_P(filter[t], m, p);
       // updating
       // L_t
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       // r_{t - 1} and N_{t - 1}
       r = ssm_update_r(r, Z_t, v, Finv, L);
       N = ssm_update_N(N, Z_t, Finv, L);
@@ -2036,7 +2049,7 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       // updating
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       // r_{t - 1} and N_{t - 1}
       r = ssm_update_r(r, Z_t, v, Finv, L);
       N = ssm_update_N(N, Z_t, Finv, L);
@@ -2190,7 +2203,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       // update smoother
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       r = ssm_update_r(r, Z_t, v, Finv, L);
       N = ssm_update_N(N, Z_t, Finv, L);
       eta = Q_t * R_t ' * r;
@@ -2304,7 +2317,7 @@ vector[] ssm_smooth_state_mean(vector[] filter,
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       // updating smoother
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       // r_{t - 1}
       r[t] = ssm_update_r(r[t + 1], Z_t, v, Finv, L);
     }

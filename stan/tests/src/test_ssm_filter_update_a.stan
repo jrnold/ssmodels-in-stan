@@ -13,5 +13,5 @@ data {
 model {}
 generated quantities {
   vector[m] output;
-  output = ssm_filter_update_a(a, c, T, v, K);
+  output = ssm_update_a(a, c, T, v, K);
 }

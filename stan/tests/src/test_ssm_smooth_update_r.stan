@@ -13,5 +13,5 @@ data {
 model {}
 generated quantities {
   vector[m] output;
-  output = ssm_smooth_update_r(r, Z, v, Finv, L);
+  output = ssm_update_r(r, Z, v, Finv, L);
 }

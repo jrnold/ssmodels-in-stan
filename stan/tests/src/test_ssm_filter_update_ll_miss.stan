@@ -12,5 +12,5 @@ data {
 model {}
 generated quantities {
   real output;
-  output = ssm_filter_update_ll_miss(v, Finv, p_t, y_idx);
+  output = ssm_update_ll_miss(v, Finv, p_t, y_idx);
 }

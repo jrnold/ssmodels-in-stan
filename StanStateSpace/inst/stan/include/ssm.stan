@@ -88,6 +88,7 @@ rep_lower_triangular_matrix(real x, int m, int n, int diag) {
       }
     }
   }
+  return A;
 }
 rep_upper_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
@@ -106,6 +107,20 @@ rep_upper_triangular_matrix(real x, int m, int n, int diag) {
       }
     }
   }
+  return A;
+}
+rep_diagonal_matrix(real x, int m, int n, int k) {
+  matrix[m, n] A;
+  if (k >= 0) {
+    for (i in 1:(n - k)) {
+      A[i, i + k] = x;
+    }
+  } else {
+    for (i in 1:(m + k)) {
+      A[i - k, i] = x;
+    }
+  }
+  return A;
 }
 matrix fill_matrix(matrix x, int m, int n, int[] i, int[] j, real a) {
   matrix[m, n] ret;
@@ -325,7 +340,7 @@ matrix ssm_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
   K = T * P * Z' * Finv;
   return K;
 }
-matrix ssm_filter_update_L(matrix Z, matrix T, matrix K) {
+matrix ssm_update_L(matrix Z, matrix T, matrix K) {
   matrix[rows(T), cols(T)] L;
   L = T - K * Z;
   return L;
@@ -958,7 +973,7 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       a = ssm_filter_get_a(filter[t], m, p);
       P = ssm_filter_get_P(filter[t], m, p);
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       r = ssm_update_r(r, Z_t, v, Finv, L);
       N = ssm_update_N(N, Z_t, Finv, L);
       alpha = a + P * r;
@@ -1030,7 +1045,7 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       K = ssm_filter_get_K(filter[t], m, p);
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       r = ssm_update_r(r, Z_t, v, Finv, L);
       N = ssm_update_N(N, Z_t, Finv, L);
       eps = H_t * (Finv * v - K ' * r);
@@ -1113,7 +1128,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       K = ssm_filter_get_K(filter[t], m, p);
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       r = ssm_update_r(r, Z_t, v, Finv, L);
       N = ssm_update_N(N, Z_t, Finv, L);
       eta = Q_t * R_t ' * r;
@@ -1181,7 +1196,7 @@ vector[] ssm_smooth_state_mean(vector[] filter,
       K = ssm_filter_get_K(filter[t], m, p);
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
-      L = ssm_filter_update_L(Z_t, T_t, K);
+      L = ssm_update_L(Z_t, T_t, K);
       r[t] = ssm_update_r(r[t + 1], Z_t, v, Finv, L);
     }
     a1 = ssm_filter_get_a(filter[1], m, p);

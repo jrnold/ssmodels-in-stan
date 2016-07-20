@@ -12,5 +12,5 @@ data {
 model {}
 generated quantities {
   matrix[m, m] output;
-  output = ssm_smooth_update_N(N, Z, Finv, L);
+  output = ssm_update_N(N, Z, Finv, L);
 }

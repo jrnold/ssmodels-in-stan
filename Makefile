@@ -9,7 +9,7 @@ SSM_STAN = stan/ssm.stan
 SSM_STAN_CLEAN = $(STAN_INCLUDE_DIR)/$(notdir $(SSM_STAN))
 STAN_FUNCTION_DOC = doc/stanfunctions.Rmd
 
-build: doc clean
+build: clean
 
 doc: $(STAN_FUNCTION_DOC)
 

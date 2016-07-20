@@ -14,5 +14,5 @@ data {
 model {}
 generated quantities {
   vector[p] output;
-  output = ssm_filter_update_v_miss(y, a, d, Z, p_t, y_idx);
+  output = ssm_update_v_miss(y, a, d, Z, p_t, y_idx);
 }

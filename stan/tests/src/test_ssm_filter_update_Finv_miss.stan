@@ -13,5 +13,5 @@ data {
 model{}
 generated quantities {
   matrix[p, p] output;
-  output = ssm_filter_update_Finv_miss(P, Z, H, p_t, y_idx);
+  output = ssm_update_Finv_miss(P, Z, H, p_t, y_idx);
 }

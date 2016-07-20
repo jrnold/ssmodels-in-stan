@@ -14,5 +14,5 @@ model {
 }
 generated quantities {
   matrix[m, m] output;
-  output = ssm_filter_update_P(P, Z, T, RQR, K);
+  output = ssm_update_P(P, Z, T, RQR, K);
 }

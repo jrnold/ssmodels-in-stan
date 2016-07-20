@@ -1,5 +1,5 @@
 library("rstan")
-devtools::install("../../StanStateSpace")
+#devtools::install("../StanStateSpace")
 library("StanStateSpace")
 
 # Run a stan test
@@ -48,16 +48,48 @@ test_stan_function <- function(FUN, data = NULL, init = NULL,
 #' Tolerance needs to be a little lower due to round tripping.
 TOL <- 1e-5
 
-# Positive definite matrix: https://stat.ethz.ch/pipermail/r-help/2008-February/153708.html
-rand_pdmat <- function(n, ev = runif(n, 0, 10)) {
-  Z <- matrix(ncol = n, rnorm(n ^ 2))
-  decomp <- qr(Z)
-  Q <- qr.Q(decomp)
-  R <- qr.R(decomp)
-  d <- diag(R)
-  ph <- d / abs(d)
-  O <- Q %*% diag(ph)
-  t(O) %*% diag(ev) %*% O
+#' random transition matrix. It should be stationary
+rand_transition_mat <- function(n) {
+  # Code from dlm::modRandom
+  x <- rnorm(n * n, n, n)
+  ev <- eigen(x)
+  max_ev <- max(abs(ev$values))
+  if (max_ev) {
+    eps <- runif(1)
+    x <- Re(ev$vectors %*% (eps * ev$values / ab * solve(ev$vectors)))
+  }
+  x
+}
+
+#' random positive definite matrix
+rand_spd_mat <- function(n, df = n + 2) {
+  x <- rWishart(1, df = df, diag(n))
+  # drop last dimension without possibly dropping other dimensions
+  dim(x) <- dim(x)[1:2]
+  x
+}
+
+#' generate random matrix
+rand_mat <- function(n, m = n, symmetric = TRUE) {
+  x <- rnorm(n * m, n, m)
+  if (symmetric && (n == m)) {
+    x <- 0.5 * (x + t(x))
+  }
+  x
+}
+
+rand_vec <- function(n) rnorm(n)
+
+rand_statespace <- function(m, p, q = m) {
+  list(
+    d = rand_vec(p),
+    Z = rand_mat(m, p),
+    H = rand_spd_mat(p),
+    c = rand_vec(m),
+    T = rand_transition_mat(m),
+    R = diag(1, m, q),
+    Q = rand_spd_mat(q)
+  )
 }
 
 #' Transform vector of real numbers to stationary AR(p) coefficients

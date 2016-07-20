@@ -15,6 +15,32 @@ _SECTION = "## "
 _SUBSECTION = "### "
 _FUNCTION = "### "
 
+def parse_stan_function_defs(text):
+    text = re.sub('\s+', ' ', text, re.DOTALL + re.M)
+    basic_types = ('int', 'real', 'matrix', 'vector', 'row_vector')
+    brackets = (r'\[(?:\s|,)*\]')
+    identifier = r'[A-Za-z][A-Za-z0-9_]*'
+    return_types =  r'(?:void|(?:{basic_types})\s*(?:{brackets})?)'.\
+        format(basic_types = '|'.join(basic_types), brackets = brackets)
+    arg_type = r'(?:{basic_types})\s*(?:{brackets})?'.\
+        format(basic_types = '|'.join(basic_types), brackets = brackets)
+    arg = r'{type}\s+{name}'.format(type = arg_type, name = identifier)
+    arglist = r'({arg})(?:\s*,\s*({arg}))*'.format(arg = arg)
+    function_def = r''.join((r'^\s*(?P<return>{return_type})',
+                             r'\s+(?P<func>{function_name})',
+                             r'\s*\(\s*(?P<arglist>{arglist})?\s*\)')).\
+        format(return_type = return_types, function_name = identifier,
+               arglist = arglist)
+    functions = {}
+    for fun_def in re.finditer(function_def, text, re.M):
+        newfun = {'return_type': fun_def.group('return'),
+                  'args': []}
+        for arg in re.match(arglist, fun_def.group('arglist')).groups():
+            if arg:
+                argtype, argname = re.split('\s+', arg)
+                newfun['args'].append({'type': argtype, 'name': argname})
+        functions[fun_def.group('func')] = newfun
+    return functions
 
 class CodeBlock:
     """ CodeBlock class
@@ -168,7 +194,6 @@ class Document(object):
         return txt
 
 
-
 def process_tag(x):
     _TAGS = {
         'param' : lambda x: re.split(r'\s+', x.strip(), 2),
@@ -232,6 +257,8 @@ def parse(f):
                 current_block = DocBlock()
             else:
                 current_block.append(line)
+        else:
+            print("bad line: %s" % line)
     doc.append(current_block)
     return doc
 

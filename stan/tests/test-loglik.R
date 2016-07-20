@@ -30,4 +30,5 @@ test_that("Stan function ssm_loglik works", {
     a1 = array(0),
     P1 = matrix(1e6))
 
+
 })

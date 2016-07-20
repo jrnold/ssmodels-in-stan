@@ -1,0 +1,19 @@
+test_that("Stan function ssm_filter_update_K works", {
+  f <- function(m, p, P, Z, T, Finv) {
+    modfit <- test_stan_function("ssm_filter_update_K",
+                                 data = list(m = m, p = p, T = T, Z = Z,
+                                             P = P, Finv = Finv))
+    ret <- rstan::extract(modfit, "output")[[1]]
+    array(ret, dim(ret)[-1L])
+  }
+  m <- 3L
+  p <- 4L
+  T <- matrix(rnorm(m * m), m, m)
+  Z <- matrix(rnorm(m * p), p, m)
+  P <- rand_pdmat(m)
+  Finv <- solve(rand_pdmat(p))
+  expected <- T %*% P %*% t(Z) %*% Finv
+  output <- f(m, p, P, Z, T, Finv)
+  expect_length(output, m * p)
+  expect_equal(output, expected, tolerance = 10e-5)
+})

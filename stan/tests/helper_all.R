@@ -59,3 +59,50 @@ rand_pdmat <- function(n, ev = runif(n, 0, 10)) {
   O <- Q %*% diag(ph)
   t(O) %*% diag(ev) %*% O
 }
+
+' Compare results of Stationary coefficients against R's implementation of the transformation
+
+#' Transform vector of real numbers to stationary AR(p) coefficients
+#'
+#' Extracted from `stats::arima()`
+ar_trans <- function(par) {
+  # ARMA object (AR, MA, SAR, SMA, S period, I, SI). I just need to worry about one set of coefficients
+  # so ignore the other parts
+  .Call(stats:::C_ARIMA_transPars, as.numeric(par), as.integer(c(length(par), rep(0, 5))), TRUE)[[1]]
+}
+
+#' Transform PACF to ACF
+#'
+#' Extracted from `stats::arima()`
+pacf_to_acf <- function(par) {
+  # ARMA object (AR, MA, SAR, SMA, S period, I, SI)
+  # Undo the tanh transformation in C_ARIMA_tranPars to get back to partial autocorrelation
+  ar_trans(atanh(par))
+}
+
+#' Transform vector of stationary AR(p) coefficients to real numbers
+#'
+#' Extracted from `stats::arima()`
+ar_invtrans <- function(par) {
+  # ARMA object (AR, MA, SAR, SMA, S period, I, SI)
+  # goes from AR to pacf, pacf (-1, 1) to (-infty, infty)
+  .Call(stats:::C_ARIMA_Invtrans, as.numeric(par), as.integer(c(length(par), rep(0, 5))))
+}
+
+#' Transform ACF to PACF
+acf_to_pacf <- function(par) {
+  # Redo the tanh transformation to get to partial autocorrelations
+  tanh(ar_invtrans(par))
+}
+
+#' Stationary ARMA covariance
+#'
+#' Extracted parts from the function `stats::arima`.
+arma_init <- function(theta, phi, method = "Gardner1980", tol = 0) {
+  if (method == "Gardner1980") {
+    Q0 <- .Call(stats:::C_getQ0, as.numeric(phi), as.numeric(theta))
+  } else {
+    Q0 <- .Call(stats:::C_getQ0bis, as.numeric(phi), as.numeric(theta), tol = tol)
+  }
+  Q0
+}

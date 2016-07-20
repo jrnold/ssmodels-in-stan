@@ -60,8 +60,6 @@ rand_pdmat <- function(n, ev = runif(n, 0, 10)) {
   t(O) %*% diag(ev) %*% O
 }
 
-' Compare results of Stationary coefficients against R's implementation of the transformation
-
 #' Transform vector of real numbers to stationary AR(p) coefficients
 #'
 #' Extracted from `stats::arima()`

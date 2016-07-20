@@ -31,23 +31,6 @@ ssm_extract_summary.stan_tidy_summary(x, par, m, p, q = m,
 
 \item{chains}{If \code{FALSE}, then use the summary over all chains. If \code{TRUE}, then use the individual chain summaries.}
 }
-\value{
-A \code{data_frame} with parameters as rows, and summary statistics and metadata about the parameters in the columns:
-   \describe{
-     \item{\code{par_id}}{Parameter identifier, e.g. \code{"Finv[1,2]"}}
-     \item{\code{parameter}}{Parameter name, e.g. \code{"Finv"}}
-     \item{\code{index}}{Index number in the original vector.}
-     \item{\code{index_row}}{Row index of this element within the parameter}
-     \item{\code{index_col}}{Column index of this element within the parameter}
-     \item{\code{mean}}{Mean}
-     \item{\code{se_mean}}{Standard error of the mean.  Only if \code{chains = FALSE}}
-     \item{\code{sd}}{Standard deviation}
-     \item{\code{10\%}}{10th percentile}
-     \item{\code{90\%}}{90th percentile}
-     \item{\code{n_eff}}{Number of effective samples.  Only if \code{chains = FALSE}}
-     \item{\code{Rhat}}{R-hat. Only if \code{chains = FALSE}}
-   }
-}
 \description{
 Extract State Space Parameters from a Stanfit summary
 }

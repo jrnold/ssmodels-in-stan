@@ -255,6 +255,8 @@ ssm_extract <- function(x, m, p, q = m,
   map(extractor, ssm_extract_param, x = x)
 }
 
+
+
 #' Extract State Space Parameters from a Stanfit summary
 #'
 #' @param x Result of the \code{\link[rstan:summary,stanfit-method]{summary}} method for a \code{\link[rstan]{stanfit}} object.
@@ -275,8 +277,10 @@ ssm_extract <- function(x, m, p, q = m,
 #'      \item{\code{mean}}{Mean}
 #'      \item{\code{se_mean}}{Standard error of the mean.  Only if \code{chains = FALSE}}
 #'      \item{\code{sd}}{Standard deviation}
-#'      \item{\code{10\%}}{10th percentile}
-#'      \item{\code{90\%}}{90th percentile}
+#'      \item{\code{p2.5}}{2.5\% percentile}
+#'      \item{\code{p25}}{25\% percentile}
+#'      \item{\code{p10}}{10\% percentile}
+#'      \item{\code{p90}}{90\% percentile}
 #'      \item{\code{n_eff}}{Number of effective samples.  Only if \code{chains = FALSE}}
 #'      \item{\code{Rhat}}{R-hat. Only if \code{chains = FALSE}}
 #'    }
@@ -318,7 +322,7 @@ ssm_extract_summary.stan_tidy_summary <-
                index_col = .[["parindex"]][ , 2])
   }, .id = "par_id")
   dat <- filter_(summary[[if (!chains) "all" else "chains"]],
-                interp(~ parameter == par, par = par))
+                interp(~parameter == par, par = par))
   nx = attr(extractor, "vector_length")
   if (max(dat[["index"]]) != nx) {
     stop(sprintf(paste("For m = %d, p = %d, q = %d and type = %s,",
@@ -339,13 +343,20 @@ ssm_extract_summary.stan_tidy_summary <-
 #'
 #' @export
 tidy_stan_summary <- function(x) {
+
+  clean_percentages <- function(string) {
+    str_replace(string, "(\\d+(?:\\.\\d+)?)%", "p\\1")
+  }
+
   params <- parse_stan_parnames(rownames(x[["summary"]]))
   ret <- list()
   ret[["all"]] <- bind_cols(params, as_data_frame(x[["summary"]]))
+  names(ret[["all"]]) <- clean_percentages(names(ret[["all"]]))
   ret[["chains"]] <-
     map_df(array_branch(x[["c_summary"]], 3),
            function(.data) bind_cols(params, as_data_frame(.data)),
            .id = "chain")
+  names(ret[["chains"]]) <- clean_percentages(names(ret[["chains"]]))
   class(ret) <- c("tidy_stan_summary")
   ret
 }

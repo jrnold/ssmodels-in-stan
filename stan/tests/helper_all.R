@@ -44,3 +44,18 @@ test_stan_function <- function(FUN, data = NULL, init = NULL,
 
   }
 }
+
+#' Tolerance needs to be a little lower due to round tripping.
+TOL <- 1e-5
+
+# Positive definite matrix: https://stat.ethz.ch/pipermail/r-help/2008-February/153708.html
+rand_pdmat <- function(n, ev = runif(n, 0, 10)) {
+  Z <- matrix(ncol = n, rnorm(n ^ 2))
+  decomp <- qr(Z)
+  Q <- qr.Q(decomp)
+  R <- qr.R(decomp)
+  d <- diag(R)
+  ph <- d / abs(d)
+  O <- Q %*% diag(ph)
+  t(O) %*% diag(ev) %*% O
+}

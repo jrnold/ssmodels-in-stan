@@ -172,6 +172,90 @@ vector symmat_to_vector(matrix x) {
   return v;
 }
 
+/** rep_lower_triangular_matrix
+
+Fill in an lower triangular matrix.
+
+@param real x Value used for the non-zero elements of the matrix.
+@param int m number of rows
+@param int n number of columns
+@param int diag If true, then include 1's on the diagonal.
+@return matrix An $m \times n$ lower triangular matrix
+*/
+rep_lower_triangular_matrix(real x, int m, int n, int diag) {
+  matrix[m, n] A;
+  for (i in 1:m) {
+    for (j in 1:n) {
+      if (i < j) {
+        A[i, j] = x;
+      } else if (i == j) {
+        if (diag) {
+          A[i, j] = x;
+        } else {
+          A[i, j] = 0.;
+        }
+      } else {
+        A[i, j] = 0.;
+      }
+    }
+  }
+  return A;
+}
+
+/** rep_upper_triangular_matrix
+
+Fill in an upper triangular matrix
+
+@param real x Value used for the non-zero elements of the matrix.
+@param int m number of rows
+@param int n number of columns
+@param int diag If true, then include 1's on the diagonal.
+@return matrix An $m \times n$ upper triangular matrix
+*/
+rep_upper_triangular_matrix(real x, int m, int n, int diag) {
+  matrix[m, n] A;
+  for (i in 1:m) {
+    for (j in 1:n) {
+      if (i > j) {
+        A[i, j] = x;
+      } else if (i == j) {
+        if (diag) {
+          A[i, j] = x;
+        } else {
+          A[i, j] = 0.;
+        }
+      } else {
+        A[i, j] = 0.;
+      }
+    }
+  }
+  return A;
+}
+
+/** rep_upper_triangular_matrix
+
+Fill in diagonal triangular matrix
+
+@param real x Value used for the non-zero elements of the matrix.
+@param int m number of rows
+@param int n number of columns
+@param int k Index of the diagonal
+@return matrix An $m \times n$ upper triangular matrix
+*/
+rep_diagonal_matrix(real x, int m, int n, int k) {
+  matrix[m, n] A;
+  if (k >= 0) {
+    for (i in 1:(n - k)) {
+      A[i, i + k] = x;
+    }
+  } else {
+    for (i in 1:(m + k)) {
+      A[i - k, i] = x;
+    }
+  }
+  return A;
+}
+
 /** fill_matrix
 
 Given a $p \times q$ matrix $\mat{X}$, default value $a$, and indexes $\vec{I} = i_1, ..., i_p$,
@@ -372,6 +456,7 @@ matrix cholesky_decompose2(matrix A) {
   }
   return L;
 }
+
 
 /** multi_normal2_rng
 

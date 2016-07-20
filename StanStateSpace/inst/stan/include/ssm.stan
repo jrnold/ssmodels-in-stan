@@ -71,6 +71,42 @@ vector symmat_to_vector(matrix x) {
   }
   return v;
 }
+rep_lower_triangular_matrix(real x, int m, int n, int diag) {
+  matrix[m, n] A;
+  for (i in 1:m) {
+    for (j in 1:n) {
+      if (i < j) {
+        A[i, j] = x;
+      } else if (i == j) {
+        if (diag) {
+          A[i, j] = x;
+        } else {
+          A[i, j] = 0.;
+        }
+      } else {
+        A[i, j] = 0.;
+      }
+    }
+  }
+}
+rep_upper_triangular_matrix(real x, int m, int n, int diag) {
+  matrix[m, n] A;
+  for (i in 1:m) {
+    for (j in 1:n) {
+      if (i > j) {
+        A[i, j] = x;
+      } else if (i == j) {
+        if (diag) {
+          A[i, j] = x;
+        } else {
+          A[i, j] = 0.;
+        }
+      } else {
+        A[i, j] = 0.;
+      }
+    }
+  }
+}
 matrix fill_matrix(matrix x, int m, int n, int[] i, int[] j, real a) {
   matrix[m, n] ret;
   ret = rep_matrix(a, m, n);

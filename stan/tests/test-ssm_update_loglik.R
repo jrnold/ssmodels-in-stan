@@ -9,7 +9,7 @@ test_that("Stan function ssm_filter_update_ll works", {
   p <- 4L
   m <- 3L
   v <- rnorm(p)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   expected <- -0.5 * p * log(2 * base::pi) - 0.5 * (log(det(solve(Finv))) + t(v) %*% Finv %*% v)
   output <- f(m, p, array(v), Finv)
   expect_length(output, 1)

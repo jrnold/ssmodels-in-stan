@@ -9,10 +9,10 @@ test_that("Stan function ssm_filter_states_update_a works", {
   m <- 3L
   p <- 4L
   a <- rnorm(m)
-  P <- rand_pdmat(m)
+  P <- rand_spd_mat(m)
   Z <- matrix(rnorm(m * p), p, m)
   v <- rnorm(p)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   expected <- a + P %*% t(Z) %*% Finv %*% v
   output <- f(m, p, a, P, Z, v, Finv)
   expect_equal(as.numeric(output), as.numeric(expected), tol = 10e-5)

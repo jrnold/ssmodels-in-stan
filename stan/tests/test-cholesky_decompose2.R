@@ -5,7 +5,7 @@ test_that("Stan function cholesky_decompose2 works", {
                                  data = list(n = n, A = A))
     rstan::extract(modfit)[["output"]][1, , ]
   }
-  A <- rand_pdmat(2)
+  A <- rand_spd_mat(2)
   cholA <- t(chol(A))
   expect_equal(f(A), cholA, tolerance = 1e-5)
   A1 <- A[1, 1]

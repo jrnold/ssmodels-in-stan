@@ -18,7 +18,7 @@ test_that("Stan function multi_normal2_rng works", {
       }
     }
   }
-  f(1000, c(1, 2), rand_pdmat(2))
+  f(1000, c(1, 2), rand_spd_mat(2))
   f(1000, c(1, 2), matrix(c(1, 0, 0, 0), 2, 2))
   f(1000, c(1, 2), matrix(0, 2, 2))
 })

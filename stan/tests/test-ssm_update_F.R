@@ -8,8 +8,8 @@ test_that("Stan function ssm_filter_update_F works", {
   m <- 3L
   p <- 4L
   Z <- matrix(rnorm(m * p), p, m)
-  P <- rand_pdmat(m)
-  H <- rand_pdmat(p)
+  P <- rand_spd_mat(m)
+  H <- rand_spd_mat(p)
   expected <- Z %*% P %*% t(Z) + H
   output <- f(m, p, Z, P, H)
   expect_length(output, p * p)

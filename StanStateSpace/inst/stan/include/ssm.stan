@@ -80,7 +80,7 @@ vector symmat_to_vector(matrix x) {
   }
   return v;
 }
-rep_lower_triangular_matrix(real x, int m, int n, int diag) {
+matrix rep_lower_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
@@ -99,7 +99,7 @@ rep_lower_triangular_matrix(real x, int m, int n, int diag) {
   }
   return A;
 }
-rep_upper_triangular_matrix(real x, int m, int n, int diag) {
+matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
@@ -118,7 +118,7 @@ rep_upper_triangular_matrix(real x, int m, int n, int diag) {
   }
   return A;
 }
-rep_diagonal_matrix(real x, int m, int n, int k) {
+matrix rep_diagonal_matrix(real x, int m, int n, int k) {
   matrix[m, n] A;
   if (k >= 0) {
     for (i in 1:(n - k)) {

@@ -11,7 +11,7 @@ test_that("Stan function ssm_smoth_update_r works", {
   r <- rnorm(m)
   Z <- matrix(rnorm(m * p), p, m)
   v <- rnorm(p)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   L <- matrix(rnorm(m * m), m, m)
   expected <- t(Z) %*% Finv %*% v + t(L) %*% r
   output <- f(m, p, array(r), Z, array(v), Finv, L)

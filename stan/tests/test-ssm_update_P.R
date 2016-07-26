@@ -8,12 +8,12 @@ test_that("Stan function ssm_filter_update_P works", {
   }
   m <- 3L
   p <- 4L
-  P <- rand_pdmat(m)
+  P <- rand_spd_mat(m)
   Z <- matrix(rnorm(m * p), p, m)
   T <- matrix(rnorm(m * m), m, m)
   # Need Kalman gain to be generated in this way; otherwise (T - K Z) not symm
-  K <- T %*% P %*% t(Z) %*% solve(rand_pdmat(p))
-  RQR <- rand_pdmat(m)
+  K <- T %*% P %*% t(Z) %*% solve(rand_spd_mat(p))
+  RQR <- rand_spd_mat(m)
   expected <- T %*% P %*% t(T - K %*% Z) + RQR
   output <- f(m, p, P, Z, T, RQR, K)
   expect_length(output, m * m)

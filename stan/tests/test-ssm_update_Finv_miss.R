@@ -30,8 +30,8 @@ test_that("Stan function ssm_filter_update_Finv_miss works", {
   p <- 4L
   p_t <- p
   Z <- matrix(rnorm(m * p), p, m)
-  P <- rand_pdmat(m)
-  H <- rand_pdmat(p)
+  P <- rand_spd_mat(m)
+  H <- rand_spd_mat(p)
   f(m, p, p_t, Z, P, H, y_idx = seq_len(p_t))
 
   # Some missing values

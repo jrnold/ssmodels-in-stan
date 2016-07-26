@@ -206,7 +206,7 @@ Fill in an lower triangular matrix.
 @param int diag If true, then include 1's on the diagonal.
 @return matrix An $m \times n$ lower triangular matrix
 */
-rep_lower_triangular_matrix(real x, int m, int n, int diag) {
+matrix rep_lower_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
@@ -236,7 +236,7 @@ Fill in an upper triangular matrix
 @param int diag If true, then include 1's on the diagonal.
 @return matrix An $m \times n$ upper triangular matrix
 */
-rep_upper_triangular_matrix(real x, int m, int n, int diag) {
+matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
@@ -266,7 +266,7 @@ Fill in diagonal triangular matrix
 @param int k Index of the diagonal
 @return matrix An $m \times n$ upper triangular matrix
 */
-rep_diagonal_matrix(real x, int m, int n, int k) {
+matrix rep_diagonal_matrix(real x, int m, int n, int k) {
   matrix[m, n] A;
   if (k >= 0) {
     for (i in 1:(n - k)) {

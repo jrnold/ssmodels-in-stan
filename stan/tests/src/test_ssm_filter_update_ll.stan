@@ -10,5 +10,5 @@ data {
 model {}
 generated quantities {
   real output;
-  output = ssm_update_ll(v, Finv);
+  output = ssm_update_loglik(v, Finv);
 }

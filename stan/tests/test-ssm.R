@@ -82,12 +82,12 @@ test_that("Stan function ssm_filter_update_P works", {
   }
   m <- 3L
   p <- 4L
-  P <- rand_pdmat(m)
+  P <- rand_spd_mat(m)
   Z <- matrix(rnorm(m * p), p, m)
   T <- matrix(rnorm(m * m), m, m)
   # Need Kalman gain to be generated in this way; otherwise (T - K Z) not symm
-  K <- T %*% P %*% t(Z) %*% solve(rand_pdmat(p))
-  RQR <- rand_pdmat(m)
+  K <- T %*% P %*% t(Z) %*% solve(rand_spd_mat(p))
+  RQR <- rand_spd_mat(m)
   expected <- T %*% P %*% t(T - K %*% Z) + RQR
   output <- f(m, p, P, Z, T, RQR, K)
   expect_length(output, m * m)
@@ -108,8 +108,8 @@ test_that("Stan function ssm_filter_update_F works", {
   m <- 3L
   p <- 4L
   Z <- matrix(rnorm(m * p), p, m)
-  P <- rand_pdmat(m)
-  H <- rand_pdmat(p)
+  P <- rand_spd_mat(m)
+  H <- rand_spd_mat(p)
   expected <- Z %*% P %*% t(Z) + H
   output <- f(m, p, Z, P, H)
   expect_length(output, p * p)
@@ -131,8 +131,8 @@ test_that("Stan function ssm_filter_update_Finv works", {
   m <- 3L
   p <- 4L
   Z <- matrix(rnorm(m * p), p, m)
-  P <- rand_pdmat(m)
-  H <- rand_pdmat(p)
+  P <- rand_spd_mat(m)
+  H <- rand_spd_mat(p)
   expected <- solve(Z %*% P %*% t(Z) + H)
   output <- f(m, p, Z, P, H)
   expect_length(output, p * p)
@@ -171,8 +171,8 @@ test_that("Stan function ssm_filter_update_Finv_miss works", {
   p <- 4L
   p_t <- p
   Z <- matrix(rnorm(m * p), p, m)
-  P <- rand_pdmat(m)
-  H <- rand_pdmat(p)
+  P <- rand_spd_mat(m)
+  H <- rand_spd_mat(p)
   f(m, p, p_t, Z, P, H, y_idx = seq_len(p_t))
 
   # Some missing values
@@ -261,8 +261,8 @@ test_that("Stan function ssm_filter_update_K works", {
   p <- 4L
   T <- matrix(rnorm(m * m), m, m)
   Z <- matrix(rnorm(m * p), p, m)
-  P <- rand_pdmat(m)
-  Finv <- solve(rand_pdmat(p))
+  P <- rand_spd_mat(m)
+  Finv <- solve(rand_spd_mat(p))
   expected <- T %*% P %*% t(Z) %*% Finv
   output <- f(m, p, P, Z, T, Finv)
   expect_length(output, m * p)
@@ -285,9 +285,9 @@ test_that("Stan function ssm_filter_update_L works", {
   m <- 3L
   Z <- matrix(rnorm(m * p), p, m)
   T <- matrix(rnorm(m * m), m, m)
-  P <- rand_pdmat(m)
+  P <- rand_spd_mat(m)
   # Need Kalman gain to be generated in this way; otherwise (T - K Z) not symm
-  K <- T %*% P %*% t(Z) %*% solve(rand_pdmat(p))
+  K <- T %*% P %*% t(Z) %*% solve(rand_spd_mat(p))
   expected <- T - K %*% Z
   output <- f(m, p, Z, T, K)
   expect_length(output, m * m)
@@ -309,7 +309,7 @@ test_that("Stan function ssm_filter_update_ll works", {
   p <- 4L
   m <- 3L
   v <- rnorm(p)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   expected <- -0.5 * p * log(2 * base::pi) - 0.5 * (log(det(solve(Finv))) + t(v) %*% Finv %*% v)
   output <- f(m, p, array(v), Finv)
   expect_length(output, 1)
@@ -376,10 +376,10 @@ test_that("Stan function ssm_filter_states_update_a works", {
   m <- 3L
   p <- 4L
   a <- rnorm(m)
-  P <- rand_pdmat(m)
+  P <- rand_spd_mat(m)
   Z <- matrix(rnorm(m * p), p, m)
   v <- rnorm(p)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   expected <- a + P %*% t(Z) %*% Finv %*% v
   output <- f(m, p, a, P, Z, v, Finv)
   expect_equal(as.numeric(output), as.numeric(expected), tol = 10e-5)
@@ -399,9 +399,9 @@ test_that("Stan function ssm_filter_states_update_P works", {
   }
   m <- 3L
   p <- 4L
-  P <- rand_pdmat(m)
+  P <- rand_spd_mat(m)
   Z <- matrix(rnorm(m * p), p, m)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   expected <- P - P %*% t(Z) %*% Finv %*% Z %*% P
   output <- f(m, p, P, Z, Finv)
   expect_length(output, m * m)
@@ -461,7 +461,7 @@ test_that("Stan function ssm_smoth_update_r works", {
   r <- rnorm(m)
   Z <- matrix(rnorm(m * p), p, m)
   v <- rnorm(p)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   L <- matrix(rnorm(m * m), m, m)
   expected <- t(Z) %*% Finv %*% v + t(L) %*% r
   output <- f(m, p, array(r), Z, array(v), Finv, L)
@@ -481,9 +481,9 @@ test_that("Stan function ssm_smoth_update_N works", {
   }
   m <- 3L
   p <- 4L
-  N <- rand_pdmat(m)
+  N <- rand_spd_mat(m)
   Z <- matrix(rnorm(m * p), p, m)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   L <- matrix(rnorm(m * m), m, m)
   expected <- t(Z) %*% Finv %*% Z + t(L) %*% N %*% L
   output <- f(m, p, N, Z, Finv, L)
@@ -823,7 +823,7 @@ test_that("Stan function cholesky_decompose2 works", {
                                  data = list(n = n, A = A))
     rstan::extract(modfit)[["output"]][1, , ]
   }
-  A <- rand_pdmat(2)
+  A <- rand_spd_mat(2)
   cholA <- t(chol(A))
   expect_equal(f(A), cholA, tolerance = 1e-5)
   A1 <- A[1, 1]
@@ -871,7 +871,7 @@ test_that("Stan function multi_normal2_rng works", {
       }
     }
   }
-  f(1000, c(1, 2), rand_pdmat(2))
+  f(1000, c(1, 2), rand_spd_mat(2))
   f(1000, c(1, 2), matrix(c(1, 0, 0, 0), 2, 2))
   f(1000, c(1, 2), matrix(0, 2, 2))
 })
@@ -896,7 +896,7 @@ test_that("Stan function multi_normal_cholesky2_rng works", {
       }
     }
   }
-  f(1000, c(1, 2), t(chol(rand_pdmat(2))))
+  f(1000, c(1, 2), t(chol(rand_spd_mat(2))))
   f(1000, c(1, 2), matrix(c(1, 0, 0, 0), 2, 2))
   f(1000, c(1, 2), matrix(0, 2, 2))
 })

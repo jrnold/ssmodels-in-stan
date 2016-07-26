@@ -10,8 +10,8 @@ test_that("Stan function ssm_filter_update_K works", {
   p <- 4L
   T <- matrix(rnorm(m * m), m, m)
   Z <- matrix(rnorm(m * p), p, m)
-  P <- rand_pdmat(m)
-  Finv <- solve(rand_pdmat(p))
+  P <- rand_spd_mat(m)
+  Finv <- solve(rand_spd_mat(p))
   expected <- T %*% P %*% t(Z) %*% Finv
   output <- f(m, p, P, Z, T, Finv)
   expect_length(output, m * p)

@@ -10,9 +10,9 @@ test_that("Stan function ssm_smoth_update_N works", {
   }
   m <- 3L
   p <- 4L
-  N <- rand_pdmat(m)
+  N <- rand_spd_mat(m)
   Z <- matrix(rnorm(m * p), p, m)
-  Finv <- solve(rand_pdmat(p))
+  Finv <- solve(rand_spd_mat(p))
   L <- matrix(rnorm(m * m), m, m)
   expected <- t(Z) %*% Finv %*% Z + t(L) %*% N %*% L
   output <- f(m, p, N, Z, Finv, L)

@@ -1,0 +1,26 @@
+"test-ssm_filter_states_get.R":
+  - ssm_filter_states_size
+  - ssm_filter_states_get_a
+  - ssm_filter_states_get_P
+
+"test-ssm_smooth_state_get.R":
+  - ssm_smooth_states_get_alpha
+  - ssm_smooth_states_get_V
+  - ssm_smooth_states_size
+
+"test-ssm_smooth_eps_get.R":
+  - ssm_smooth_eps_get_mean
+  - ssm_smooth_eps_get_var
+  - ssm_smooth_eps_size
+
+"test-ssm_smooth_eta_get.R":
+  - ssm_smooth_eta_get_mean
+  - ssm_smooth_eta_get_mean
+  - ssm_smooth_eta_size
+
+"test-ssm_sim_get.R":
+  - ssm_sim_get_y
+  - ssm_sim_get_a
+  - ssm_sim_get_eta
+  - ssm_sim_get_eps
+  - ssm_sim_size

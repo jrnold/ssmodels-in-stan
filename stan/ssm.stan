@@ -77,14 +77,25 @@ args:
     description: The order of the power
 
 */
+matrix matrix_pow(matrix A, int A);
+
 matrix matrix_pow(matrix A, int n) {
   matrix[rows(A), cols(A)] B;
-  B = A;
-  if (n > 2) {
-    for (i in 2:n) {
-      B = B * A;
-    }
+  if (n < 0) {
+    reject("n must be greater than or equal to 1.");
   }
+  if (n == 0) {
+    return diag_matrix(rep_vector(1., rows(A)));
+  } else if (n == 1) {
+    return A
+  } else if (n > 1) {
+    # recurively this is n log n.
+    if (n % 2 == 0) {
+      return matrix_pow(A, n / 2) * matrix_pow(A, n / 2)
+    } else {
+      return A * matrix_pow(n - 1);
+    }
+  } else if (n > 0) {
   return B;
 }
 
@@ -3005,7 +3016,7 @@ See @Jones1980a, @Jones1987a, @Monahan1984a, @AnsleyKohn1986a, and the functions
    $$
    $$
 
-The transformatation is reversed to take autocorrelation coefficients to
+The transformation is reversed to take autocorrelation coefficients to
 an unconstrained $R^p$ space.
 
 1. Autocorrelation coefficients are transformed to partial autocorrelation coefficients,

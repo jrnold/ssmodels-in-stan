@@ -1,12 +1,10 @@
 #!/usr/bin/env %python
 import re
 import sys
-import yaml
-
 import argparse
 
 """ Regex matching the start of function doc block /** function_name """
-RE_FUNCTION_BLOCK_START = re.compile(r"^\s*/\*\*\s*function")
+RE_FUNCTION_BLOCK_START = re.compile(r"^\s*/\*\*+\s*([A-Za-z][A-Za-z0-9_]*)\b")
 """ Regex matching the start of a non-function doc block /** """
 RE_BLOCK_START = re.compile(r"^\s*/\*\*")
 """ Regex matching the end of a doc block """
@@ -16,12 +14,6 @@ _CHAPTER = "# "
 _SECTION = "## "
 _SUBSECTION = "### "
 _FUNCTION = "### "
-
-def text_or_list(x):
-    if isinstance(x, list):
-        return ''.join(x)
-    else:
-        return str(x)
 
 def parse_stan_function_defs(text):
     text = re.sub('\s+', ' ', text, re.DOTALL + re.M)
@@ -55,17 +47,25 @@ class CodeBlock:
 
     The code block class contains blocks of code
     """
-    template = '```stan\n{text}\n```'
+    before = ""
+    after = ""
 
-    def __init__(self, text):
-        self.text = text_or_list(text)
-        self.functions = parse_stan_function_defs(self.text)
+    def __init__(self, lines = []):
+        self.lines = []
+        if not isinstance(lines, list):
+            lines = list(lines)
+        for ln in lines:
+            self.append(ln)
 
-    def format(self):
-        return self.template.format(text = self.text)
+    def append(self, line):
+        line = line.rstrip()
+        self.lines.append(line)
+
+    def to_string(self):
+        return self.before + '\n'.join(self.lines) + self.after
 
     def is_empty(self):
-        return self.text.strip() == ''
+        return ''.join(self.lines).strip() == ''
 
 class DocBlock:
     """ CodeBlock class
@@ -73,32 +73,25 @@ class DocBlock:
     The code block class contains blocks of comments
     """
     _re_leading_comment = re.compile(r'\s*\*')
-    template = "{text}"
+    before = "/**\n"
+    after = "\n*/"
 
-    def __init__(self, text):
-        self.text = text_or_list(text)
+    def __init__(self, lines = []):
+        self.lines = []
+        if not isinstance(lines, list):
+            lines = list(lines)
+        for ln in lines:
+            self.append(ln)
 
-    # def append(self, line):
-    #     line = self._re_leading_comment.sub('', line).rstrip()
-    #     is_tag = process_tag(line)
-    #     if is_tag:
-    #         if is_tag[0] == 'chapter':
-    #             self.lines.append(_CHAPTER + " " + is_tag[1])
-    #         elif is_tag[0] == 'section':
-    #             self.lines.append(_SECTION + " " + is_tag[1])
-    #         elif is_tag[0] == 'subsection':
-    #             self.lines.append(_SUBSECTION + " " + is_tag[1])
-    #         else:
-    #             print("tag not recognized:", line)
-    #             self.lines.append(line)
-    #     else:
-    #         self.lines.append(line)
+    def append(self, line):
+        line = self._re_leading_comment.sub('', line).rstrip()
+        self.lines.append(line)
 
-    def format(self):
-        return self.template.format(text = self.text)
+    def to_string(self):
+        return self.before + '\n'.join(self.lines) + self.after
 
     def is_empty(self):
-        return self.text.strip() == ''
+        return ''.join(self.lines).strip() == ''
 
 class FunctionDocBlock(DocBlock):
     """ CodeBlock class
@@ -106,46 +99,65 @@ class FunctionDocBlock(DocBlock):
     The code block class contains blocks of comments
     """
     _re_leading_comment = re.compile(r'\s*\*')
-    template = """
-### {funname}
 
-**Parameters:**
+    def __init__(self, funcname, lines = []):
+        self.lines = []
+        self.params = []
+        self.name = funcname
+        self.return_type = None
+        if not isinstance(lines, list):
+            lines = list(lines)
+        for ln in lines:
+            self.append(ln)
 
+    def append(self, line):
+        line = self._re_leading_comment.sub('', line).rstrip()
+        is_tag = process_tag(line)
+        if is_tag:
+            if is_tag[0] == 'param':
+                self.params.append({'type': is_tag[2][0],
+                                    'name': is_tag[2][1],
+                                    'description': is_tag[2][2]})
+            elif is_tag[0] == 'return':
+                self.return_type = is_tag[2]
+            else:
+                print("tag not recognized:", line)
+                self.lines.append(line)
+        else:
+            self.lines.append(line)
+
+    def to_string(self):
+        template = """/**
+---
+name: {funname}
+param:
 {params}
-
-**Return Value:** {rtrn}
+return: {rtrn}
+---
 
 {body}
+*/
 """
-
-    def __init__(self, function, text):
-        self.text = text_or_list(text)
-        data = yaml.loads(self.text)
-
-    def format(self):
-        return self.text
-
-    # def format(self):
-    #     if len(self.params) > 0:
-    #         param_list = '\n'.join(["- `{type}`  **{name}** {description}".format(**x)
-    #                                 for x in self.params])
-    #     else:
-    #         param_list = ""
-    #     if self.return_type:
-    #         try:
-    #             rtrn = "`{0}` {1}".format(*self.return_type)
-    #         except:
-    #             print("WARNING: %s has bad return type" % self.name)
-    #             print(self.return_type)
-    #             rtrn = ""
-    #     else:
-    #         print("WARNING: %s has no return type" % self.name)
-    #         rtrn = ""
-    #     msg = template.format(funname = self.name,
-    #                            params = param_list,
-    #                            rtrn = rtrn,
-    #                            body = '\n'.join(self.lines))
-    #     return msg
+        if len(self.params) > 0:
+            param_list = '\n'.join(["- name: {name}\n  description: {description}".format(**x)
+                                    for x in self.params])
+        else:
+            param_list = ""
+        if self.return_type:
+            try:
+                rtrn = "{1}".format(*self.return_type)
+            except:
+                print("WARNING: %s has bad return type" % self.name)
+                print(self.return_type)
+                rtrn = ""
+        else:
+            print("WARNING: %s has no return type" % self.name)
+            rtrn = ""
+        msg = template.format(funname = self.name,
+                               params = param_list,
+                               rtrn = rtrn,
+                               body = '\n'.join(self.lines))
+        return msg
 
     def is_empty(self):
         return False
@@ -165,17 +177,26 @@ class Document(object):
         """ Number of blocks in the Document """
         return len(self.data)
 
-    def format(self):
-        txt = '\n'.join([x.format() for x in self.data if not x.is_empty()])
-        if not txt.endswith('\n'):
-            txt += '\n'
+    def to_string(self):
+        txt = '\n'.join([x.to_string() for x in self.data if not x.is_empty()])
         return txt
 
+
 def process_tag(x):
+    _TAGS = {
+        'param' : lambda x: re.split(r'\s+', x.strip(), 2),
+        'return' : lambda x: re.split(r'\s+', x.strip(), 1),
+        'section': lambda x: x.strip(),
+        'subsection': lambda x: x.strip()
+    }
     m = re.match('\s*@([A-Za-z][A-Za-z0-9_]*)\s*(.*)', x)
     if m:
         tag, text = m.groups()
-        return (tag, text.strip())
+        if tag in _TAGS:
+            parsed = _TAGS[tag](text)
+        else:
+            parsed = None
+        return (tag, text, parsed)
     else:
         return None
 
@@ -197,54 +218,40 @@ def parse(f):
     text = f.readlines()
     current_block = None
     doc = Document()
-    sink = []
     for linenum, line in enumerate(text):
-        print("parsing line %d" % linenum)
+        m_function_block = is_function_docblock_start(line)
         if current_block is None:
-            if is_function_docblock_start(line):
-                current_block = 'function'
+            if m_function_block:
+                current_block = FunctionDocBlock(m_function_block.group(1))
             elif is_docblock_start(line):
-                current_block = 'doc'
+                current_block = DocBlock()
             else:
-                current_block = 'code'
-                sink.append(line)
+                current_block = CodeBlock([line])
 
-        elif current_block in ('function', 'doc'):
+        elif (isinstance(current_block, DocBlock) or
+            isinstance(current_block, FunctionDocBlock)):
             if is_docblock_end(line):
-                if current_block == 'function':
-                    doc.append(FunctionDocBlock(sink))
-                else:
-                    doc.append(DocBlock(sink))
-                current_block = None
-                sink = []
+                doc.append(current_block)
+                current_block = CodeBlock()
             else:
-                sink.append(line)
+                current_block.append(line)
 
-        elif current_block in ('code',):
-            if is_function_docblock_start(line):
-                doc.append(CodeBlock(sink))
-                sink = []
-                current_block = 'function'
+        elif isinstance(current_block, CodeBlock):
+            if m_function_block:
+                doc.append(current_block)
+                current_block = FunctionDocBlock(m_function_block.group(1))
             elif is_docblock_start(line):
-                doc.append(CodeBlock(sink))
-                sink = []
-                current_block = 'doc'
+                doc.append(current_block)
+                current_block = DocBlock()
             else:
-                sink.append(line)
+                current_block.append(line)
         else:
             print("bad line: %s" % line)
-    if current_block == 'function':
-        doc.append(FunctionDocBlock(sink))
-    elif current_block == 'doc':
-        doc.append(DocBlock(sink))
-    elif current_block == 'code':
-        doc.append(CodeBlock(sink))
-    else:
-        print("Somethings wrong, document ended in state %s" % current_block)
+    doc.append(current_block)
     return doc
 
 def create_docfile(src, dst):
-    docs = parse(src).format()
+    docs = parse(src).to_string()
     dst.write(docs)
 
 def main():

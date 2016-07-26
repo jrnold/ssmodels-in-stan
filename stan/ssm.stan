@@ -23,11 +23,11 @@ stan(model_code = model$model_code)
 */
 /**
 ---
-name: to_symmetric_matrix
-param:
+function: to_symmetric_matrix
+args:
   - name: x
     description: "An $n \times n$ matrix"
-return: An $n \times n$ symmetric matrix: $0.5 (x + x')$.
+returns: An $n \times n$ symmetric matrix, $0.5 (x + x')$.
 ---
 Ensure a matrix is symmetric
 */
@@ -37,7 +37,7 @@ matrix to_symmetric_matrix(matrix x) {
 
 /**
 ---
-name: to_matrix_colwise
+function: to_matrix_colwise
 args:
   - name: v
     description: An $n \times m$ vector.
@@ -45,7 +45,7 @@ args:
     description: Number of rows in the vector
   - name: n
     description: Number of columns in the vector
-return: A $m \times n$ matrix containting the elements from `v`
+returns: A $m \times n$ matrix containting the elements from `v`
 ---
 Convert vector to a matrix (column-major).
 */
@@ -66,8 +66,8 @@ matrix to_matrix_colwise(vector v, int m, int n) {
 
 /**
 ---
-name: matrix_pow
-param:
+function: matrix_pow
+args:
 - name: A
   description: The matrix to take the power of
 - name: n
@@ -100,11 +100,11 @@ matrix matrix_pow(matrix A, int n) {
 
 /**
 ---
-name: symmat_size
-param:
+function: symmat_size
+args:
 - name: x
   description: An $m \times m$ matrix.
-return: The number of unique elements
+returns: The number of unique elements
 ---
 
 Calculate the number of unique elements in a symmetric matrix
@@ -128,11 +128,11 @@ int symmat_size(int n) {
 
 /**
 ---
-name: find_symmat_dim
-param:
+function: find_symmat_dim
+args:
 - name: n
   description: The number of unique elements in a symmetric matrix.
-return: The dimension of the associated symmetric matrix.
+returns: The dimension of the associated symmetric matrix.
 ---
 
 Given vector with $n$ elements containing the $m (m + 1) / 2$ elements of a symmetric matrix,
@@ -156,13 +156,13 @@ int find_symmat_dim(int n) {
 
 /**
 ---
-name: vector_to_symmat
-param:
+function: vector_to_symmat
+args:
 - name: x
   description: The vector with the unique elements
 - name: n
-  description: The dimensions of the returned matrix: $n \times n$.
-return: matrix An $n \times n$ symmetric matrix.
+  description: The dimensions of the returned matrix, $n \times n$.
+returns: matrix An $n \times n$ symmetric matrix.
 ---
 Convert a vector to a symmetric matrix
 
@@ -187,11 +187,11 @@ matrix vector_to_symmat(vector x, int n) {
 
 /**
 ---
-name: symmat_to_vector
-param:
+function: symmat_to_vector
+args:
 - name: x
   description: An $n \times n$ matrix.
-return: A $n (n + 1) / 2$ vector with the unique elements in $x$.
+returns: A $n (n + 1) / 2$ vector with the unique elements in $x$.
 ---
 
 
@@ -220,8 +220,8 @@ vector symmat_to_vector(matrix x) {
 
 /**
 ---
-name: rep_lower_triangular_matrix
-param:
+function: rep_lower_triangular_matrix
+args:
 - name: x
   description: Value used for the non-zero elements of the matrix.
 - name: m
@@ -230,7 +230,7 @@ param:
   description: number of columns
 - name: diag
   description: If true, then include 1's on the diagonal.
-return: An $m \times n$ lower triangular matrix
+returns: An $m \times n$ lower triangular matrix
 ---
 
 
@@ -260,8 +260,8 @@ matrix rep_lower_triangular_matrix(real x, int m, int n, int diag) {
 
 /**
 ---
-name: rep_upper_triangular_matrix
-param:
+function: rep_upper_triangular_matrix
+args:
 - name: x
   description: Value used for the non-zero elements of the matrix.
 - name: m
@@ -270,7 +270,7 @@ param:
   description: number of columns
 - name: diag
   description: If true, then include 1's on the diagonal.
-return: An $m \times n$ upper triangular matrix
+returns: An $m \times n$ upper triangular matrix
 ---
 
 
@@ -300,8 +300,8 @@ matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
 
 /**
 ---
-name: rep_upper_triangular_matrix
-param:
+function: rep_upper_triangular_matrix
+args:
 - name: x
   description: Value used for the non-zero elements of the matrix.
 - name: m
@@ -310,7 +310,7 @@ param:
   description: number of columns
 - name: k
   description: Index of the diagonal
-return: An $m \times n$ upper triangular matrix
+returns: An $m \times n$ upper triangular matrix
 ---
 
 
@@ -334,8 +334,8 @@ matrix rep_diagonal_matrix(real x, int m, int n, int k) {
 
 /**
 ---
-name: fill_matrix
-param:
+function: fill_matrix
+args:
 - name: x
   description: A $p \times q$, $p \leq m$, $\q \leq n$ matrix
 - name: m
@@ -348,7 +348,7 @@ param:
   description: Indices mapping the columns of $A$ to the columns of the output matrix
 - name: a
   description: The default value in the returned matrix
-return: A $m \times n$ matrix
+returns: A $m \times n$ matrix
 ---
 
 
@@ -374,8 +374,8 @@ matrix fill_matrix(matrix x, int m, int n, int[] i, int[] j, real a) {
 
 /**
 ---
-name: fill_vector
-param:
+function: fill_vector
+args:
 - name: x
   description: A $p \times q$, $p \leq m$, $\q \leq n$ matrix
 - name: n
@@ -384,7 +384,7 @@ param:
   description: Indices mapping the rows of $A$ to the rows in the output matrix
 - name: y
   description: The default value in the returned vector
-return: A $n \times 1$ matrix
+returns: A $n \times 1$ matrix
 ---
 
 
@@ -409,11 +409,11 @@ vector fill_vector(vector x, int n, int[] i, real a) {
 
 /**
 ---
-name: sum_int_true
-param:
+function: sum_int_true
+args:
 - name: x
   description: An array of length $n$ of integers
-return: An integer between 0 and $n$.
+returns: An integer between 0 and $n$.
 ---
 
 
@@ -435,11 +435,11 @@ int int_sum_true(int[] x) {
 
 /**
 ---
-name: sum_int_false
-param:
+function: sum_int_false
+args:
 - name: x
   description: An array of length $n$ of integers
-return: An integer between 0 and $n$.
+returns: An integer between 0 and $n$.
 ---
 
 
@@ -462,13 +462,13 @@ int int_sum_false(int[] x) {
 
 /**
 ---
-name: mask_indexes
-param:
+function: mask_indexes
+args:
 - name: x
   description: An array of length $n$ of integers
 - name: m
   description: The number of false values in `x`.
-return: An array of integers with elements having values between 1 and $m$.
+returns: An array of integers with elements having values between 1 and $m$.
 ---
 
 
@@ -499,13 +499,13 @@ int[] mask_indexes(int[] x, int n) {
 
 /**
 ---
-name: select_indexes
-param:
+function: select_indexes
+args:
 - name: x
   description: An array of length $m$ of integers
 - name: n
   description: The number of true values in `x`.
-return: An array of integers with elements having values between 1 and $m$.
+returns: An array of integers with elements having values between 1 and $m$.
 ---
 
 
@@ -535,13 +535,13 @@ int[] select_indexes(int[] x, int n) {
 
 /**
 ---
-name: normal2_rng
-param:
+function: normal2_rng
+args:
 - name: mu
   description: mean
 - name: sigma
   description: variance
-return: A value drawn from the specified normal distribution.
+returns: A value drawn from the specified normal distribution.
 ---
 
 
@@ -563,11 +563,11 @@ real normal2_rng(real mu, real sigma) {
 
 /**
 ---
-name: choleksky_decompose2
-param:
+function: choleksky_decompose2
+args:
 - name: A
   description: An $n \times n$ matrix
-return: An $n \times n$ lower-triangular matrix
+returns: An $n \times n$ lower-triangular matrix
 ---
 
 
@@ -603,13 +603,13 @@ matrix cholesky_decompose2(matrix A) {
 
 /**
 ---
-name: multi_normal2_rng
-param:
+function: multi_normal2_rng
+args:
 - name: mu
   description: An $n \times 1$ vector of the means
 - name: Sigma
   description: An $n \times n$ lower triangular matrix with covariance matrix.
-return: An $n \times 1$ vector drawn from the specified multivariate normal distribution.
+returns: An $n \times 1$ vector drawn from the specified multivariate normal distribution.
 ---
 
 
@@ -647,13 +647,13 @@ vector multi_normal2_rng(vector mu, matrix Sigma) {
 
 /**
 ---
-name: multi_normal_cholesky2_rng
-param:
+function: multi_normal_cholesky2_rng
+args:
 - name: mu
   description: An $n \times 1$ vector of the means
 - name: L
   description: An $n \times n$ lower triangular matrix with the Cholesky decomposition of the covariance matrix.
-return: An $n \times 1$ vector drawn from the specified multivariate normal distribution.
+returns: An $n \times 1$ vector drawn from the specified multivariate normal distribution.
 ---
 
 
@@ -699,8 +699,8 @@ Functions used in filtering and log-likelihood calculations.
 */
 /**
 ---
-name: ssm_update_a
-param:
+function: ssm_update_a
+args:
 - name: a
   description: An $m \times 1$ vector with the predicted state, $\vec{a}_t$.
 - name: c
@@ -711,7 +711,7 @@ param:
   description: A $p \times 1$ vector with the forecast error, $\vec{v}_t$.
 - name: K
   description: An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
-return: A $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
+returns: A $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
 ---
 
 Update the expected value of the predicted state, $\vec{a}_{t + 1} = \E(\vec{\alpha}_{t + 1} | \vec{y}_{1:t})$,
@@ -732,8 +732,8 @@ vector ssm_update_a(vector a, vector c, matrix T, vector v, matrix K) {
 
 /**
 ---
-name: ssm_update_P
-param:
+function: ssm_update_P
+args:
 - name: P
   description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 - name: Z
@@ -744,7 +744,7 @@ param:
   description: A $m \times m$ matrix with the system covariance matrix, $\mat{R}_t \mat{Q}_t \mat{R}_t'$.
 - name: K
   description: An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
-return: An $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
+returns: An $m \times 1$ vector with the predicted state at $t + 1$, $\vec{a}_{t + 1}$.
 ---
 
 Update the expected value of the predicted state, $\mat{P}_{t + 1} = \Var(\alpha_{t + 1} | \vec{y}_{1:t})$,
@@ -766,8 +766,8 @@ matrix ssm_update_P(matrix P, matrix Z, matrix T,
 
 /**
 ---
-name: ssm_update_v
-param:
+function: ssm_update_v
+args:
 - name: y
   description: A $p \times 1$ vector of the observations, $\vec{y}_t$.
 - name: a
@@ -776,7 +776,7 @@ param:
   description: A $p \times 1$ vector with the observation intercept, $\vec{d}_t$.
 - name: Z
   description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
-return: A $p \times 1$ vector of the forecast errors, $\vec{v}_t$.
+returns: A $p \times 1$ vector of the forecast errors, $\vec{v}_t$.
 ---
 
 Update the forcast error, $\vec{v}_t = \vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}})$
@@ -797,8 +797,8 @@ vector ssm_update_v(vector y, vector a, vector d, matrix Z) {
 
 /**
 ---
-name: ssm_update_v_miss
-param:
+function: ssm_update_v_miss
+args:
 - name: y
   description: A $p \times 1$ vector of the observations, $\vec{y}_t$.
 - name: a
@@ -809,7 +809,7 @@ param:
   description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 - name: y_idx
   description: A length $p$ array of integers indexes with the indexes of thenon-missing values of $y$. Elements $1:p_t$ should be between $1$ and $p$; elements $p_t:p$ are zero, and are not used.
-return: A $p \times 1$ vector of the forecast errors, $\vec{v}_t$.
+returns: A $p \times 1$ vector of the forecast errors, $\vec{v}_t$.
 ---
 
 
@@ -854,15 +854,15 @@ vector ssm_update_v_miss(vector y, vector a, vector d, matrix Z,
 
 /**
 ---
-name: ssm_update_F
-param:
+function: ssm_update_F
+args:
 - name: P
   description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 - name: Z
   description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 - name: H
   description: A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
-return: A $p \times p$ vector with $\mat{F}_t$.
+returns: A $p \times p$ vector with $\mat{F}_t$.
 ---
 
 Update the variance of the forcast error, $\mat{F}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))$
@@ -883,15 +883,15 @@ matrix ssm_update_F(matrix P, matrix Z, matrix H) {
 
 /**
 ---
-name: ssm_update_Finv
-param:
+function: ssm_update_Finv
+args:
 - name: P
   description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 - name: Z
   description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 - name: H
   description: A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
-return: A $p \times p$ vector with $\mat{F}^{-1}_t$.
+returns: A $p \times p$ vector with $\mat{F}^{-1}_t$.
 ---
 
 Update the precision of the forcast error, $\mat{F}^{-1}_t = \Var(\vec{y}_t - \E(\vec{y}_t | \vec{y_{1:(t - 1)}}))^{-1}$
@@ -911,8 +911,8 @@ matrix ssm_update_Finv(matrix P, matrix Z, matrix H) {
 
 /**
 ---
-name: ssm_update_Finv_miss
-param:
+function: ssm_update_Finv_miss
+args:
 - name: P
   description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 - name: Z
@@ -923,7 +923,7 @@ param:
   description: The number of non-missing observations in $\vec{y}_t$.
 - name: y_idx
   description: A length $p$ array of integers. The first $p_t$ elments of this array indexes of thenon-missing values of $y$. Elements $1:p_t$ should be between $1$ and $p$; elements $p_t:p$ are zero, and are not used.
-return: A $p \times p$ vector with $\mat{F}^{-1}_t$.
+returns: A $p \times p$ vector with $\mat{F}^{-1}_t$.
 ---
 
 
@@ -963,8 +963,8 @@ matrix ssm_update_Finv_miss(matrix P, matrix Z, matrix H,
 
 /**
 ---
-name: ssm_update_K
-param:
+function: ssm_update_K
+args:
 - name: P
   description: An $m \times m$ vector with the variance of the predicted state, $P_t$.
 - name: Z
@@ -973,7 +973,7 @@ param:
   description: An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
 - name: Finv
   description: A $p \times p$ matrix
-return: An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
+returns: An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
 ---
 
 Update the Kalman gain, $\mat{K}_t$.
@@ -994,15 +994,15 @@ matrix ssm_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
 
 /**
 ---
-name: ssm_update_L
-param:
+function: ssm_update_L
+args:
 - name: Z
   description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$
 - name: T
   description: An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
 - name: K
   description: An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
-return: An $m \times m$ matrix, $\mat{L}_t$.
+returns: An $m \times m$ matrix, $\mat{L}_t$.
 ---
 
 Update $L_t$
@@ -1022,13 +1022,13 @@ matrix ssm_update_L(matrix Z, matrix T, matrix K) {
 
 /**
 ---
-name: ssm_update_loglik
-param:
+function: ssm_update_loglik
+args:
 - name: v
   description: A $p \times 1$ matrix with the forecast error, $\vec{v}_t$.
 - name: Finv
   description: A $p \times p$ matrix with variance of the forecast error, $\mat{F}^{-1}_t$.
-return: The log-likelihood
+returns: The log-likelihood
 ---
 
 
@@ -1056,8 +1056,8 @@ real ssm_update_loglik(vector v, matrix Finv) {
 
 /**
 ---
-name: ssm_update_loglik_miss
-param:
+function: ssm_update_loglik_miss
+args:
 - name: v
   description: A $p \times 1$ matrix with the forecast error, $\vec{v}_t$.
 - name: Finv
@@ -1066,7 +1066,7 @@ param:
   description: The number of non-missing observations in $\vec{y}_t$.
 - name: y_idx
   description: A length $p$ array of integers with the indexes of the nom-missing values in $\vec{y}_t$. Elements $1:p_t$ should be values between $1$ and $p$; elements $p_t:p$ are zero and are not used.
-return: The log-likelihood
+returns: The log-likelihood
 ---
 
 
@@ -1103,13 +1103,13 @@ real ssm_update_loglik_miss(vector v, matrix Finv, int p_t, int[] y_idx) {
 */
 /**
 ---
-name: ssm_filter_idx
-param:
+function: ssm_filter_idx
+args:
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: A $6 \times 3$ integer array containing the indexes of the return values of the Kalman filter.
+returns: A $6 \times 3$ integer array containing the indexes of the return values of the Kalman filter.
 ---
 
 Indexes of the return values of the Kalman filter functions:
@@ -1157,13 +1157,13 @@ int[,] ssm_filter_idx(int m, int p) {
 
 /**
 ---
-name: ssm_filter_size
-param:
+function: ssm_filter_size
+args:
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: The number of elements in the vector.
+returns: The number of elements in the vector.
 ---
 
 Number of elements in vector containing filter results
@@ -1181,15 +1181,15 @@ int ssm_filter_size(int m, int p) {
 
 /**
 ---
-name: ssm_filter_get_loglik
-param:
+function: ssm_filter_get_loglik
+args:
 - name: A
   description: vector with results from `ssm_filter`.
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: The log-likelihood $\ell_t$
+returns: The log-likelihood $\ell_t$
 ---
 
 Get the log-likehood from the results of `ssm_filter`.
@@ -1205,15 +1205,15 @@ real ssm_filter_get_loglik(vector x, int m, int p) {
 
 /**
 ---
-name: ssm_filter_get_v
-param:
+function: ssm_filter_get_v
+args:
 - name: A
   description: vector with results from `ssm_filter`.
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: A $p \times 1$ vector with the forecast error, $\vec{v}_t$.
+returns: A $p \times 1$ vector with the forecast error, $\vec{v}_t$.
 ---
 
 Get the forecast error from the results of `ssm_filter`.
@@ -1231,15 +1231,15 @@ vector ssm_filter_get_v(vector x, int m, int p) {
 
 /**
 ---
-name: ssm_filter_get_Finv
-param:
+function: ssm_filter_get_Finv
+args:
 - name: A
   description: vector with results from `ssm_filter`.
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: A $p \times p$ matrix with the forecast precision, $\mat{F}^{-1}_t$.
+returns: A $p \times p$ matrix with the forecast precision, $\mat{F}^{-1}_t$.
 ---
 
 Get the forecast precision from the results of `ssm_filter`.
@@ -1257,15 +1257,15 @@ matrix ssm_filter_get_Finv(vector x, int m, int p) {
 
 /**
 ---
-name: ssm_filter_get_K
-param:
+function: ssm_filter_get_K
+args:
 - name: A
   description: vector with results from `ssm_filter`.
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: A $m \times p$ matrix with the Kalman gain, $\mat{F}^{-1}_t$.
+returns: A $m \times p$ matrix with the Kalman gain, $\mat{F}^{-1}_t$.
 ---
 
 Get the Kalman gain from the results of `ssm_filter`.
@@ -1283,15 +1283,15 @@ matrix ssm_filter_get_K(vector x, int m, int p) {
 
 /**
 ---
-name: ssm_filter_get_a
-param:
+function: ssm_filter_get_a
+args:
 - name: A
   description: vector with results from `ssm_filter`.
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: An $m \times 1$ vector with the expected value of the predicted state, $\E(\vec{\alpha}_t | \vec{y}_{1:(t-1)}) = \vec{a}_t$.
+returns: An $m \times 1$ vector with the expected value of the predicted state, $\E(\vec{\alpha}_t | \vec{y}_{1:(t-1)}) = \vec{a}_t$.
 ---
 
 Get the expected value of the predicted state from the results of `ssm_filter`.
@@ -1309,15 +1309,15 @@ vector ssm_filter_get_a(vector x, int m, int p) {
 
 /**
 ---
-name: ssm_filter_get_P
-param:
+function: ssm_filter_get_P
+args:
 - name: A
   description: vector with results from `ssm_filter`.
 - name: m
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-return: An $m \times m$ matrix with the variance of the predicted state, $\Var(\vec{\alpha}_t | \vec{y}_{1:(t-1)}) = \mat{P}_t$.
+returns: An $m \times m$ matrix with the variance of the predicted state, $\Var(\vec{\alpha}_t | \vec{y}_{1:(t-1)}) = \mat{P}_t$.
 ---
 
 Get the variance of the predicted state from the results of `ssm_filter`.
@@ -1335,8 +1335,8 @@ matrix ssm_filter_get_P(vector x, int m, int p) {
 
 /**
 ---
-name: ssm_filter
-param:
+function: ssm_filter
+args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
 - name: d
@@ -1357,7 +1357,7 @@ param:
   description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 - name: P1
   description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-return: Array of size $n$ of $(1 + p + p (p + 1) / 2 + mp + m + m (m + 1) / 2) \times 1$ vectors in the format described in `ssm_filter_idx`.
+returns: Array of size $n$ of $(1 + p + p (p + 1) / 2 + mp + m + m (m + 1) / 2) \times 1$ vectors in the format described in `ssm_filter_idx`.
 ---
 
 
@@ -1485,8 +1485,8 @@ vector[] ssm_filter(vector[] y,
 
 /**
 ---
-name: ssm_filter_miss
-param:
+function: ssm_filter_miss
+args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
 - name: d
@@ -1511,7 +1511,7 @@ param:
   description: Number of non-missing observations at time $t$.
 - name: y_idx
   description: An array of integers with the indexes of the non-missing elements of $\vec{y}_t$. This is zero-padded so the length is $p$.
-return: See `ssm_filter`
+returns: See `ssm_filter`
 ---
 
 
@@ -1616,11 +1616,11 @@ vector[] ssm_filter_miss(vector[] y,
 
 /**
 ---
-name: ssm_filter_states
-param:
+function: ssm_filter_states
+args:
 - name: m
   description: Number of states
-return: The size of the vector
+returns: The size of the vector
 ---
 
 Length of the vectors returned by `ssm_filter_states`
@@ -1636,13 +1636,13 @@ int ssm_filter_states_size(int m) {
 
 /**
 ---
-name: ssm_filter_states_get_a
-param:
+function: ssm_filter_states_get_a
+args:
 - name: x
   description: A vector returned by `ssm_filter_states`
 - name: m
   description: Number of states
-return: An $m \times 1$ vector with the filtered expected value of the state, $\vec{a}_{t|t} = \E(\vec{\alpha}_t | \vec{y}_{1:t})$.
+returns: An $m \times 1$ vector with the filtered expected value of the state, $\vec{a}_{t|t} = \E(\vec{\alpha}_t | \vec{y}_{1:t})$.
 ---
 
 Extract $a_{t|t}$ from the results of `ssm_filter_states`
@@ -1658,13 +1658,13 @@ vector ssm_filter_states_get_a(vector x, int m) {
 
 /**
 ---
-name: ssm_filter_states_get_P
-param:
+function: ssm_filter_states_get_P
+args:
 - name: x
   description: A vector returned by `ssm_filter_states`
 - name: m
   description: Number of states
-return: An $m \times m$ matrix with the filtered variance of the state, $\mat{P}_{t|t} = \Var(\vec{\alpha}_t | \vec{y}_{1:t})$.
+returns: An $m \times m$ matrix with the filtered variance of the state, $\mat{P}_{t|t} = \Var(\vec{\alpha}_t | \vec{y}_{1:t})$.
 ---
 
 Extract $P_{t|t}$ from the results of `ssm_filter_states`
@@ -1680,8 +1680,8 @@ matrix ssm_filter_states_get_P(vector x, int m) {
 
 /**
 ---
-name: ssm_filter_states_update_a
-param:
+function: ssm_filter_states_update_a
+args:
 - name: a
   description: An $m \times 1$ vector with the expected value of the predicted state, $\vec{a}_t$.
 - name: P
@@ -1692,7 +1692,7 @@ param:
   description: A $p \times 1$ vector with the forecast errors, $\vec{v}_t$
 - name: Finv
   description: A $p \times p$ matrix with the forecast prediction, $\mat{F}_{t}^{-1}$.
-return: An $m \times 1$ matrix the expected value of the fitered states, $\E(\vec{alpha}_t | \vec{y}_{1:t}) = \vec{a}_{t|t}$.
+returns: An $m \times 1$ matrix the expected value of the fitered states, $\E(\vec{alpha}_t | \vec{y}_{1:t}) = \vec{a}_{t|t}$.
 ---
 
 
@@ -1713,15 +1713,15 @@ vector ssm_filter_states_update_a(vector a, matrix P, matrix Z,
 
 /**
 ---
-name: ssm_filter_states_update_P
-param:
+function: ssm_filter_states_update_P
+args:
 - name: P
   description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
 - name: Z
   description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
 - name: Finv
   description: A $p \times p$ matrix with the forecast prediction, $\mat{F}_{t}^{-1}$.
-return: An $m \times m$ matrix with variance of the filtered states, $\Var(\vec{alpha}_t | \vec{y}_{1:t}) = \mat{P}_{t|t}$.
+returns: An $m \times m$ matrix with variance of the filtered states, $\Var(\vec{alpha}_t | \vec{y}_{1:t}) = \mat{P}_{t|t}$.
 ---
 
 
@@ -1743,13 +1743,13 @@ matrix ssm_filter_states_update_P(matrix P, matrix Z, matrix Finv) {
 
 /**
 ---
-name: ssm_filter_states
-param:
+function: ssm_filter_states
+args:
 - name: filter
   description: Results from `ssm_filter`
 - name: Z
   description: Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
-return: of size $n$ of vectors.
+returns: of size $n$ of vectors.
 ---
 
 Calculate filtered expected values and variances of the states
@@ -1818,8 +1818,8 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
 */
 /**
 ---
-name: ssm_lpdf
-param:
+function: ssm_lpdf
+args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
 - name: d
@@ -1840,7 +1840,7 @@ param:
   description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 - name: P1
   description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-return: The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, \mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
+returns: The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, \mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
 ---
 
 Log-likelihood of a Linear Gaussian State Space Model
@@ -1948,8 +1948,8 @@ real ssm_lpdf(vector[] y,
 
 /**
 ---
-name: ssm_filter_miss
-param:
+function: ssm_filter_miss
+args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
 - name: d
@@ -1974,7 +1974,7 @@ param:
   description: Number of non-missing observations at time $t$.
 - name: y_idx
   description: An array of integers with the indexes of the non-missing elements of $\vec{y}_t$. This is zero-padded so the length is $p$.
-return: The log-likelihood $p(\vec{y}_{1:n} | \vec{d}_{1:n}, \mat{Z}_{1:n}, \mat{H}_{1:n}, \vec{c}_{1:n}, \mat{T}_{1:n}, \mat{R}_{1:n}, \mat{Q}_{1:n})$.
+returns: The log-likelihood $p(\vec{y}_{1:n} | \vec{d}_{1:n}, \mat{Z}_{1:n}, \mat{H}_{1:n}, \vec{c}_{1:n}, \mat{T}_{1:n}, \mat{R}_{1:n}, \mat{Q}_{1:n})$.
 ---
 
 
@@ -2072,13 +2072,13 @@ real ssm_miss_lpdf(vector[] y,
 */
 /**
 ---
-name: matrix_diff
-param:
+function: matrix_diff
+args:
 - name: A
   description: An $m \times n$ matrix.
 - name: B
   description: An $m \times n$ matrix.
-return: If converged, then 1, else 0.
+returns: If converged, then 1, else 0.
 ---
 
 
@@ -2121,8 +2121,8 @@ real matrix_diff(matrix A, matrix B) {
 
 /**
 ---
-name: ssm_constant_lpdf
-param:
+function: ssm_constant_lpdf
+args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
 - name: d
@@ -2143,7 +2143,7 @@ param:
   description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 - name: P1
   description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-return: The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, \mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
+returns: The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, \mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
 ---
 
 Log-likelihood of a Time-Invariant Linear Gaussian State Space Model
@@ -2225,8 +2225,8 @@ real ssm_constant_lpdf(vector[] y,
 */
 /**
 ---
-name: ssm_update_r
-param:
+function: ssm_update_r
+args:
 - name: r
   description: An $m \times 1$ vector with $\vec{r}_{t-1}$
 - name: Z
@@ -2237,7 +2237,7 @@ param:
   description: A $p \times p$ matrix of the forecast precision, $\mat{F}^{-1}_t$.
 - name: L
   description: An $m \times m$ matrix with $\mat{L}_t$.
-return: An $m \times 1$ vector with $\vec{r}_t$.
+returns: An $m \times 1$ vector with $\vec{r}_t$.
 ---
 
 Update $\vec{r}_t$ in smoothing recursions
@@ -2260,8 +2260,8 @@ vector ssm_update_r(vector r, matrix Z, vector v, matrix Finv,
 
 /**
 ---
-name: ssm_update_N
-param:
+function: ssm_update_N
+args:
 - name: N
   description: An $m \times 1$ vector with $\vec{N}_{t-1}$
 - name: Z
@@ -2270,7 +2270,7 @@ param:
   description: A $p \times p$ matrix of the forecast precision, $\mat{F}^{-1}_t$.
 - name: L
   description: An $m \times m$ matrix with $\mat{L}_t$.
-return: An $m \times m$ matrix with $\vec{N}_t$.
+returns: An $m \times m$ matrix with $\vec{N}_t$.
 ---
 
 Update $\mat{N}_t$ in smoothing recursions
@@ -2294,11 +2294,11 @@ matrix ssm_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
 
 /**
 ---
-name: ssm_smooth_state_size
-param:
+function: ssm_smooth_state_size
+args:
 - name: m
   description: The number of states.
-return: The size of the vectors is $m + m (m + 1) / 2$.
+returns: The size of the vectors is $m + m (m + 1) / 2$.
 ---
 
 The number of elements in vectors returned by `ssm_smooth_state`
@@ -2314,13 +2314,13 @@ int ssm_smooth_state_size(int m) {
 
 /**
 ---
-name: ssm_smooth_state_get_mean
-param:
+function: ssm_smooth_state_get_mean
+args:
 - name: x
   description: A vector returned by `ssm_smooth_state`
 - name: q
   description: The number of state disturbances, $\vec{\eta}_t$.
-return: An $m \times 1$ vector with $\hat{\vec{\eta}}_t$.
+returns: An $m \times 1$ vector with $\hat{\vec{\eta}}_t$.
 ---
 
 Extract $\hat{\vec{\alpha}}_t$ from vectors returned by `ssm_smooth_state`
@@ -2335,13 +2335,13 @@ vector ssm_smooth_state_get_mean(vector x, int m) {
 
 /**
 ---
-name: ssm_smooth_state_get_var
-param:
+function: ssm_smooth_state_get_var
+args:
 - name: x
   description: A vector returned by `ssm_smooth_state`
 - name: m
   description: The number of states
-return: An $m \times m$ matrix with $\mat{V}_t$.
+returns: An $m \times m$ matrix with $\mat{V}_t$.
 ---
 
 Extract $mat{V}_t$ from vectors returned by `ssm_smooth_state`
@@ -2357,15 +2357,15 @@ matrix ssm_smooth_state_get_var(vector x, int m) {
 
 /**
 ---
-name: ssm_smooth_state
-param:
+function: ssm_smooth_state
+args:
 - name: filter
   description: Results of `ssm_filter`
 - name: Z
   description: Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
 - name: T
   description: Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
-return: An array of vectors constaining $\hat{\vec{\alpha}}_t$ and $\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_{1:n})$.
+returns: An array of vectors constaining $\hat{\vec{\alpha}}_t$ and $\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_{1:n})$.
 ---
 
 The state smoother
@@ -2465,11 +2465,11 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
 
 /**
 ---
-name: ssm_smooth_eps_size
-param:
+function: ssm_smooth_eps_size
+args:
 - name: p
   description: The length of the observation vectors, $\vec{y}_t$.
-return: The size of the vectors is $p + p (p + 1) / 2$.
+returns: The size of the vectors is $p + p (p + 1) / 2$.
 ---
 
 The size of the vectors returned by `ssm_smooth_eps`
@@ -2485,13 +2485,13 @@ int ssm_smooth_eps_size(int p) {
 
 /**
 ---
-name: ssm_smooth_eps_get_mean
-param:
+function: ssm_smooth_eps_get_mean
+args:
 - name: A
   description: vector from the results of `ssm_smooth_eps`.
 - name: p
   description: The length of the observation vectors, $\vec{y}_t$.
-return: A $p \times 1$ vector with $\hat{\vec{\varepsilon}}_t$.
+returns: A $p \times 1$ vector with $\hat{\vec{\varepsilon}}_t$.
 ---
 
 
@@ -2507,13 +2507,13 @@ vector ssm_smooth_eps_get_mean(vector x, int p) {
 
 /**
 ---
-name: ssm_smooth_eps_get_var
-param:
+function: ssm_smooth_eps_get_var
+args:
 - name: x
   description: A vector returned by `ssm_smooth_eps`
 - name: p
   description: The length of the observation vectors, $\vec{y}_t$.
-return: A $p \times p$ matrix with $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$
+returns: A $p \times p$ matrix with $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$
 ---
 
 Extract $\Var(\varepsilon_t|\vec{y}_{1:n})$ from vectors returned by `ssm_smooth_eps`
@@ -2529,8 +2529,8 @@ matrix ssm_smooth_eps_get_var(vector x, int p) {
 
 /**
 ---
-name: ssm_smooth_eps
-param:
+function: ssm_smooth_eps
+args:
 - name: filter
   description: Results of `ssm_filter`
 - name: Z
@@ -2539,7 +2539,7 @@ param:
   description: Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
 - name: T
   description: Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
-return: An array of vectors constaining $\hat{\vec{\varepsilon}}_t$ and $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$ in the format described below.
+returns: An array of vectors constaining $\hat{\vec{\varepsilon}}_t$ and $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$ in the format described below.
 ---
 
 
@@ -2644,11 +2644,11 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
 
 /**
 ---
-name: ssm_smooth_eta
-param:
+function: ssm_smooth_eta
+args:
 - name: p
   description: The length of the observation vectors, $\vec{y}_t$.
-return: The size of the vectors is $q + q (q + 1) / 2$.
+returns: The size of the vectors is $q + q (q + 1) / 2$.
 ---
 
 The size of the vectors returned by `ssm_smooth_eta`
@@ -2664,13 +2664,13 @@ int ssm_smooth_eta_size(int q) {
 
 /**
 ---
-name: ssm_smooth_eta_get_mean
-param:
+function: ssm_smooth_eta_get_mean
+args:
 - name: x
   description: A vector returned by `ssm_smooth_eta`
 - name: q
   description: The number of state disturbances, $\vec{\eta}_t$.
-return: A $q \times 1$ vector with $\hat{\vec{\eta}}_t$.
+returns: A $q \times 1$ vector with $\hat{\vec{\eta}}_t$.
 ---
 
 Extract $\hat{\vec{\varepsilon}}_t$ from vectors returned by `ssm_smooth_eta`
@@ -2686,13 +2686,13 @@ vector ssm_smooth_eta_get_mean(vector x, int q) {
 
 /**
 ---
-name: ssm_smooth_eta_get_var
-param:
+function: ssm_smooth_eta_get_var
+args:
 - name: x
   description: A vector returned by `ssm_smooth_eta`
 - name: q
   description: The number of state disturbances, $\vec{\eta}_t$.
-return: A $q \times q$ matrix with $\Var(\vec{\eta}_t | \vec{y}_{1:n})$.
+returns: A $q \times q$ matrix with $\Var(\vec{\eta}_t | \vec{y}_{1:n})$.
 ---
 
 Extract $\Var(\eta_t|\vec{y}_{1:n})$ from vectors returned by `ssm_smooth_eta`
@@ -2708,8 +2708,8 @@ matrix ssm_smooth_eta_get_var(vector x, int q) {
 
 /**
 ---
-name: ssm_smooth_eta
-param:
+function: ssm_smooth_eta
+args:
 - name: filter
   description: Results of `ssm_filter`
 - name: Z
@@ -2720,7 +2720,7 @@ param:
   description: State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
 - name: Q
   description: State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
-return: An array of vectors constaining $\hat{\vec{\eta}}_t$ and $\Var(\vec{\eta}_t | \vec{y}_{1:n})$ in the format described below.
+returns: An array of vectors constaining $\hat{\vec{\eta}}_t$ and $\Var(\vec{\eta}_t | \vec{y}_{1:n})$ in the format described below.
 ---
 
 
@@ -2831,8 +2831,8 @@ vector[] ssm_smooth_eta(vector[] filter,
 
 /**
 ---
-name: ssm_smooth_state_mean
-param:
+function: ssm_smooth_state_mean
+args:
 - name: filter
   description: The results of `ssm_filter`
 - name: Z
@@ -2845,7 +2845,7 @@ param:
   description: State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
 - name: Q
   description: State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
-return: An array of size $n$ of $m \times 1$ vectors containing $\hat{\vec{\alpha}}_t$.
+returns: An array of size $n$ of $m \times 1$ vectors containing $\hat{\vec{\alpha}}_t$.
 ---
 
 
@@ -2984,15 +2984,15 @@ vector[] ssm_smooth_state_mean(vector[] filter,
 */
 /**
 ---
-name: ssm_sim_idx
-param:
+function: ssm_sim_idx
+args:
 - name: m
   description: The number of states
 - name: p
   description: The length of the observation vector
 - name: q
   description: The number of state disturbances
-return: A 4 x 3 array of integers
+returns: A 4 x 3 array of integers
 ---
 
 
@@ -3026,15 +3026,15 @@ int[,] ssm_sim_idx(int m, int p, int q) {
 
 /**
 ---
-name: ssm_sim_size
-param:
+function: ssm_sim_size
+args:
 - name: m
   description: The number of states
 - name: p
   description: The length of the observation vector
 - name: q
   description: The number of state disturbances
-return: The number of elements
+returns: The number of elements
 ---
 
 
@@ -3051,15 +3051,15 @@ int ssm_sim_size(int m, int p, int q) {
 
 /**
 ---
-name: ssm_sim_get_y
-param:
+function: ssm_sim_get_y
+args:
 - name: m
   description: The number of states
 - name: p
   description: The length of the observation vector
 - name: q
   description: The number of state disturbances
-return: vector A $p \times 1$ vector with $\vec{y}_t$.
+returns: vector A $p \times 1$ vector with $\vec{y}_t$.
 ---
 
 
@@ -3078,15 +3078,15 @@ vector ssm_sim_get_y(vector x, int m, int p, int q) {
 
 /**
 ---
-name: ssm_sim_get_a
-param:
+function: ssm_sim_get_a
+args:
 - name: m
   description: The number of states
 - name: p
   description: The length of the observation vector
 - name: q
   description: The number of state disturbances
-return: A $m \times 1$ vector with $\vec{\alpha}_t$.
+returns: A $m \times 1$ vector with $\vec{\alpha}_t$.
 ---
 
 
@@ -3105,15 +3105,15 @@ vector ssm_sim_get_a(vector x, int m, int p, int q) {
 
 /**
 ---
-name: ssm_sim_get_eps
-param:
+function: ssm_sim_get_eps
+args:
 - name: m
   description: The number of states
 - name: p
   description: The length of the observation vector
 - name: q
   description: The number of state disturbances
-return: vector A $p \times 1$ vector with $\vec{\varepsilon}_t$.
+returns: vector A $p \times 1$ vector with $\vec{\varepsilon}_t$.
 ---
 
 
@@ -3133,15 +3133,15 @@ vector ssm_sim_get_eps(vector x, int m, int p, int q) {
 
 /**
 ---
-name: ssm_sim_get_eta
-param:
+function: ssm_sim_get_eta
+args:
 - name: m
   description: The number of states
 - name: p
   description: The length of the observation vector
 - name: q
   description: The number of state disturbances
-return: vector A $q \times 1$ vector with $\vec{\eta}_t$.
+returns: vector A $q \times 1$ vector with $\vec{\eta}_t$.
 ---
 
 Extract $\vec{\eta}_t$ from vectors returne by `ssm_sim_rng`.
@@ -3159,8 +3159,8 @@ vector ssm_sim_get_eta(vector x, int m, int p, int q) {
 
 /**
 ---
-name: ssm_sim_rng
-param:
+function: ssm_sim_rng
+args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
 - name: d
@@ -3181,7 +3181,7 @@ param:
   description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 - name: P1
   description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-return: of size $n$ of vectors with Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}_t$. See the description.
+returns: of size $n$ of vectors with Draw $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\eta}_t$ and $\vec{\varepsilon}_t$. See the description.
 ---
 
 
@@ -3329,8 +3329,8 @@ vector[] ssm_sim_rng(int n,
 */
 /**
 ---
-name: ssm_simsmo_state_rng
-param:
+function: ssm_simsmo_state_rng
+args:
 - name: filter
   description: A length $n$ array with results from `ssm_filter`.
 - name: d
@@ -3351,7 +3351,7 @@ param:
   description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 - name: P1
   description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-return: Array of size $n$ of $m \times 1$ vectors containing a single draw from $(\vec{\alpha}_{1:n} | \vec{y}_{1:n})$.
+returns: Array of size $n$ of $m \times 1$ vectors containing a single draw from $(\vec{\alpha}_{1:n} | \vec{y}_{1:n})$.
 ---
 
 State simulation smoother
@@ -3449,8 +3449,8 @@ vector[] ssm_simsmo_states_miss_rng(vector[] filter,
 
 /**
 ---
-name: ssm_simsmo_eta_rng
-param:
+function: ssm_simsmo_eta_rng
+args:
 - name: filter
   description: A length $n$ array with results from `ssm_filter`.
 - name: d
@@ -3471,7 +3471,7 @@ param:
   description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 - name: P1
   description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-return: Array of size $n$ of $q \times 1$ vectors containing a single draw from $(\vec{\eta}_{1:n} | \vec{y}_{1:n})$.
+returns: Array of size $n$ of $q \times 1$ vectors containing a single draw from $(\vec{\eta}_{1:n} | \vec{y}_{1:n})$.
 ---
 
 
@@ -3570,8 +3570,8 @@ vector[] ssm_simsmo_eta_miss_rng(vector[] filter,
 
 /**
 ---
-name: ssm_simsmo_eps_rng
-param:
+function: ssm_simsmo_eps_rng
+args:
 - name: filter
   description: A length $n$ array with results from `ssm_filter`.
 - name: d
@@ -3592,7 +3592,7 @@ param:
   description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
 - name: P1
   description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-return: Array of size $n$ of $p \times 1$ vectors containing a single draw from $(\vec{\varepsilon}_{1:n} | \vec{y}_{1:n})$.
+returns: Array of size $n$ of $p \times 1$ vectors containing a single draw from $(\vec{\varepsilon}_{1:n} | \vec{y}_{1:n})$.
 ---
 
 
@@ -3698,11 +3698,11 @@ vector[] ssm_simsmo_eps_miss_rng(vector[] filter,
 */
 /**
 ---
-name: pacf_to_acf
-param:
+function: pacf_to_acf
+args:
 - name: x
   description: A vector of coefficients of a partial autocorrelation function
-return: A vector of coefficients of an Autocorrelation function
+returns: A vector of coefficients of an Autocorrelation function
 ---
 
 
@@ -3737,11 +3737,11 @@ vector pacf_to_acf(vector x) {
 
 /**
 ---
-name: constrain_stationary
-param:
+function: constrain_stationary
+args:
 - name: x
   description: An unconstrained vector in $(-\infty, \infty)$
-return: A vector of coefficients for a stationary AR or inverible MA process.
+returns: A vector of coefficients for a stationary AR or inverible MA process.
 ---
 
 Constrain vector of coefficients to the stationary and intertible region for AR or MA functions.
@@ -3787,11 +3787,11 @@ vector constrain_stationary(vector x) {
 
 /**
 ---
-name: acf_to_pacf
-param:
+function: acf_to_pacf
+args:
 - name: x
   description: Coeffcients of an autocorrelation function.
-return: A vector of coefficients of the corresponding partial autocorrelation function.
+returns: A vector of coefficients of the corresponding partial autocorrelation function.
 ---
 
 Convert coefficients of an autocorrelation function to partial autocorrelations.
@@ -3829,11 +3829,11 @@ vector acf_to_pacf(vector x) {
 
 /**
 ---
-name: unconstrain_stationary
-param:
+function: unconstrain_stationary
+args:
 - name: x
   description: Coeffcients of an autocorrelation function.
-return: Coefficients of the corresponding partial autocorrelation function.
+returns: Coefficients of the corresponding partial autocorrelation function.
 ---
 
 Transform from stationary and invertible space to $(-\infty, \infty)$.
@@ -3860,13 +3860,13 @@ vector unconstrain_stationary(vector x) {
 
 /**
 ---
-name: kronecker_prod
-param:
+function: kronecker_prod
+args:
 - name: A
   description: An $m \times n$ matrix
 - name: B
   description: A $p \times q$ matrix
-return: An $mp \times nq$ matrix.
+returns: An $mp \times nq$ matrix.
 ---
 
 
@@ -3913,13 +3913,13 @@ matrix kronecker_prod(matrix A, matrix B) {
 
 /**
 ---
-name: ssm_stationary_cov
-param:
+function: ssm_stationary_cov
+args:
 - name: T
   description: The $m \times m$ transition matrix
 - name: R
   description: The $m \times q$ system disturbance selection matrix
-return: An $m \times m$ matrix with the stationary covariance matrix.
+returns: An $m \times m$ matrix with the stationary covariance matrix.
 ---
 
 

@@ -1,4 +1,12 @@
 #function: ssm_filter_idx
+#function: ssm_filter_get_a
+#function: ssm_filter_get_P
+#function: ssm_filter_get_v
+#function: ssm_filter_get_Finv
+#function: ssm_filter_get_K
+#function: ssm_filter_size
+#function: ssm_filter_get_loglik
+
 context("ssm_filter_idx")
 test_that("Stan function ssm_filter_idx and ssm_filter_get_* functions work", {
 

@@ -10,34 +10,33 @@ import sys
 import os
 from os import path
 import re
+import fnmatch
 
 import yaml
 
 from standoc import parse_stan_function_defs
 
 def check_functions(filename, testdir):
-    tests = []
-    with open(path.join(testdir, 'tests.yaml'), 'r') as f:
-        known_tests = yaml.load(f)
-    for k, v in known_tests.items():
-        for tst in v:
-            tests.append(tst)
-    for f in os.listdir(testdir):
-        m = re.match(r'^test-(.*)\.R$', f)
-        if m:
-            tests.append(m.group(1))
+    covered = set()
+    for fname in os.listdir(testdir):
+        if fnmatch.fnmatch(fname, 'test-*.R'):
+            with open(path.join(testdir, fname), 'r') as f:
+                for line in f:
+                    m = re.match(r'#function:\s+(\w+)', line)
+                    if m:
+                        covered.add(m.group(1))
     with open(filename, 'r') as f:
-        functions = parse_stan_function_defs(f.read())
-    missing = []
-    for func in functions:
-        if func not in tests:
-            missing.append(func)
+        functions = set(parse_stan_function_defs(f.read()))
+    missing = functions - covered
     if len(missing) == 0:
         print("All functions have tests!!!\n")
     else:
-        print("Missing tests for %d functions" % len(missing))
-        print("Functions missing tests are:")
+        print("Missing tests for %d functions:" % len(missing))
         print('\n'.join("- %s" % x for x in missing))
+    unknown = covered - functions
+    if len(unknown) > 0:
+        print("\nThere are some unknown functions in tests")
+        print('\n'.join("- %s" % x for x in unknown))
 
 def main():
     filename, testdir = sys.argv[1:3]

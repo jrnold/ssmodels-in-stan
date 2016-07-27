@@ -1,8 +1,9 @@
-#function: loglik
-context("loglik")
+#function: ssm_constant_lpdf
+
+context("ssm_constant_lpdf")
 set.seed(60322390)
 
-test_that("Stan function ssm_loglik works", {
+test_that("It works", {
   f <- function(y, .d, .Z, .H, .c, .T, .R, .Q, a1, P1) {
     .data <- list(y = y,
                   n = nrow(y),

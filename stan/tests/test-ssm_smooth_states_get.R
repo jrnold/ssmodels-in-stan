@@ -1,4 +1,7 @@
-#function: ssm_smooth_states_get
+#function: ssm_smooth_state_get_mean
+#function: ssm_smooth_state_get_var
+#function: ssm_smooth_state_size
+
 context("ssm_smooth_states_get")
 
 test_that("they work", {

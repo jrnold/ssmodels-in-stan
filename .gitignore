@@ -26,3 +26,4 @@ doc/*.rds
 *_files
 *_cache
 /doc/bookdown*
+__pycache__

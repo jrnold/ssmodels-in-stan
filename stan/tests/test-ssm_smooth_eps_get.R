@@ -1,4 +1,7 @@
-#function: ssm_smooth_eps_get
+#function: ssm_smooth_eps_get_mean
+#function: ssm_smooth_eps_get_var
+#function: ssm_smooth_eps_size
+
 context("ssm_smooth_eps_get")
 test_that("Stan functions ssm_filter_eps_get works", {
   f <- function(p, x) {

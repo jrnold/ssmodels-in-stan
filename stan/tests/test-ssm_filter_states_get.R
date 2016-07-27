@@ -1,4 +1,7 @@
-#function: ssm_filter_states_get
+#function: ssm_filter_states_get_a
+#function: ssm_filter_states_get_P
+#function: ssm_filter_states_size
+
 context("ssm_filter_states_get")
 test_that("Stan functions ssm_filter_states_get", {
   f <- function(m, x) {

@@ -1,4 +1,10 @@
-#function: ssm_sim_get
+#function: ssm_sim_idx
+#function: ssm_sim_get_y
+#function: ssm_sim_get_a
+#function: ssm_sim_get_eta
+#function: ssm_sim_get_eps
+#function: ssm_sim_size
+
 context("ssm_sim_get")
 test_that("Stan functions ssm_sim_get works", {
   f <- function(m, p, q, x) {

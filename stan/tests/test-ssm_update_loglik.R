@@ -1,6 +1,6 @@
-test_that("Stan function ssm_filter_update_ll works", {
+test_that("Stan function ssm_update_ll works", {
   f <- function(m, p, v, Finv) {
-    modfit <- test_stan_function("ssm_filter_update_ll",
+    modfit <- test_stan_function("ssm_update_ll",
                                  data = list(m = m, p = p, v = v, Finv = Finv))
     ret <- rstan::extract(modfit, "output")[[1]]
     as.numeric(ret)

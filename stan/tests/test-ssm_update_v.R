@@ -1,6 +1,6 @@
-test_that("Stan function ssm_filter_update_v works", {
+test_that("Stan function ssm_update_v works", {
   f <- function(m, p, y, a, d, Z) {
-    modfit <- test_stan_function("ssm_filter_update_v",
+    modfit <- test_stan_function("ssm_update_v",
                                  data = list(m = m, p = p,
                                    a = array(a), d = array(d), y = array(y),
                                    Z = Z))

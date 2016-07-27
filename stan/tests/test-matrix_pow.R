@@ -59,11 +59,19 @@ matrix_pow_params[[5]] <- within(list(), {
 })
 
 matrix_pow_params[[5]] <- within(list(), {
-  m <- 5
-  A <- diag(2, m, m)
-  n <- 3
-  expected <- diag(2 ^ n, m, m)
-  info <- "diag matrix"
+  m <- 3
+  A <- rand_mat(m)
+  n <- 5
+  expected <- A %*% A %*% A %*% A %*% A
+  info <- "m = 3, n = 5"
+})
+
+matrix_pow_params[[7]] <- within(list(), {
+  m <- 3
+  A <- rand_mat(m)
+  n <- 4
+  expected <- A %*% A %*% A %*% A
+  info <- "m = 3, n = 4"
 })
 
 for (.x in matrix_pow_params) {

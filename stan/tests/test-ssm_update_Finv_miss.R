@@ -1,6 +1,6 @@
-test_that("Stan function ssm_filter_update_Finv_miss works", {
+test_that("Stan function ssm_update_Finv_miss works", {
   f <- function(m, p, p_t, Z, P, H, y_idx) {
-    modfit <- test_stan_function("ssm_filter_update_Finv_miss",
+    modfit <- test_stan_function("ssm_update_Finv_miss",
                                  data = list(m = m, p = p, p_t = p_t,
                                    Z = Z, P = P,
                                    H = H, y_idx = y_idx))

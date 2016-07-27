@@ -1,6 +1,6 @@
-test_that("Stan function ssm_filter_update_v_miss works", {
+test_that("Stan function ssm_update_v_miss works", {
   f <- function(m, p, y, a, d, Z, p_t, y_idx) {
-    modfit <- test_stan_function("ssm_filter_update_v_miss",
+    modfit <- test_stan_function("ssm_update_v_miss",
                                  data = list(m = m, p = p, p_t = p_t,
                                    a = array(a),  d = array(d), y = array(y),
                                    Z = Z, y_idx = y_idx))

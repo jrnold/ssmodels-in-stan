@@ -1,6 +1,6 @@
 test_that("Stan function ssm_smoth_update_r works", {
   f <- function(m, p, r, Z, v, Finv, L) {
-    modfit <- test_stan_function("ssm_smooth_update_r",
+    modfit <- test_stan_function("ssm_update_r",
                                  data = list(m = m, p = p, r = r, Z = Z,
                                              v = v, Finv = Finv, L = L))
     ret <- rstan::extract(modfit, "output")[[1]]

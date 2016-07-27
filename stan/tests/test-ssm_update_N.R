@@ -1,6 +1,6 @@
 test_that("Stan function ssm_smoth_update_N works", {
   f <- function(m, p, N, Z, Finv, L) {
-    modfit <- test_stan_function("ssm_smooth_update_N",
+    modfit <- test_stan_function("ssm_update_N",
                                  data = list(m = m, p = p,
                                              N = N,
                                              Z = Z,

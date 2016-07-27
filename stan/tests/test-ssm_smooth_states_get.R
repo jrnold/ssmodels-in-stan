@@ -1,6 +1,8 @@
-test_that("Stan functions ssm_filter_states_get", {
+context("Stan function ssm_smooth_state_get")
+
+test_that("they work", {
   f <- function(m, x) {
-    modfit <- test_stan_function("ssm_smooth_states_get",
+    modfit <- test_stan_function("ssm_smooth_state_get",
                                  data = list(m = m, x = x,
                                              xsz = length(x)))
     rstan::extract(modfit)

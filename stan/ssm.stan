@@ -239,7 +239,7 @@ matrix rep_lower_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
-      if (i < j) {
+      if (i > j) {
         A[i, j] = x;
       } else if (i == j) {
         if (diag) {
@@ -279,7 +279,8 @@ matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
-      if (i > j) {
+      # if row less than column
+      if (i < j) {
         A[i, j] = x;
       } else if (i == j) {
         if (diag) {
@@ -297,7 +298,7 @@ matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
 
 /**
 ---
-function: rep_upper_triangular_matrix
+function: rep_diagonal_triangular_matrix
 args:
 - name: x
   description: Value used for the non-zero elements of the matrix.
@@ -311,18 +312,21 @@ returns: An $m \times n$ upper triangular matrix
 ---
 
 
-Fill in diagonal triangular matrix
+Create a diagonal $m \times n$ matrix with values $x$ on the $k$-th diagonal.
 
 */
 
 matrix rep_diagonal_matrix(real x, int m, int n, int k) {
   matrix[m, n] A;
+  int mn;
+  A = rep_matrix(0., m, n);
+  mn = min(m, n);
   if (k >= 0) {
-    for (i in 1:(n - k)) {
+    for (i in 1:min(m, n - k)) {
       A[i, i + k] = x;
     }
   } else {
-    for (i in 1:(m + k)) {
+    for (i in 1:min(m + k, n)) {
       A[i - k, i] = x;
     }
   }

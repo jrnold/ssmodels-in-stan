@@ -81,7 +81,7 @@ matrix rep_lower_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
-      if (i < j) {
+      if (i > j) {
         A[i, j] = x;
       } else if (i == j) {
         if (diag) {
@@ -100,7 +100,7 @@ matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
   matrix[m, n] A;
   for (i in 1:m) {
     for (j in 1:n) {
-      if (i > j) {
+      if (i < j) {
         A[i, j] = x;
       } else if (i == j) {
         if (diag) {
@@ -117,12 +117,15 @@ matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
 }
 matrix rep_diagonal_matrix(real x, int m, int n, int k) {
   matrix[m, n] A;
+  int mn;
+  A = rep_matrix(0., m, n);
+  mn = min(m, n);
   if (k >= 0) {
-    for (i in 1:(n - k)) {
+    for (i in 1:min(m, n - k)) {
       A[i, i + k] = x;
     }
   } else {
-    for (i in 1:(m + k)) {
+    for (i in 1:min(m + k, n)) {
       A[i - k, i] = x;
     }
   }

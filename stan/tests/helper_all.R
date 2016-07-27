@@ -1,6 +1,9 @@
-library("rstan")
-#devtools::install("../StanStateSpace")
-library("StanStateSpace")
+suppressPackageStartupMessages({
+  library("rstan")
+  #devtools::install("../StanStateSpace")
+  library("StanStateSpace")
+  library("purrr")
+})
 
 # Run a stan test
 # @param file name of function. The file is "stan/test_{file}.stan"
@@ -32,7 +35,7 @@ test_stan_function <- function(FUN, data = NULL, init = NULL,
   }
   msg <- capture.output({
     rc <- devtools::system_check(filename, args = args)
-  })
+  }, type = "message")
   # If error, then raise it
   if (rc > 0) {
     stop(msg)
@@ -51,12 +54,12 @@ TOL <- 1e-5
 #' random transition matrix. It should be stationary
 rand_transition_mat <- function(n) {
   # Code from dlm::modRandom
-  x <- rnorm(n * n, n, n)
+  x <- matrix(rnorm(n * n), n, n)
   ev <- eigen(x)
   max_ev <- max(abs(ev$values))
   if (max_ev) {
     eps <- runif(1)
-    x <- Re(ev$vectors %*% (eps * ev$values / ab * solve(ev$vectors)))
+    x <- Re(ev$vectors %*% (eps * ev$values / max_ev * solve(ev$vectors)))
   }
   x
 }
@@ -71,7 +74,7 @@ rand_spd_mat <- function(n, df = n + 2) {
 
 #' generate random matrix
 rand_mat <- function(n, m = n, symmetric = TRUE) {
-  x <- rnorm(n * m, n, m)
+  x <- matrix(rnorm(n * m), n, m)
   if (symmetric && (n == m)) {
     x <- 0.5 * (x + t(x))
   }

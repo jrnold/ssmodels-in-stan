@@ -1,3 +1,5 @@
+#function: unconstrain_stationary
+context("unconstrain_stationary")
 test_that("Stan function unconstrain_stationary works", {
   f <- function(x) {
     modfit <- test_stan_function("unconstrain_stationary", data = list(x = array(x), n = length(x)))

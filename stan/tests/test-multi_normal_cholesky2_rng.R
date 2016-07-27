@@ -1,3 +1,5 @@
+#function: multi_normal_cholesky2_rng
+context("multi_normal_cholesky2_rng")
 test_that("Stan function multi_normal_cholesky2_rng works", {
   f <- function(n, mu, L) {
     m <- length(mu)

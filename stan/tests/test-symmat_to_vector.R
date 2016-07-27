@@ -1,3 +1,5 @@
+#function: symmat_to_vector
+context("symmat_to_vector")
 test_that("Stan function symmat_to_vector works", {
   f <- function(x) {
     modfit <- test_stan_function("symmat_to_vector",

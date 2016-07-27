@@ -1,3 +1,5 @@
+#function: sum_true
+context("sum_true")
 test_that("Stan function sum_true works", {
   f <- function(x) {
     n <- length(x)

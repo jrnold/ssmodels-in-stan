@@ -1,3 +1,5 @@
+#function: ssm_sim_get
+context("ssm_sim_get")
 test_that("Stan functions ssm_sim_get works", {
   f <- function(m, p, q, x) {
     modfit <- test_stan_function("ssm_sim_get",

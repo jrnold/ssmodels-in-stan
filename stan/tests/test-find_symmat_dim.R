@@ -1,3 +1,4 @@
+#function: find_symmat_dim
 context("find_symmat_dim")
 
 test_that("Stan function find_symmat_dim works", {

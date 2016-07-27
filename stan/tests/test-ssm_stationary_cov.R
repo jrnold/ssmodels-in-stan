@@ -1,3 +1,5 @@
+#function: ssm_stationary_cov
+context("ssm_stationary_cov")
 test_that("Stan function ssm_stationary_cov works", {
   f <- function(T, RQR) {
     modfit <- test_stan_function("stationary_cov",

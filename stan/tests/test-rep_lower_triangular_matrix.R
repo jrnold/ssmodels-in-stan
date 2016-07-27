@@ -1,4 +1,5 @@
-context("Stan function rep_lower_triangular_matrix")
+#function: rep_lower_triangular_matrix
+context("rep_lower_triangular_matrix")
 
 test_rep_lower_triangular_matrix <- function(x, m, n, diag, expected) {
   .data <- list(x = x, m = m, n = n, diag = diag)

@@ -1,3 +1,5 @@
+#function: ssm_update_v_miss
+context("ssm_update_v_miss")
 test_that("Stan function ssm_update_v_miss works", {
   f <- function(m, p, y, a, d, Z, p_t, y_idx) {
     modfit <- test_stan_function("ssm_update_v_miss",

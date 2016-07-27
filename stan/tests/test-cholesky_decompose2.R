@@ -1,3 +1,5 @@
+#function: cholesky_decompose2
+context("cholesky_decompose2")
 test_that("Stan function cholesky_decompose2 works", {
   f <- function(A) {
     n <- nrow(A)

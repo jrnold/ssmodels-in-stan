@@ -1,3 +1,4 @@
+#function: to_matrix_colwise
 context("to_matrix_colwise")
 
 test_that("Stan function to_matrix_colwise works", {

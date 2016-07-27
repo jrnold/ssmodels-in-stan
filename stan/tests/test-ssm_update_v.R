@@ -1,3 +1,5 @@
+#function: ssm_update_v
+context("ssm_update_v")
 test_that("Stan function ssm_update_v works", {
   f <- function(m, p, y, a, d, Z) {
     modfit <- test_stan_function("ssm_update_v",

@@ -1,3 +1,5 @@
+#function: normal2_rng
+context("normal2_rng")
 test_that("Stan function normal2_rng works", {
   f <- function(n, mu, sigma) {
     modfit <- test_stan_function("normal2_rng",

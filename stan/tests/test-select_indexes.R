@@ -1,3 +1,5 @@
+#function: select_indexes
+context("select_indexes")
 test_that("Stan function select_indexes works", {
   f <- function(x) {
     x <- as.integer(x)

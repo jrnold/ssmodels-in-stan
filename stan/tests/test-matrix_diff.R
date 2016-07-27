@@ -1,3 +1,5 @@
+#function: matrix_diff
+context("matrix_diff")
 test_that("Stan function matrix_diff works", {
   f <- function(m, n, A, B) {
     modfit <- test_stan_function("matrix_diff",

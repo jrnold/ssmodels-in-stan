@@ -1,4 +1,5 @@
-context("Stan function rep_diagonal_matrix")
+#function: rep_diagonal_matrix
+context("rep_diagonal_matrix")
 
 run_rep_diagonal_matrix <- function(x, m, n, k) {
   .data <- list(x = x, m = m, n = n, k = k)

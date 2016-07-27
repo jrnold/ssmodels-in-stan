@@ -1,3 +1,5 @@
+#function: ssm_filter_states_get
+context("ssm_filter_states_get")
 test_that("Stan functions ssm_filter_states_get", {
   f <- function(m, x) {
     modfit <- test_stan_function("ssm_filter_states_get",

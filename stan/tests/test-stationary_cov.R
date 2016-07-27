@@ -1,4 +1,5 @@
-context("Stan function stationary_cov")
+#function: stationary_cov
+context("stationary_cov")
 
 test_that("Stan function ssm_loglik works", {
   f <- function(.T, .RQR) {

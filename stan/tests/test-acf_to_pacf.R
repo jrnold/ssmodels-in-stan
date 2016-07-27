@@ -1,3 +1,5 @@
+#function: acf_to_pacf
+context("acf_to_pacf")
 test_that("Stan function acf_to_pacf works", {
   f <- function(x) {
     modfit <- test_stan_function("acf_to_pacf", data = list(x = array(x), n = length(x)))

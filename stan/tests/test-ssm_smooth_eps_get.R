@@ -1,3 +1,5 @@
+#function: ssm_smooth_eps_get
+context("ssm_smooth_eps_get")
 test_that("Stan functions ssm_filter_eps_get works", {
   f <- function(p, x) {
     modfit <- test_stan_function("ssm_smooth_eps_get",

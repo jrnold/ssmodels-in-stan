@@ -1,4 +1,5 @@
-context("Stan function matrix_pow")
+#function: matrix_pow
+context("matrix_pow")
 
 test_matrix_pow <- function(m, A, n, expected) {
   .data <- list(m = m, A = A, n = n)

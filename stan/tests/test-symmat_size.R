@@ -1,3 +1,4 @@
+#function: symmat_size
 context("symmat_size")
 
 test_that("Stan function symmat_size works", {

@@ -1,3 +1,5 @@
+#function: ssm_filter_eta_get
+context("ssm_filter_eta_get")
 test_that("Stan functions ssm_filter_eta_get works", {
   f <- function(q, x) {
     modfit <- test_stan_function("ssm_smooth_eta_get",

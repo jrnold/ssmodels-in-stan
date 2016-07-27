@@ -1,3 +1,5 @@
+#function: kronecker_prod
+context("kronecker_prod")
 test_that("Stan function kronecker_prod works", {
   f <- function(A, B) {
     modfit <- test_stan_function("kronecker_prod",

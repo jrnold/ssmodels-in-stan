@@ -1,3 +1,5 @@
+#function: ssm_filter_idx
+context("ssm_filter_idx")
 test_that("Stan function ssm_filter_idx and ssm_filter_get_* functions work", {
 
 

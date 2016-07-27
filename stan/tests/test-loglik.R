@@ -1,4 +1,5 @@
-context("Stan loglikelihood tests")
+#function: loglik
+context("loglik")
 set.seed(60322390)
 
 test_that("Stan function ssm_loglik works", {

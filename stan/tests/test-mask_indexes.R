@@ -1,3 +1,5 @@
+#function: mask_indexes
+context("mask_indexes")
 test_that("Stan function mask_indexes works", {
   f <- function(x) {
     x <- as.integer(x)

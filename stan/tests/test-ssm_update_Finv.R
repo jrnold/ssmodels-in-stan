@@ -1,3 +1,5 @@
+#function: ssm_update_Finv
+context("ssm_update_Finv")
 test_that("Stan function ssm_update_Finv works", {
   f <- function(m, p, Z, P, H) {
     modfit <- test_stan_function("ssm_update_Finv",

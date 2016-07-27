@@ -1,4 +1,5 @@
-context("Stan function ssm_smooth_state_get")
+#function: ssm_smooth_states_get
+context("ssm_smooth_states_get")
 
 test_that("they work", {
   f <- function(m, x) {

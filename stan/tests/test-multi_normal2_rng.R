@@ -1,3 +1,5 @@
+#function: multi_normal2_rng
+context("multi_normal2_rng")
 test_that("Stan function multi_normal2_rng works", {
   f <- function(n, mu, Sigma) {
     m <- length(mu)

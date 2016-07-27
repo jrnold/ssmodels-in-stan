@@ -1,3 +1,5 @@
+#function: ssm_update_loglik
+context("ssm_update_loglik")
 test_that("Stan function ssm_update_ll works", {
   f <- function(m, p, v, Finv) {
     modfit <- test_stan_function("ssm_update_ll",

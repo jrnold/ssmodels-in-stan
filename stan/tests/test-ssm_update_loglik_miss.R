@@ -1,3 +1,5 @@
+#function: ssm_update_loglik_miss
+context("ssm_update_loglik_miss")
 # @param p number of observations
 # @param missing logical vector with missing values indicated by true
 test_ssm_update_loglik_miss <- function(p, missing) {

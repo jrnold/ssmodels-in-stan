@@ -1,3 +1,5 @@
+#function: ssm_filter_states_update_a
+context("ssm_filter_states_update_a")
 test_that("Stan function ssm_filter_states_update_a works", {
   f <- function(m, p, a, P = P, Z, v, Finv) {
     modfit <- test_stan_function("ssm_filter_states_update_a",

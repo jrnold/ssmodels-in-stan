@@ -1,3 +1,4 @@
+#function: to_symmetric_matrix
 context("to_symmetric_matrix")
 
 test_that("Stan function to_symmetric_matrix works", {

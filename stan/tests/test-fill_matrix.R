@@ -1,3 +1,5 @@
+#function: fill_matrix
+context("fill_matrix")
 test_that("Stan function fill_matrix works", {
   f <- function(x, m, n, i, j, a) {
     p <- nrow(x)

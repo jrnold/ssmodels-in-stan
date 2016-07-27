@@ -1,3 +1,5 @@
+#function: fill_vector
+context("fill_vector")
 test_that("Stan function fill_vector works", {
   f <- function(x, n, i, a) {
     m <- length(x)

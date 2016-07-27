@@ -1,4 +1,5 @@
-context("Stan function int_sum_false")
+#function: int_sum_false
+context("int_sum_false")
 
 test_int_sum_false <- function(x, expected) {
   .data <- list(x = as.integer(x), n = length(x))

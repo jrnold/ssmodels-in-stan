@@ -1,0 +1,88 @@
+## Road Casualties in Great Britain
+
+Monthly totals of car drivers in Great Britain killed or seriously injured
+January 1969 to December 1984. The compulsory wearing of seat belts was
+introducted on January 31, 1983. These data were analyzed in @HarveyDurbin1986,
+and used as an example in @DurbinKoopman2012, @Harvey1993a, and
+@CommandeurKoopman2007.
+
+This data is included in R with the dataset `Seatbelts`.
+
+```{r Seatbelts}
+data("Seatbelts", package = "datasets")
+Seatbelts_ <- tbl_df(as.data.frame(Seatbelts)) %>%
+  mutate(date = ts_to_date(time(Seatbelts))) %>%
+  select(date, everything())
+```
+
+```{r Seatbelts-plot}
+ggplot(Seatbelts_, aes(x = date, y = drivers)) +
+  geom_point() +
+  geom_line() +
+  scale_y_log10() +
+  xlab("")
+```
+
+
+```{r Seatbelts-StructTS-BSM}
+StructTS(log10(Seatbelts[ , "drivers"]), type = "BSM")
+```
+
+```{r Seatbelts-Stan-BSM}
+seatbelts_data <- within(list(), {
+  y <- matrix(log10(Seatbelts_$drivers))
+  n <- length(y)
+  p <- 1
+  q <- 3
+  m <- 13
+  T_lvls <- as.numeric(upper.tri(matrix(0, 2, 2), diag = TRUE))
+  T_seas <- rbind(rep(-1, 11), diag(1, 10, 11))
+  T <- matrix(0, 13, 13)
+  T[1:2, 1:2] <- T_lvls
+  T[3:13, 3:13] <- T_seas
+  Z <- matrix(c(c(1, 0, 1), rep(0, 10)), 1, 13)
+  R <- rbind(matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1), 3, 3),
+             matrix(0, 10, 3))
+  d <- array(0, 1)
+  c <- rep(0, m)
+  a1 <- rep(0, m)
+  P1 <- diag(1e6, m, m) * var(as.numeric(y))
+})
+seatbelts_init <- list(sigma_eta = c(6.02, 1e-6, .02),
+                      sigma_epsilon = .04)
+seatbelts_bsm_sample <- sampling(var_only_mod,
+                         chains = 1,
+                         iter = 500,
+                         init = list(seatbelts_init),
+                         data = seatbelts_data, verbose = TRUE)
+summary(seatbelts_bsm_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
+```
+
+
+
+```{r Seatbelts-Stan-bsm-plot}
+seatbelt_bsm_params <-
+  extract_param_from_ssm_filter(rstan::extract(seatbelts_bsm_sample, "filter_res")[[1]], 13, 1)
+
+seatbelt_bsm_states <- seatbelt_bsm_params[["a"]] %>%
+  apply(2:3, mean) %>%
+  reshape2::melt(varnames = c("obs", "state"))
+
+ggplot(dplyr::filter(seatbelts_states, state <= 3),
+       aes(x = obs, y = value)) +
+  geom_line() +
+  facet_wrap(~state, ncol = 1)
+```
+
+
+```{r Seatbelts-Stan-bsm-optimize}
+seatbelts_optim <-
+  rstan::optimizing(var_only_mod,
+                   init = seatbelts_init,
+                   data = seatbelts_data,
+                   as_vector = FALSE,
+                   verbose = TRUE)
+seatbelts_optim$par[c("sigma_eta", "sigma_epsilon")]
+```

@@ -1,0 +1,65 @@
+## UK Quarterly Gas Consumption
+
+Quarterly UK gas consumption from 1960 to 1986 in millions of therms.
+These data are used as an example in @DurbinKoopman2012,
+and included in R as a dataset `UKgas`.
+
+```{r UKgas}
+UKgas_ <- data_frame(date = ts_to_date(time(UKgas)),
+                     therms = as.numeric(UKgas))
+```
+
+```{r UKgas-plot}
+ggplot(UKgas_, aes(x = date, y = therms)) +
+  geom_point() +
+  geom_line() +
+  scale_y_log10("therms") +
+  scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
+  xlab("")
+```
+
+```{r UKGas-Stan-BSM}
+ukgas_data <- within(list(), {
+  y <- matrix(log10(UKgas_$therms))
+  n <- length(y)
+  p <- 1
+  q <- 3
+  m <- 5
+  T_lvls <- as.numeric(upper.tri(matrix(0, 2, 2), diag = TRUE))
+  T_seas <- rbind(rep(-1, 3), diag(1, 2, 3))
+  T <- matrix(0, 5, 5)
+  T[1:2, 1:2] <- T_lvls
+  T[3:5, 3:5] <- T_seas
+  Z <- matrix(c(c(1, 0, 1), rep(0, 2)), 1, 5)
+  R <- rbind(matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1), 3, 3),
+             matrix(0, 2, 3))
+  d <- array(0, 1)
+  c <- rep(0, m)
+  a1 <- rep(0, m)
+  P1 <- diag(1e6, m, m) * var(as.numeric(y))
+})
+ukgas_sample <-
+  sampling(var_only_mod,
+           chains = 1,
+           iter = 500,
+           init = "random",
+           data = ukgas_data, verbose = TRUE)
+summary(ukgas_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
+```
+
+```{r UKgas-predicted-states}
+ukgas_params <-
+  extract_param_from_ssm_filter(rstan::extract(ukgas_sample, "filter_res")[[1]],
+                                ukgas_data$m, ukgas_data$p)
+
+ukgas_states <- ukgas_params[["a"]] %>%
+  apply(2:3, mean) %>%
+  reshape2::melt(varnames = c("obs", "state"))
+
+ggplot(dplyr::filter(ukgas_states, state <= 3),
+       aes(x = obs, y = value)) +
+  geom_line() +
+  facet_wrap(~state, ncol = 1)
+```

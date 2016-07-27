@@ -1,0 +1,105 @@
+
+## Airline Passenger Miles
+
+Monthly totals of international airline passengers, 1949 to 1960, used in the
+Box-Jenkins textbook [@BoxJenkinsReinsel1994]. This data is included with R as
+the dataset `AirPassengers`.
+
+```{r AirPassengers}
+data("AirPassengers", package = "datasets")
+AirPassengers_ <- tbl_df(as.data.frame(AirPassengers)) %>%
+  mutate(date = ts_to_date(time(AirPassengers))) %>%
+  select(date, everything()) %>%
+  mutate(x = as.numeric(x)) %>%
+  rename(passengers = x) %>%
+  mutate(log_passengers = log10(passengers))
+```
+
+```{r AirPassengers-plot}
+ggplot(AirPassengers_, aes(x = date, y = passengers)) +
+  geom_point() +
+  geom_line() +
+  scale_y_continuous("Number") + xlab("")
+```
+
+
+## Structural Time Series Model
+
+```{r AirPassengers-StructTS}
+StructTS(log10(AirPassengers), type = "BSM")
+```
+
+```{r AirPassengers-StanModel}
+var_only_code <- stanc_builder(find_rstudio_root_file("stan/var_only.stan"))
+# rm(var_only_mod)
+# var_only_mod <- stan_model(model_code = var_only_code[["model_code"]],
+#                            model_name = var_only_code[["model_name"]])
+
+```
+
+```{r}
+airlines_data <- within(list(), {
+  y <- matrix(log10(as.numeric(AirPassengers))) - 2
+  n <- length(y)
+  p <- 1
+  q <- 3
+  m <- 13
+  T_lvls <- as.numeric(upper.tri(matrix(0, 2, 2), diag = TRUE))
+  T_seas <- rbind(rep(-1, 11), diag(1, 10, 11))
+  T <- matrix(0, 13, 13)
+  T[1:2, 1:2] <- T_lvls
+  T[3:13, 3:13] <- T_seas
+  Z <- matrix(c(c(1, 0, 1), rep(0, 10)), 1, 13)
+  R <- rbind(matrix(c(1, 0, 0,
+                      0, 1, 0,
+                      0, 0, 1), 3, 3),
+             matrix(0, 10, 3))
+  d <- array(0, 1)
+  c <- rep(0, m)
+  a1 <- rep(0, m)
+  P1 <- diag(1, m, m)
+})
+airlines_init <- list(sigma_eta = rep(sd(AirPassengers), 3),
+                      sigma_epsilon = sd(AirPassengers))
+airlines_ll_sample <- sampling(var_only_mod,
+                         chains = 1,
+                         iter = 500,
+                         init = list(airlines_init),
+                         data = airlines_data, verbose = TRUE)
+summary(airlines_ll_sample, c("sigma_eta", "sigma_epsilon"))[[1]]
+```
+
+```{r Airlines-predicted-states}
+airlines_params <-
+  extract_param_from_ssm_filter(rstan::extract(airlines_ll_sample, "filter_res")[[1]],
+                                m = 13, p = 1)
+
+
+airlines_states <- airlines_params[["a"]] %>%
+  apply(2:3, mean) %>%
+  reshape2::melt(varnames = c("obs", "state"))
+
+ggplot(dplyr::filter(airlines_states, state <= 3),
+       aes(x = obs, y = value)) +
+  geom_line() +
+  facet_wrap(~state, ncol = 1)
+```
+
+```{r Airlines-predicted-states}
+airlines_optim <-
+  rstan::optimizing(var_only_mod,
+                   init = airlines_init,
+                   data = airlines_data,
+                   as_vector = FALSE,
+                   verbose = TRUE)
+airlines_optim$par[c("sigma_eta", "sigma_epsilon")]
+```
+
+## SARIMA Model
+
+See help for `AirPassengers` in R for example models. SARIMA (0, 1, 1) (0, 1, 1)
+as in Box-Jenkins
+```{r AirPassengers-arima}
+arima(log10(AirPassengers), c(0, 1, 1),
+      seasonal = list(order = c(0, 1, 1), period = 12))
+```

@@ -19,8 +19,19 @@
   - ssm_smooth_eta_size
 
 "test-ssm_sim_get.R":
+  - ssm_sim_idx
   - ssm_sim_get_y
   - ssm_sim_get_a
   - ssm_sim_get_eta
   - ssm_sim_get_eps
   - ssm_sim_size
+
+"test-ssm_filter_idx.R":
+  - ssm_filter_idx
+  - ssm_filter_get_a
+  - ssm_filter_get_P
+  - ssm_filter_get_v
+  - ssm_filter_get_Finv
+  - ssm_filter_get_K
+  - ssm_filter_size
+  - ssm_filter_get_loglik

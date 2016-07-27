@@ -1,4 +1,4 @@
-@chapter Stan Functions
+`r render_chapter("Stan Functions")`
 
 State space functionality for Stan is provided as a set of user-defined functions.
 
@@ -17,7 +17,7 @@ model <- stanc_builder("yourmodel.stan", isystem = "path/to/ssm/")
 stan(model_code = model$model_code)
 ```
 
-@section Utility Functions
+`r render_section("Utility Functions")`
 
 
 
@@ -93,26 +93,23 @@ Calculate the power of a matrix, $\mat{A}^n$.
 
 
 ```stan
-matrix matrix_pow(matrix A, int A);
+matrix matrix_pow(matrix A, int n);
 
 matrix matrix_pow(matrix A, int n) {
-  matrix[rows(A), cols(A)] B;
-  if (n < 0) {
-    reject("n must be greater than or equal to 1.");
-  }
   if (n == 0) {
     return diag_matrix(rep_vector(1., rows(A)));
   } else if (n == 1) {
-    return A
+    return A;
   } else if (n > 1) {
     # recurively this is n log n.
     if (n % 2 == 0) {
-      return matrix_pow(A, n / 2) * matrix_pow(A, n / 2)
+      return matrix_pow(A, n / 2) * matrix_pow(A, n / 2);
     } else {
-      return A * matrix_pow(n - 1);
+      return A * matrix_pow(A, n - 1);
     }
-  } else if (n > 0) {
-  return B;
+  } else {
+    return A;
+  }
 }
 
 
@@ -766,7 +763,7 @@ vector multi_normal_cholesky2_rng(vector mu, matrix L) {
 ```
 
 
-@section Filtering
+`r render_section("Filtering")`
 
 Functions used in filtering and log-likelihood calculations.
 
@@ -1200,7 +1197,7 @@ real ssm_update_loglik_miss(vector v, matrix Finv, int p_t, int[] y_idx) {
 
 ```
 
-@section Filtering
+`r render_section("Filtering")`
 
 
 
@@ -1629,7 +1626,26 @@ vector[] ssm_filter(vector[] y,
 
 **returns** See `ssm_filter`
 
+The function `ssm_filter_miss` runs a Kalman filter like `ssm_filter`, except that it allows for missing values.
 
+In the Kalman filter with missing values, the observation equation is,
+$$
+\begin{aligned}[t]
+\vec{y}^*_{t} &= \vec{d}^*_{t} + \mat{Z}^*_{t} \vec{\alpha}_t + \vec{\varepsilon}^*_t \\
+\vec{\varepsilon}^*_t &\sim N(\vec{0}, \mat{H}^*_t)
+\end{aligned}
+$$
+where $\vec{y}^*_{t} = \mat{W}_t \vec{y}_t$, $\vec{d}^*_t = \mat{W}_t \vec{d}_t$,
+$\mat{Z}^*_t = \mat{W}_t \mat{Z}_t$, $\mat{H}^*_t = \mat{W}_t \mat{H}_t \mat{W}_t\T$,
+where $\mat{W}_t$ selects the non-missing rows of $\vec{y}_t$.
+
+If all observations
+
+If $y_{t,j}$ is missing, then
+
+- $v_{t,j} = 0$
+- $F^{-1}_{t,.,j} = \vec{0}_{p}$ and F^{-1}_{t,j,.} = \vec{0}_{p}$ if either $i
+- $K_{t,.,j} = \vec{0}_{m}$
 
 
 ```stan
@@ -1951,7 +1967,7 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
 ```
 
 
-@section Log-likelihood
+`r render_section("Log-likelihood")`
 
 
 
@@ -2197,7 +2213,7 @@ real ssm_miss_lpdf(vector[] y,
 ```
 
 
-@section Time-Invariant Kalman Filter
+`r render_section("Time-Invariant Kalman Filter")`
 
 
 
@@ -2349,7 +2365,7 @@ real ssm_constant_lpdf(vector[] y,
 ```
 
 
-@section Common Smoother Functions
+`r render_section("Common Smoother Functions")`
 
 
 
@@ -3163,7 +3179,7 @@ vector[] ssm_smooth_state_mean(vector[] filter,
 
 ```
 
-@section Simulators and Smoothing Simulators
+`r render_section("Simulators and Smoothing Simulators")`
 
 
 
@@ -3516,7 +3532,7 @@ vector[] ssm_sim_rng(int n,
 ```
 
 
-@section Simulation Smoothers
+`r render_section("Simulation Smoothers")`
 
 
 
@@ -3873,7 +3889,7 @@ vector[] ssm_simsmo_eps_miss_rng(vector[] filter,
 ```
 
 
-@section Stationary
+`r render_section("Stationary")`
 
 
 

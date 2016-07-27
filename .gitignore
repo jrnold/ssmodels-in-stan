@@ -23,3 +23,6 @@ stan/tests/build/
 *.utf8.md
 doc/*.rds
 *.knit.md
+*_files
+*_cache
+/doc/bookdown*

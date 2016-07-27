@@ -13,24 +13,21 @@ matrix to_matrix_colwise(vector v, int m, int n) {
   }
   return res;
 }
-matrix matrix_pow(matrix A, int A);
+matrix matrix_pow(matrix A, int n);
 matrix matrix_pow(matrix A, int n) {
-  matrix[rows(A), cols(A)] B;
-  if (n < 0) {
-    reject("n must be greater than or equal to 1.");
-  }
   if (n == 0) {
     return diag_matrix(rep_vector(1., rows(A)));
   } else if (n == 1) {
-    return A
+    return A;
   } else if (n > 1) {
     if (n % 2 == 0) {
-      return matrix_pow(A, n / 2) * matrix_pow(A, n / 2)
+      return matrix_pow(A, n / 2) * matrix_pow(A, n / 2);
     } else {
-      return A * matrix_pow(n - 1);
+      return A * matrix_pow(A, n - 1);
     }
-  } else if (n > 0) {
-  return B;
+  } else {
+    return A;
+  }
 }
 int symmat_size(int n) {
   int sz;

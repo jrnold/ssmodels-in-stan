@@ -41,20 +41,20 @@ In the 2004 election the Australian Labor Party (ALP) won 37.6% percent of
 first preferences, and in 2007 they won 43.4%.
 These will be treated as coming from a source with no house effect and an infinitely large sample size.
 
-```{r}
+```{rAustralianElectionPolling-data}
 library("dplyr")
 data("AustralianElectionPolling", package = "pscl")
 glimpse(AustralianElectionPolling)
 ```
 
 Unique polling organizations (Morgan face-to-face and phone polls treated separately):
-```{r}
+```{r AustralianElectionPolling-orgs}
 AustralianElectionPolling %>% group_by(org) %>% tally()
 ```
 
 Date of the poll is the median day (rounded down) for when they are in the field.
 
-```{r}
+```{r aus_elections}
 aus_elections <-
   bind_rows(
     data_frame(date = as.Date("2004-10-09"), ALP = 37.6, sd = .00025),
@@ -73,7 +73,7 @@ aus_polling <-
          sd = sqrt(y * (1 - y) / sampleSize),
          org = as.character(org)) %>%
   select(date, org, y, sd) %>%
-  bind_rows(select(mutate(elections, y = ALP / 100, org = "Election"), -ALP)) %>%
+  bind_rows(select(mutate(aus_elections, y = ALP / 100, org = "Election"), -ALP)) %>%
   mutate(time = as.integer(difftime(date, as.Date("2004-10-09"), unit = "days")) + 1)
 
 datelist <-
@@ -118,7 +118,7 @@ aus_elec_data <-
 ```
 
 ```{r}
-polling_mod <- ssm_stan_model("polling1.stan")
+polling_mod <- ssm_stan_model("polling.stan")
 polling_samples <-
   sampling(polling_mod, data = aus_elec_data, iter = 2000, chains = 1,
            init = list(list(delta = rep(0, aus_elec_data[["p"]] - 1),
@@ -151,6 +151,6 @@ ggplot() +
 
 ```{r}
 filter(polling_summary[["all"]], parameter == "delta") %>%
-  select(parname, mean, se_mean, `2.5%`, `97.5%`, n_eff, Rhat)
+  select(parname, mean, se_mean, p2.5, p97.5, n_eff, Rhat)
 ```
 

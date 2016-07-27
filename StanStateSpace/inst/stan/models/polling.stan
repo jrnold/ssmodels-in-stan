@@ -51,13 +51,15 @@ model {
                     p_t, y_idx);
 }
 generated quantities {
-  vector[filter_sz] filtered[n];
   vector[1] alpha[n];
-  // filtering
-  filtered = ssm_filter_miss(y, d, Z, H, c, T, R, Q,
-                             a1, P1, p_t, y_idx);
-  // sampling states
-  alpha = ssm_simsmo_states_miss_rng(filtered, d, Z, H,
-                                     c, T, R, Q,
-                                     a1, P1, p_t, y_idx);
+  {
+    vector[filter_sz] filtered[n];
+    // filtering
+    filtered = ssm_filter_miss(y, d, Z, H, c, T, R, Q,
+                               a1, P1, p_t, y_idx);
+    // sampling states
+    alpha = ssm_simsmo_states_miss_rng(filtered, d, Z, H,
+                                       c, T, R, Q,
+                                       a1, P1, p_t, y_idx);
+  }
 }

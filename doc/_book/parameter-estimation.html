@@ -8,7 +8,7 @@
   <title>State Space Models in Stan</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <meta name="description" content="Documentation for State Space Models in Stan.">
-  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.1 and GitBook 2.6.7">
 
   <meta property="og:title" content="State Space Models in Stan" />
   <meta property="og:type" content="book" />
@@ -25,7 +25,7 @@
 
 <meta name="author" content="Jeffrey B. Arnold">
 
-<meta name="date" content="2016-06-21">
+<meta name="date" content="2016-07-16">
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="forecasting-matrices.html">
-<link rel="next" href="log-log-likelihood.html">
+<link rel="prev" href="filtering-and-smoothing.html">
+<link rel="next" href="example-models.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -113,7 +113,8 @@ $$
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\diag}{diag}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\VEC}{vec}
 
 \newcommand{\mat}[1]{\boldsymbol{#1}}
 \newcommand{\vec}[1]{\boldsymbol{#1}}
@@ -140,64 +141,141 @@ $$
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
 <li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
 <li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
-<li class="chapter" data-level="3.1" data-path="filtering.html"><a href="filtering.html"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
-<li class="chapter" data-level="3.2" data-path="smoothing.html"><a href="smoothing.html"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
-<li class="chapter" data-level="3.2.1" data-path="smoothing.html"><a href="smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
-<li class="chapter" data-level="3.2.2" data-path="smoothing.html"><a href="smoothing.html#updating-smoothed-states"><i class="fa fa-check"></i><b>3.2.2</b> Updating Smoothed States</a></li>
-<li class="chapter" data-level="3.2.3" data-path="smoothing.html"><a href="smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Disturbance smoothing</a></li>
-<li class="chapter" data-level="3.2.4" data-path="smoothing.html"><a href="smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.4</b> Fast state smoothing</a></li>
-<li class="chapter" data-level="3.2.5" data-path="smoothing.html"><a href="smoothing.html#classical-state-smoothing"><i class="fa fa-check"></i><b>3.2.5</b> Classical state smoothing</a></li>
+<li class="chapter" data-level="3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#filtering"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
+<li class="chapter" data-level="3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#smoothing"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
+<li class="chapter" data-level="3.2.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.2</b> Disturbance smoothing</a></li>
+<li class="chapter" data-level="3.2.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Fast state smoothing</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
-<li class="chapter" data-level="3.3.1" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#mean-corrections"><i class="fa fa-check"></i><b>3.3.1</b> Mean corrections</a></li>
-<li class="chapter" data-level="3.3.2" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
-<li class="chapter" data-level="3.3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#forward-filter-backwards-smoother"><i class="fa fa-check"></i><b>3.3.3</b> Forward-Filter Backwards smoother</a></li>
+<li class="chapter" data-level="3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#simulation-smoothers"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#mean-correction-simulation-smoother"><i class="fa fa-check"></i><b>3.3.1</b> Mean correction simulation smoother</a></li>
+<li class="chapter" data-level="3.3.2" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
+<li class="chapter" data-level="3.3.3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forward-filter-backwards-smoother-ffbs"><i class="fa fa-check"></i><b>3.3.3</b> Forward-filter backwards-smoother (FFBS)</a></li>
 </ul></li>
-<li class="chapter" data-level="3.4" data-path="missing-observations.html"><a href="missing-observations.html"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
-<li class="chapter" data-level="3.5" data-path="forecasting-matrices.html"><a href="forecasting-matrices.html"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
+<li class="chapter" data-level="3.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#missing-observations"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
+<li class="chapter" data-level="3.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forecasting-matrices"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>4</b> Parameter Estimation</a><ul>
-<li class="chapter" data-level="4.1" data-path="log-log-likelihood.html"><a href="log-log-likelihood.html"><i class="fa fa-check"></i><b>4.1</b> Log log-likelihood</a></li>
-<li class="chapter" data-level="4.2" data-path="integrated-sampler.html"><a href="integrated-sampler.html"><i class="fa fa-check"></i><b>4.2</b> Integrated Sampler</a></li>
-<li class="chapter" data-level="4.3" data-path="diagnostic-checking.html"><a href="diagnostic-checking.html"><i class="fa fa-check"></i><b>4.3</b> Diagnostic Checking</a></li>
+<li class="chapter" data-level="4.1" data-path="parameter-estimation.html"><a href="parameter-estimation.html#log-log-likelihood"><i class="fa fa-check"></i><b>4.1</b> Log log-likelihood</a></li>
+<li class="chapter" data-level="4.2" data-path="parameter-estimation.html"><a href="parameter-estimation.html#integrated-sampler"><i class="fa fa-check"></i><b>4.2</b> Integrated Sampler</a></li>
+<li class="chapter" data-level="4.3" data-path="parameter-estimation.html"><a href="parameter-estimation.html#diagnostic-checking"><i class="fa fa-check"></i><b>4.3</b> Diagnostic Checking</a></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a><ul>
-<li class="chapter" data-level="5.0.1" data-path="example-models.html"><a href="example-models.html#polynomial-trend-models"><i class="fa fa-check"></i><b>5.0.1</b> Polynomial Trend Models</a></li>
-<li class="chapter" data-level="5.0.2" data-path="example-models.html"><a href="example-models.html#seasonal-factor-models"><i class="fa fa-check"></i><b>5.0.2</b> Seasonal Factor Models</a></li>
-<li class="chapter" data-level="5.0.3" data-path="example-models.html"><a href="example-models.html#fourier-form-seasonal-models"><i class="fa fa-check"></i><b>5.0.3</b> Fourier Form Seasonal Models</a></li>
-<li class="chapter" data-level="5.0.4" data-path="example-models.html"><a href="example-models.html#arma-and-arima-models"><i class="fa fa-check"></i><b>5.0.4</b> ARMA and ARIMA Models</a></li>
-<li class="chapter" data-level="5.0.5" data-path="example-models.html"><a href="example-models.html#ar2"><i class="fa fa-check"></i><b>5.0.5</b> AR(2)</a></li>
-<li class="chapter" data-level="5.0.6" data-path="example-models.html"><a href="example-models.html#arp"><i class="fa fa-check"></i><b>5.0.6</b> AR(p)</a></li>
-<li class="chapter" data-level="5.1" data-path="armap-q-hamilton.html"><a href="armap-q-hamilton.html"><i class="fa fa-check"></i><b>5.1</b> ARMA(p, q) Hamilton</a></li>
-<li class="chapter" data-level="5.2" data-path="armap-q-harvey.html"><a href="armap-q-harvey.html"><i class="fa fa-check"></i><b>5.2</b> ARMA(p, q) Harvey</a></li>
-<li class="chapter" data-level="5.3" data-path="armap-q-akaike.html"><a href="armap-q-akaike.html"><i class="fa fa-check"></i><b>5.3</b> ARMA(p, q) Akaike</a></li>
-<li class="chapter" data-level="5.4" data-path="canonical-representation.html"><a href="canonical-representation.html"><i class="fa fa-check"></i><b>5.4</b> Canonical Representation</a></li>
-</ul></li>
+<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a></li>
 <li class="chapter" data-level="6" data-path="example-models-1.html"><a href="example-models-1.html"><i class="fa fa-check"></i><b>6</b> Example Models</a><ul>
-<li class="chapter" data-level="6.1" data-path="nile.html"><a href="nile.html"><i class="fa fa-check"></i><b>6.1</b> Nile</a><ul>
-<li class="chapter" data-level="6.1.1" data-path="nile.html"><a href="nile.html#local-level-model-1"><i class="fa fa-check"></i><b>6.1.1</b> Local Level Model</a></li>
+<li class="chapter" data-level="6.1" data-path="example-models-1.html"><a href="example-models-1.html#nile"><i class="fa fa-check"></i><b>6.1</b> Nile</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="example-models-1.html"><a href="example-models-1.html#local-level-model"><i class="fa fa-check"></i><b>6.1.1</b> Local Level Model</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="airline-passenger-miles.html"><a href="airline-passenger-miles.html"><i class="fa fa-check"></i><b>6.2</b> Airline Passenger Miles</a></li>
-<li class="chapter" data-level="6.3" data-path="road-casualties-in-great-britain.html"><a href="road-casualties-in-great-britain.html"><i class="fa fa-check"></i><b>6.3</b> Road Casualties in Great Britain</a></li>
-<li class="chapter" data-level="6.4" data-path="uk-quarterly-gas-consumption.html"><a href="uk-quarterly-gas-consumption.html"><i class="fa fa-check"></i><b>6.4</b> UK Quarterly Gas Consumption</a></li>
-<li class="chapter" data-level="6.5" data-path="stata.html"><a href="stata.html"><i class="fa fa-check"></i><b>6.5</b> Stata</a></li>
-<li class="chapter" data-level="6.6" data-path="other-sources.html"><a href="other-sources.html"><i class="fa fa-check"></i><b>6.6</b> Other Sources</a></li>
+<li class="chapter" data-level="6.2" data-path="example-models-1.html"><a href="example-models-1.html#nile-with-known-intervention-intercept"><i class="fa fa-check"></i><b>6.2</b> Nile with known intervention (intercept)</a></li>
+<li class="chapter" data-level="6.3" data-path="example-models-1.html"><a href="example-models-1.html#local-level-with-known-intervention-variance"><i class="fa fa-check"></i><b>6.3</b> Local Level with known intervention (variance)</a></li>
+<li class="chapter" data-level="6.4" data-path="example-models-1.html"><a href="example-models-1.html#local-level-with-time-varying-variances"><i class="fa fa-check"></i><b>6.4</b> local level with time-varying variances</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>7</b> Stan Functions</a><ul>
-<li class="chapter" data-level="7.1" data-path="misc.html"><a href="misc.html"><i class="fa fa-check"></i><b>7.1</b> Misc</a><ul>
-<li class="chapter" data-level="7.1.1" data-path="misc.html"><a href="misc.html#make_symmetric_matrix"><i class="fa fa-check"></i><b>7.1.1</b> make_symmetric_matrix</a></li>
-<li class="chapter" data-level="7.1.2" data-path="misc.html"><a href="misc.html#to_matrix_colwise"><i class="fa fa-check"></i><b>7.1.2</b> to_matrix_colwise</a></li>
-<li class="chapter" data-level="7.1.3" data-path="misc.html"><a href="misc.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>7.1.3</b> to_matrix_rowwise</a></li>
-<li class="chapter" data-level="7.1.4" data-path="misc.html"><a href="misc.html#to_vector_colwise"><i class="fa fa-check"></i><b>7.1.4</b> to_vector_colwise</a></li>
-<li class="chapter" data-level="7.1.5" data-path="misc.html"><a href="misc.html#to_vector_rowwise"><i class="fa fa-check"></i><b>7.1.5</b> to_vector_rowwise</a></li>
+<li class="chapter" data-level="7.1" data-path="stan-functions.html"><a href="stan-functions.html#utility-functions"><i class="fa fa-check"></i><b>7.1</b> Utility Functions</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="stan-functions.html"><a href="stan-functions.html#to_symmetric_matrix"><i class="fa fa-check"></i><b>7.1.1</b> to_symmetric_matrix</a></li>
+<li class="chapter" data-level="7.1.2" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_colwise"><i class="fa fa-check"></i><b>7.1.2</b> to_matrix_colwise</a></li>
+<li class="chapter" data-level="7.1.3" data-path="stan-functions.html"><a href="stan-functions.html#matrix_pow"><i class="fa fa-check"></i><b>7.1.3</b> matrix_pow</a></li>
+<li class="chapter" data-level="7.1.4" data-path="stan-functions.html"><a href="stan-functions.html#symmat_size"><i class="fa fa-check"></i><b>7.1.4</b> symmat_size</a></li>
+<li class="chapter" data-level="7.1.5" data-path="stan-functions.html"><a href="stan-functions.html#find_symmat_dim"><i class="fa fa-check"></i><b>7.1.5</b> find_symmat_dim</a></li>
+<li class="chapter" data-level="7.1.6" data-path="stan-functions.html"><a href="stan-functions.html#vector_to_symmat"><i class="fa fa-check"></i><b>7.1.6</b> vector_to_symmat</a></li>
+<li class="chapter" data-level="7.1.7" data-path="stan-functions.html"><a href="stan-functions.html#symmat_to_vector"><i class="fa fa-check"></i><b>7.1.7</b> symmat_to_vector</a></li>
+<li class="chapter" data-level="7.1.8" data-path="stan-functions.html"><a href="stan-functions.html#rep_lower_triangular_matrix"><i class="fa fa-check"></i><b>7.1.8</b> rep_lower_triangular_matrix</a></li>
+<li class="chapter" data-level="7.1.9" data-path="stan-functions.html"><a href="stan-functions.html#rep_upper_triangular_matrix"><i class="fa fa-check"></i><b>7.1.9</b> rep_upper_triangular_matrix</a></li>
+<li class="chapter" data-level="7.1.10" data-path="stan-functions.html"><a href="stan-functions.html#rep_upper_triangular_matrix-1"><i class="fa fa-check"></i><b>7.1.10</b> rep_upper_triangular_matrix</a></li>
+<li class="chapter" data-level="7.1.11" data-path="stan-functions.html"><a href="stan-functions.html#fill_matrix"><i class="fa fa-check"></i><b>7.1.11</b> fill_matrix</a></li>
+<li class="chapter" data-level="7.1.12" data-path="stan-functions.html"><a href="stan-functions.html#fill_vector"><i class="fa fa-check"></i><b>7.1.12</b> fill_vector</a></li>
+<li class="chapter" data-level="7.1.13" data-path="stan-functions.html"><a href="stan-functions.html#sum_int_true"><i class="fa fa-check"></i><b>7.1.13</b> sum_int_true</a></li>
+<li class="chapter" data-level="7.1.14" data-path="stan-functions.html"><a href="stan-functions.html#sum_int_false"><i class="fa fa-check"></i><b>7.1.14</b> sum_int_false</a></li>
+<li class="chapter" data-level="7.1.15" data-path="stan-functions.html"><a href="stan-functions.html#mask_indexes"><i class="fa fa-check"></i><b>7.1.15</b> mask_indexes</a></li>
+<li class="chapter" data-level="7.1.16" data-path="stan-functions.html"><a href="stan-functions.html#select_indexes"><i class="fa fa-check"></i><b>7.1.16</b> select_indexes</a></li>
+<li class="chapter" data-level="7.1.17" data-path="stan-functions.html"><a href="stan-functions.html#normal2_rng"><i class="fa fa-check"></i><b>7.1.17</b> normal2_rng</a></li>
+<li class="chapter" data-level="7.1.18" data-path="stan-functions.html"><a href="stan-functions.html#choleksky_decompose2"><i class="fa fa-check"></i><b>7.1.18</b> choleksky_decompose2</a></li>
+<li class="chapter" data-level="7.1.19" data-path="stan-functions.html"><a href="stan-functions.html#multi_normal2_rng"><i class="fa fa-check"></i><b>7.1.19</b> multi_normal2_rng</a></li>
+<li class="chapter" data-level="7.1.20" data-path="stan-functions.html"><a href="stan-functions.html#multi_normal_cholesky2_rng"><i class="fa fa-check"></i><b>7.1.20</b> multi_normal_cholesky2_rng</a></li>
 </ul></li>
-<li class="chapter" data-level="7.2" data-path="filtering-1.html"><a href="filtering-1.html"><i class="fa fa-check"></i><b>7.2</b> Filtering</a></li>
+<li class="chapter" data-level="7.2" data-path="stan-functions.html"><a href="stan-functions.html#filtering-1"><i class="fa fa-check"></i><b>7.2</b> Filtering</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_a"><i class="fa fa-check"></i><b>7.2.1</b> ssm_update_a</a></li>
+<li class="chapter" data-level="7.2.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_p"><i class="fa fa-check"></i><b>7.2.2</b> ssm_update_P</a></li>
+<li class="chapter" data-level="7.2.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_v"><i class="fa fa-check"></i><b>7.2.3</b> ssm_update_v</a></li>
+<li class="chapter" data-level="7.2.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_v_miss"><i class="fa fa-check"></i><b>7.2.4</b> ssm_update_v_miss</a></li>
+<li class="chapter" data-level="7.2.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_f"><i class="fa fa-check"></i><b>7.2.5</b> ssm_update_F</a></li>
+<li class="chapter" data-level="7.2.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_finv"><i class="fa fa-check"></i><b>7.2.6</b> ssm_update_Finv</a></li>
+<li class="chapter" data-level="7.2.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_finv_miss"><i class="fa fa-check"></i><b>7.2.7</b> ssm_update_Finv_miss</a></li>
+<li class="chapter" data-level="7.2.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_k"><i class="fa fa-check"></i><b>7.2.8</b> ssm_update_K</a></li>
+<li class="chapter" data-level="7.2.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_l"><i class="fa fa-check"></i><b>7.2.9</b> ssm_update_L</a></li>
+<li class="chapter" data-level="7.2.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_loglik"><i class="fa fa-check"></i><b>7.2.10</b> ssm_update_loglik</a></li>
+<li class="chapter" data-level="7.2.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_loglik_miss"><i class="fa fa-check"></i><b>7.2.11</b> ssm_update_loglik_miss</a></li>
 </ul></li>
-<li class="chapter" data-level="8" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>8</b> Software</a><ul>
-<li class="chapter" data-level="8.1" data-path="r-packages.html"><a href="r-packages.html"><i class="fa fa-check"></i><b>8.1</b> R packages</a></li>
-<li class="chapter" data-level="8.2" data-path="other.html"><a href="other.html"><i class="fa fa-check"></i><b>8.2</b> Other</a><ul>
-<li class="chapter" data-level="8.2.1" data-path="other.html"><a href="other.html#stata-1"><i class="fa fa-check"></i><b>8.2.1</b> Stata</a></li>
-<li class="chapter" data-level="8.2.2" data-path="other.html"><a href="other.html#python"><i class="fa fa-check"></i><b>8.2.2</b> Python</a></li>
+<li class="chapter" data-level="7.3" data-path="stan-functions.html"><a href="stan-functions.html#filtering-2"><i class="fa fa-check"></i><b>7.3</b> Filtering</a><ul>
+<li class="chapter" data-level="7.3.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_idx"><i class="fa fa-check"></i><b>7.3.1</b> ssm_filter_idx</a></li>
+<li class="chapter" data-level="7.3.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_size"><i class="fa fa-check"></i><b>7.3.2</b> ssm_filter_size</a></li>
+<li class="chapter" data-level="7.3.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_loglik"><i class="fa fa-check"></i><b>7.3.3</b> ssm_filter_get_loglik</a></li>
+<li class="chapter" data-level="7.3.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_v"><i class="fa fa-check"></i><b>7.3.4</b> ssm_filter_get_v</a></li>
+<li class="chapter" data-level="7.3.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_finv"><i class="fa fa-check"></i><b>7.3.5</b> ssm_filter_get_Finv</a></li>
+<li class="chapter" data-level="7.3.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_k"><i class="fa fa-check"></i><b>7.3.6</b> ssm_filter_get_K</a></li>
+<li class="chapter" data-level="7.3.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_a"><i class="fa fa-check"></i><b>7.3.7</b> ssm_filter_get_a</a></li>
+<li class="chapter" data-level="7.3.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_p"><i class="fa fa-check"></i><b>7.3.8</b> ssm_filter_get_P</a></li>
+<li class="chapter" data-level="7.3.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter"><i class="fa fa-check"></i><b>7.3.9</b> ssm_filter</a></li>
+<li class="chapter" data-level="7.3.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_miss"><i class="fa fa-check"></i><b>7.3.10</b> ssm_filter_miss</a></li>
+<li class="chapter" data-level="7.3.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states"><i class="fa fa-check"></i><b>7.3.11</b> ssm_filter_states</a></li>
+<li class="chapter" data-level="7.3.12" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_get_a"><i class="fa fa-check"></i><b>7.3.12</b> ssm_filter_states_get_a</a></li>
+<li class="chapter" data-level="7.3.13" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_get_p"><i class="fa fa-check"></i><b>7.3.13</b> ssm_filter_states_get_P</a></li>
+<li class="chapter" data-level="7.3.14" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_update_a"><i class="fa fa-check"></i><b>7.3.14</b> ssm_filter_states_update_a</a></li>
+<li class="chapter" data-level="7.3.15" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_update_p"><i class="fa fa-check"></i><b>7.3.15</b> ssm_filter_states_update_P</a></li>
+<li class="chapter" data-level="7.3.16" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states-1"><i class="fa fa-check"></i><b>7.3.16</b> ssm_filter_states</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="stan-functions.html"><a href="stan-functions.html#log-likelihood"><i class="fa fa-check"></i><b>7.4</b> Log-likelihood</a><ul>
+<li class="chapter" data-level="7.4.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_lpdf"><i class="fa fa-check"></i><b>7.4.1</b> ssm_lpdf</a></li>
+<li class="chapter" data-level="7.4.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_miss-1"><i class="fa fa-check"></i><b>7.4.2</b> ssm_filter_miss</a></li>
+</ul></li>
+<li class="chapter" data-level="7.5" data-path="stan-functions.html"><a href="stan-functions.html#time-invariant-kalman-filter"><i class="fa fa-check"></i><b>7.5</b> Time-Invariant Kalman Filter</a><ul>
+<li class="chapter" data-level="7.5.1" data-path="stan-functions.html"><a href="stan-functions.html#matrix_diff"><i class="fa fa-check"></i><b>7.5.1</b> matrix_diff</a></li>
+<li class="chapter" data-level="7.5.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_constant_lpdf"><i class="fa fa-check"></i><b>7.5.2</b> ssm_constant_lpdf</a></li>
+</ul></li>
+<li class="chapter" data-level="7.6" data-path="stan-functions.html"><a href="stan-functions.html#common-smoother-functions"><i class="fa fa-check"></i><b>7.6</b> Common Smoother Functions</a><ul>
+<li class="chapter" data-level="7.6.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_r"><i class="fa fa-check"></i><b>7.6.1</b> ssm_update_r</a></li>
+<li class="chapter" data-level="7.6.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_n"><i class="fa fa-check"></i><b>7.6.2</b> ssm_update_N</a></li>
+<li class="chapter" data-level="7.6.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_size"><i class="fa fa-check"></i><b>7.6.3</b> ssm_smooth_state_size</a></li>
+<li class="chapter" data-level="7.6.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_get_mean"><i class="fa fa-check"></i><b>7.6.4</b> ssm_smooth_state_get_mean</a></li>
+<li class="chapter" data-level="7.6.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_get_var"><i class="fa fa-check"></i><b>7.6.5</b> ssm_smooth_state_get_var</a></li>
+<li class="chapter" data-level="7.6.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state"><i class="fa fa-check"></i><b>7.6.6</b> ssm_smooth_state</a></li>
+<li class="chapter" data-level="7.6.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_size"><i class="fa fa-check"></i><b>7.6.7</b> ssm_smooth_eps_size</a></li>
+<li class="chapter" data-level="7.6.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_get_mean"><i class="fa fa-check"></i><b>7.6.8</b> ssm_smooth_eps_get_mean</a></li>
+<li class="chapter" data-level="7.6.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_get_var"><i class="fa fa-check"></i><b>7.6.9</b> ssm_smooth_eps_get_var</a></li>
+<li class="chapter" data-level="7.6.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps"><i class="fa fa-check"></i><b>7.6.10</b> ssm_smooth_eps</a></li>
+<li class="chapter" data-level="7.6.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta"><i class="fa fa-check"></i><b>7.6.11</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="7.6.12" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta_get_mean"><i class="fa fa-check"></i><b>7.6.12</b> ssm_smooth_eta_get_mean</a></li>
+<li class="chapter" data-level="7.6.13" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta_get_var"><i class="fa fa-check"></i><b>7.6.13</b> ssm_smooth_eta_get_var</a></li>
+<li class="chapter" data-level="7.6.14" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta-1"><i class="fa fa-check"></i><b>7.6.14</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="7.6.15" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_mean"><i class="fa fa-check"></i><b>7.6.15</b> ssm_smooth_state_mean</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="stan-functions.html"><a href="stan-functions.html#simulators-and-smoothing-simulators"><i class="fa fa-check"></i><b>7.7</b> Simulators and Smoothing Simulators</a><ul>
+<li class="chapter" data-level="7.7.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_idx"><i class="fa fa-check"></i><b>7.7.1</b> ssm_sim_idx</a></li>
+<li class="chapter" data-level="7.7.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_size"><i class="fa fa-check"></i><b>7.7.2</b> ssm_sim_size</a></li>
+<li class="chapter" data-level="7.7.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_y"><i class="fa fa-check"></i><b>7.7.3</b> ssm_sim_get_y</a></li>
+<li class="chapter" data-level="7.7.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_a"><i class="fa fa-check"></i><b>7.7.4</b> ssm_sim_get_a</a></li>
+<li class="chapter" data-level="7.7.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_eps"><i class="fa fa-check"></i><b>7.7.5</b> ssm_sim_get_eps</a></li>
+<li class="chapter" data-level="7.7.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_eta"><i class="fa fa-check"></i><b>7.7.6</b> ssm_sim_get_eta</a></li>
+<li class="chapter" data-level="7.7.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_rng"><i class="fa fa-check"></i><b>7.7.7</b> ssm_sim_rng</a></li>
+</ul></li>
+<li class="chapter" data-level="7.8" data-path="stan-functions.html"><a href="stan-functions.html#simulation-smoothers-1"><i class="fa fa-check"></i><b>7.8</b> Simulation Smoothers</a><ul>
+<li class="chapter" data-level="7.8.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_state_rng"><i class="fa fa-check"></i><b>7.8.1</b> ssm_simsmo_state_rng</a></li>
+<li class="chapter" data-level="7.8.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_eta_rng"><i class="fa fa-check"></i><b>7.8.2</b> ssm_simsmo_eta_rng</a></li>
+<li class="chapter" data-level="7.8.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_eps_rng"><i class="fa fa-check"></i><b>7.8.3</b> ssm_simsmo_eps_rng</a></li>
+</ul></li>
+<li class="chapter" data-level="7.9" data-path="stan-functions.html"><a href="stan-functions.html#stationary"><i class="fa fa-check"></i><b>7.9</b> Stationary</a><ul>
+<li class="chapter" data-level="7.9.1" data-path="stan-functions.html"><a href="stan-functions.html#pacf_to_acf"><i class="fa fa-check"></i><b>7.9.1</b> pacf_to_acf</a></li>
+<li class="chapter" data-level="7.9.2" data-path="stan-functions.html"><a href="stan-functions.html#constrain_stationary"><i class="fa fa-check"></i><b>7.9.2</b> constrain_stationary</a></li>
+<li class="chapter" data-level="7.9.3" data-path="stan-functions.html"><a href="stan-functions.html#acf_to_pacf"><i class="fa fa-check"></i><b>7.9.3</b> acf_to_pacf</a></li>
+<li class="chapter" data-level="7.9.4" data-path="stan-functions.html"><a href="stan-functions.html#unconstrain_stationary"><i class="fa fa-check"></i><b>7.9.4</b> unconstrain_stationary</a></li>
+<li class="chapter" data-level="7.9.5" data-path="stan-functions.html"><a href="stan-functions.html#kronecker_prod"><i class="fa fa-check"></i><b>7.9.5</b> kronecker_prod</a></li>
+<li class="chapter" data-level="7.9.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_stationary_cov"><i class="fa fa-check"></i><b>7.9.6</b> ssm_stationary_cov</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>8</b> Other Software</a><ul>
+<li class="chapter" data-level="8.1" data-path="other-software.html"><a href="other-software.html#r-packages"><i class="fa fa-check"></i><b>8.1</b> R packages</a></li>
+<li class="chapter" data-level="8.2" data-path="other-software.html"><a href="other-software.html#other"><i class="fa fa-check"></i><b>8.2</b> Other</a><ul>
+<li class="chapter" data-level="8.2.1" data-path="other-software.html"><a href="other-software.html#stata"><i class="fa fa-check"></i><b>8.2.1</b> Stata</a></li>
+<li class="chapter" data-level="8.2.2" data-path="other-software.html"><a href="other-software.html#python"><i class="fa fa-check"></i><b>8.2.2</b> Python</a></li>
 </ul></li>
 </ul></li>
 <li class="divider"></li>
@@ -221,15 +299,60 @@ $$
 
             <section class="normal" id="section-">
 <div id="parameter-estimation" class="section level1">
-<h1><span class="header-section-number">Chapter 4</span> Parameter Estimation</h1> 
+<h1><span class="header-section-number">Chapter 4</span> Parameter Estimation</h1>
+<div id="log-log-likelihood" class="section level2">
+<h2><span class="header-section-number">4.1</span> Log log-likelihood</h2>
+<p>If the the system matrices and initial conditions are known, the log likelihood is <span class="math display">\[
+\begin{aligned}[t]
+\log L(\mat{Y}_n) &amp;= \log p(\vec{y}_1, \dots, \vec{y}_n) = \sum_{t = 1}^n \log p(\vec{y}_t | \mat{Y}_{t - 1}) \\
+&amp;= - \frac{np}{2} \log 2 \pi - \frac{1}{2} \sum_{t = 1}^n \left( \log \left| \mat{F}_t \right| + \vec{v}\T \mat{F}_t^{-1} \vec{v}_t \right)
+\end{aligned} .
+\]</span> The log-likelihood only requires running the filter to calculate <span class="math inline">\(\mat{F}_t\)</span> and <span class="math inline">\(\mat{V}_t\)</span>.</p>
+<p>See <span class="citation">(Durbin and Koopman <a href="#ref-DurbinKoopman2012">2012</a>, Sec. 7.2.1)</span></p>
+</div>
+<div id="integrated-sampler" class="section level2">
+<h2><span class="header-section-number">4.2</span> Integrated Sampler</h2>
+<p><span class="math display">\[
+p(\vec{y} | \mat{H}, \mat{\Psi}) = \int p(\vec{y} | \vec{\alpha}, \mat{H}) p(\vec{\alpha} | \mat{\Psi})\,d\vec{\alpha},
+\]</span></p>
+<p>The log-likelihood of a state-space function can be calculated analytically and expressed up to an integrating constant marginally of the state vector <span class="math inline">\(\vec{\alpha}\)</span>, <span class="math display">\[
+\log p(\vec{y} | \mat{H}, \mat{\Psi}) = \text{const} - 0.5 \left( \sum_{t = 1}^n \sum_{i = 1}^p \log f_{t, i} - v_t^2 f^{-1}_{t,i} \right) .
+\]</span> Thus, parameters of the state space model can be sampled as, <span class="math display">\[
+p(\mat{H}, \mat{\Psi} | \vec{y}) \propto p(\vec{y} | \mat{H}, \mat{\Psi}) p(\mat{H}) p(\mat{\Psi}) .
+\]</span></p>
+</div>
+<div id="diagnostic-checking" class="section level2">
+<h2><span class="header-section-number">4.3</span> Diagnostic Checking</h2>
+<p>The <em>standardized prediction errors</em> are, <span class="math display">\[
+\vec{v}^*_t = \mat{G}_t \vec{v}_t ,
+\]</span> where <span class="math inline">\(\mat{G}_t \mat{G}_t\T = \mat{F}_t^{-1}\)</span>. See Koopmans JSS Sec 3.3. These residuals should satisfy independence, homoskedasticity, and normality.</p>
+<ul>
+<li>independence: Box-Ljung test statistic</li>
+<li>normality: Bowman and Shenton test statistic</li>
+<li>homoskedasticity: compare variance of standardized prediction errors of the 1st third to that of the last third. See Harvey (1989), Durbin and Koopman (2012), and Commandeur and Koopman (2007).</li>
+</ul>
+<p>The <em>auxiliary residuals</em> are the standardized smoothed observation and state disturbances, <span class="math display">\[
+\begin{aligned}[t]
+e^*_t &amp;= \frac{\hat{\varepsilon}_t}{\sqrt{\Var(\hat{varepsilon}_t)}} , \\
+r^*_t &amp;= \frac{\hat{\eta}_t}{\sqrt{\Var{\hat{\eta}_t}}} ,
+\end{aligned}
+\]</span> for <span class="math inline">\(t = 1, \dots, n\)</span>. The standardized smoothed observation disturbances allows for the detection of <em>outliers</em>, while the standardized smoothed state disturbances allows for the detection of <em>structural breaks</em>. Each auxiliary residual is a <span class="math inline">\(t\)</span>-test that there was no outlier (or structural break).</p>
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="forecasting-matrices.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="log-log-likelihood.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="filtering-and-smoothing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="example-models.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

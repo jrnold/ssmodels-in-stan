@@ -8,7 +8,7 @@
   <title>State Space Models in Stan</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <meta name="description" content="Documentation for State Space Models in Stan.">
-  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.1 and GitBook 2.6.7">
 
   <meta property="og:title" content="State Space Models in Stan" />
   <meta property="og:type" content="book" />
@@ -25,7 +25,7 @@
 
 <meta name="author" content="Jeffrey B. Arnold">
 
-<meta name="date" content="2016-07-02">
+<meta name="date" content="2016-07-16">
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
@@ -155,95 +155,127 @@ $$
 <li class="chapter" data-level="3.4" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#missing-observations"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
 <li class="chapter" data-level="3.5" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html#forecasting-matrices"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>4</b> Stan Functions</a><ul>
-<li class="chapter" data-level="4.1" data-path="stan-functions.html"><a href="stan-functions.html#utility-functions"><i class="fa fa-check"></i><b>4.1</b> Utility Functions</a><ul>
-<li class="chapter" data-level="4.1.1" data-path="stan-functions.html"><a href="stan-functions.html#to_symmetric_matrix"><i class="fa fa-check"></i><b>4.1.1</b> to_symmetric_matrix</a></li>
-<li class="chapter" data-level="4.1.2" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_colwise"><i class="fa fa-check"></i><b>4.1.2</b> to_matrix_colwise</a></li>
-<li class="chapter" data-level="4.1.3" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>4.1.3</b> to_matrix_rowwise</a></li>
-<li class="chapter" data-level="4.1.4" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_colwise"><i class="fa fa-check"></i><b>4.1.4</b> to_vector_colwise</a></li>
-<li class="chapter" data-level="4.1.5" data-path="stan-functions.html"><a href="stan-functions.html#to_vector_rowwise"><i class="fa fa-check"></i><b>4.1.5</b> to_vector_rowwise</a></li>
-<li class="chapter" data-level="4.1.6" data-path="stan-functions.html"><a href="stan-functions.html#symmat_size"><i class="fa fa-check"></i><b>4.1.6</b> symmat_size</a></li>
-<li class="chapter" data-level="4.1.7" data-path="stan-functions.html"><a href="stan-functions.html#find_symmat_dim"><i class="fa fa-check"></i><b>4.1.7</b> find_symmat_dim</a></li>
-<li class="chapter" data-level="4.1.8" data-path="stan-functions.html"><a href="stan-functions.html#vector_to_symmat"><i class="fa fa-check"></i><b>4.1.8</b> vector_to_symmat</a></li>
-<li class="chapter" data-level="4.1.9" data-path="stan-functions.html"><a href="stan-functions.html#symmat_to_vector"><i class="fa fa-check"></i><b>4.1.9</b> symmat_to_vector</a></li>
+<li class="chapter" data-level="4" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>4</b> Parameter Estimation</a><ul>
+<li class="chapter" data-level="4.1" data-path="parameter-estimation.html"><a href="parameter-estimation.html#log-log-likelihood"><i class="fa fa-check"></i><b>4.1</b> Log log-likelihood</a></li>
+<li class="chapter" data-level="4.2" data-path="parameter-estimation.html"><a href="parameter-estimation.html#integrated-sampler"><i class="fa fa-check"></i><b>4.2</b> Integrated Sampler</a></li>
+<li class="chapter" data-level="4.3" data-path="parameter-estimation.html"><a href="parameter-estimation.html#diagnostic-checking"><i class="fa fa-check"></i><b>4.3</b> Diagnostic Checking</a></li>
 </ul></li>
-<li class="chapter" data-level="4.2" data-path="stan-functions.html"><a href="stan-functions.html#filtering-1"><i class="fa fa-check"></i><b>4.2</b> Filtering</a><ul>
-<li class="chapter" data-level="4.2.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_a"><i class="fa fa-check"></i><b>4.2.1</b> ssm_filter_update_a</a></li>
-<li class="chapter" data-level="4.2.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_p"><i class="fa fa-check"></i><b>4.2.2</b> ssm_filter_update_P</a></li>
-<li class="chapter" data-level="4.2.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_v"><i class="fa fa-check"></i><b>4.2.3</b> ssm_filter_update_v</a></li>
-<li class="chapter" data-level="4.2.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_f"><i class="fa fa-check"></i><b>4.2.4</b> ssm_filter_update_F</a></li>
-<li class="chapter" data-level="4.2.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_finv"><i class="fa fa-check"></i><b>4.2.5</b> ssm_filter_update_Finv</a></li>
-<li class="chapter" data-level="4.2.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_k"><i class="fa fa-check"></i><b>4.2.6</b> ssm_filter_update_K</a></li>
-<li class="chapter" data-level="4.2.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_l"><i class="fa fa-check"></i><b>4.2.7</b> ssm_filter_update_L</a></li>
-<li class="chapter" data-level="4.2.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_update_ll"><i class="fa fa-check"></i><b>4.2.8</b> ssm_filter_update_ll</a></li>
+<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a></li>
+<li class="chapter" data-level="6" data-path="example-models-1.html"><a href="example-models-1.html"><i class="fa fa-check"></i><b>6</b> Example Models</a><ul>
+<li class="chapter" data-level="6.1" data-path="example-models-1.html"><a href="example-models-1.html#nile"><i class="fa fa-check"></i><b>6.1</b> Nile</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="example-models-1.html"><a href="example-models-1.html#local-level-model"><i class="fa fa-check"></i><b>6.1.1</b> Local Level Model</a></li>
 </ul></li>
-<li class="chapter" data-level="4.3" data-path="stan-functions.html"><a href="stan-functions.html#filtering-2"><i class="fa fa-check"></i><b>4.3</b> Filtering</a><ul>
-<li class="chapter" data-level="4.3.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_idx"><i class="fa fa-check"></i><b>4.3.1</b> ssm_filter_idx</a></li>
-<li class="chapter" data-level="4.3.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_size"><i class="fa fa-check"></i><b>4.3.2</b> ssm_filter_size</a></li>
-<li class="chapter" data-level="4.3.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_loglik"><i class="fa fa-check"></i><b>4.3.3</b> ssm_filter_get_loglik</a></li>
-<li class="chapter" data-level="4.3.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_v"><i class="fa fa-check"></i><b>4.3.4</b> ssm_filter_get_v</a></li>
-<li class="chapter" data-level="4.3.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_finv"><i class="fa fa-check"></i><b>4.3.5</b> ssm_filter_get_Finv</a></li>
-<li class="chapter" data-level="4.3.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_k"><i class="fa fa-check"></i><b>4.3.6</b> ssm_filter_get_K</a></li>
-<li class="chapter" data-level="4.3.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_a"><i class="fa fa-check"></i><b>4.3.7</b> ssm_filter_get_a</a></li>
-<li class="chapter" data-level="4.3.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_p"><i class="fa fa-check"></i><b>4.3.8</b> ssm_filter_get_P</a></li>
-<li class="chapter" data-level="4.3.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter"><i class="fa fa-check"></i><b>4.3.9</b> ssm_filter</a></li>
-<li class="chapter" data-level="4.3.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states"><i class="fa fa-check"></i><b>4.3.10</b> ssm_filter_states</a></li>
-<li class="chapter" data-level="4.3.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_get_a"><i class="fa fa-check"></i><b>4.3.11</b> ssm_filter_states_get_a</a></li>
-<li class="chapter" data-level="4.3.12" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_get_p"><i class="fa fa-check"></i><b>4.3.12</b> ssm_filter_states_get_P</a></li>
-<li class="chapter" data-level="4.3.13" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states-1"><i class="fa fa-check"></i><b>4.3.13</b> ssm_filter_states</a></li>
+<li class="chapter" data-level="6.2" data-path="example-models-1.html"><a href="example-models-1.html#nile-with-known-intervention-intercept"><i class="fa fa-check"></i><b>6.2</b> Nile with known intervention (intercept)</a></li>
+<li class="chapter" data-level="6.3" data-path="example-models-1.html"><a href="example-models-1.html#local-level-with-known-intervention-variance"><i class="fa fa-check"></i><b>6.3</b> Local Level with known intervention (variance)</a></li>
+<li class="chapter" data-level="6.4" data-path="example-models-1.html"><a href="example-models-1.html#local-level-with-time-varying-variances"><i class="fa fa-check"></i><b>6.4</b> local level with time-varying variances</a></li>
 </ul></li>
-<li class="chapter" data-level="4.4" data-path="stan-functions.html"><a href="stan-functions.html#log-likelihood"><i class="fa fa-check"></i><b>4.4</b> Log-likelihood</a><ul>
-<li class="chapter" data-level="4.4.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_lpdf"><i class="fa fa-check"></i><b>4.4.1</b> ssm_lpdf</a></li>
+<li class="chapter" data-level="7" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>7</b> Stan Functions</a><ul>
+<li class="chapter" data-level="7.1" data-path="stan-functions.html"><a href="stan-functions.html#utility-functions"><i class="fa fa-check"></i><b>7.1</b> Utility Functions</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="stan-functions.html"><a href="stan-functions.html#to_symmetric_matrix"><i class="fa fa-check"></i><b>7.1.1</b> to_symmetric_matrix</a></li>
+<li class="chapter" data-level="7.1.2" data-path="stan-functions.html"><a href="stan-functions.html#to_matrix_colwise"><i class="fa fa-check"></i><b>7.1.2</b> to_matrix_colwise</a></li>
+<li class="chapter" data-level="7.1.3" data-path="stan-functions.html"><a href="stan-functions.html#matrix_pow"><i class="fa fa-check"></i><b>7.1.3</b> matrix_pow</a></li>
+<li class="chapter" data-level="7.1.4" data-path="stan-functions.html"><a href="stan-functions.html#symmat_size"><i class="fa fa-check"></i><b>7.1.4</b> symmat_size</a></li>
+<li class="chapter" data-level="7.1.5" data-path="stan-functions.html"><a href="stan-functions.html#find_symmat_dim"><i class="fa fa-check"></i><b>7.1.5</b> find_symmat_dim</a></li>
+<li class="chapter" data-level="7.1.6" data-path="stan-functions.html"><a href="stan-functions.html#vector_to_symmat"><i class="fa fa-check"></i><b>7.1.6</b> vector_to_symmat</a></li>
+<li class="chapter" data-level="7.1.7" data-path="stan-functions.html"><a href="stan-functions.html#symmat_to_vector"><i class="fa fa-check"></i><b>7.1.7</b> symmat_to_vector</a></li>
+<li class="chapter" data-level="7.1.8" data-path="stan-functions.html"><a href="stan-functions.html#rep_lower_triangular_matrix"><i class="fa fa-check"></i><b>7.1.8</b> rep_lower_triangular_matrix</a></li>
+<li class="chapter" data-level="7.1.9" data-path="stan-functions.html"><a href="stan-functions.html#rep_upper_triangular_matrix"><i class="fa fa-check"></i><b>7.1.9</b> rep_upper_triangular_matrix</a></li>
+<li class="chapter" data-level="7.1.10" data-path="stan-functions.html"><a href="stan-functions.html#rep_upper_triangular_matrix-1"><i class="fa fa-check"></i><b>7.1.10</b> rep_upper_triangular_matrix</a></li>
+<li class="chapter" data-level="7.1.11" data-path="stan-functions.html"><a href="stan-functions.html#fill_matrix"><i class="fa fa-check"></i><b>7.1.11</b> fill_matrix</a></li>
+<li class="chapter" data-level="7.1.12" data-path="stan-functions.html"><a href="stan-functions.html#fill_vector"><i class="fa fa-check"></i><b>7.1.12</b> fill_vector</a></li>
+<li class="chapter" data-level="7.1.13" data-path="stan-functions.html"><a href="stan-functions.html#sum_int_true"><i class="fa fa-check"></i><b>7.1.13</b> sum_int_true</a></li>
+<li class="chapter" data-level="7.1.14" data-path="stan-functions.html"><a href="stan-functions.html#sum_int_false"><i class="fa fa-check"></i><b>7.1.14</b> sum_int_false</a></li>
+<li class="chapter" data-level="7.1.15" data-path="stan-functions.html"><a href="stan-functions.html#mask_indexes"><i class="fa fa-check"></i><b>7.1.15</b> mask_indexes</a></li>
+<li class="chapter" data-level="7.1.16" data-path="stan-functions.html"><a href="stan-functions.html#select_indexes"><i class="fa fa-check"></i><b>7.1.16</b> select_indexes</a></li>
+<li class="chapter" data-level="7.1.17" data-path="stan-functions.html"><a href="stan-functions.html#normal2_rng"><i class="fa fa-check"></i><b>7.1.17</b> normal2_rng</a></li>
+<li class="chapter" data-level="7.1.18" data-path="stan-functions.html"><a href="stan-functions.html#choleksky_decompose2"><i class="fa fa-check"></i><b>7.1.18</b> choleksky_decompose2</a></li>
+<li class="chapter" data-level="7.1.19" data-path="stan-functions.html"><a href="stan-functions.html#multi_normal2_rng"><i class="fa fa-check"></i><b>7.1.19</b> multi_normal2_rng</a></li>
+<li class="chapter" data-level="7.1.20" data-path="stan-functions.html"><a href="stan-functions.html#multi_normal_cholesky2_rng"><i class="fa fa-check"></i><b>7.1.20</b> multi_normal_cholesky2_rng</a></li>
 </ul></li>
-<li class="chapter" data-level="4.5" data-path="stan-functions.html"><a href="stan-functions.html#time-invariant-kalman-filter"><i class="fa fa-check"></i><b>4.5</b> Time-Invariant Kalman Filter</a><ul>
-<li class="chapter" data-level="4.5.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_check_matrix_equal"><i class="fa fa-check"></i><b>4.5.1</b> ssm_check_matrix_equal</a></li>
-<li class="chapter" data-level="4.5.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_constant_lpdf"><i class="fa fa-check"></i><b>4.5.2</b> ssm_constant_lpdf</a></li>
+<li class="chapter" data-level="7.2" data-path="stan-functions.html"><a href="stan-functions.html#filtering-1"><i class="fa fa-check"></i><b>7.2</b> Filtering</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_a"><i class="fa fa-check"></i><b>7.2.1</b> ssm_update_a</a></li>
+<li class="chapter" data-level="7.2.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_p"><i class="fa fa-check"></i><b>7.2.2</b> ssm_update_P</a></li>
+<li class="chapter" data-level="7.2.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_v"><i class="fa fa-check"></i><b>7.2.3</b> ssm_update_v</a></li>
+<li class="chapter" data-level="7.2.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_v_miss"><i class="fa fa-check"></i><b>7.2.4</b> ssm_update_v_miss</a></li>
+<li class="chapter" data-level="7.2.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_f"><i class="fa fa-check"></i><b>7.2.5</b> ssm_update_F</a></li>
+<li class="chapter" data-level="7.2.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_finv"><i class="fa fa-check"></i><b>7.2.6</b> ssm_update_Finv</a></li>
+<li class="chapter" data-level="7.2.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_finv_miss"><i class="fa fa-check"></i><b>7.2.7</b> ssm_update_Finv_miss</a></li>
+<li class="chapter" data-level="7.2.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_k"><i class="fa fa-check"></i><b>7.2.8</b> ssm_update_K</a></li>
+<li class="chapter" data-level="7.2.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_l"><i class="fa fa-check"></i><b>7.2.9</b> ssm_update_L</a></li>
+<li class="chapter" data-level="7.2.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_loglik"><i class="fa fa-check"></i><b>7.2.10</b> ssm_update_loglik</a></li>
+<li class="chapter" data-level="7.2.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_loglik_miss"><i class="fa fa-check"></i><b>7.2.11</b> ssm_update_loglik_miss</a></li>
 </ul></li>
-<li class="chapter" data-level="4.6" data-path="stan-functions.html"><a href="stan-functions.html#common-smoother-functions"><i class="fa fa-check"></i><b>4.6</b> Common Smoother Functions</a><ul>
-<li class="chapter" data-level="4.6.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_update_r"><i class="fa fa-check"></i><b>4.6.1</b> ssm_smooth_update_r</a></li>
-<li class="chapter" data-level="4.6.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_update_n"><i class="fa fa-check"></i><b>4.6.2</b> ssm_smooth_update_N</a></li>
-<li class="chapter" data-level="4.6.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_size"><i class="fa fa-check"></i><b>4.6.3</b> ssm_smooth_state_size</a></li>
-<li class="chapter" data-level="4.6.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_get_mean"><i class="fa fa-check"></i><b>4.6.4</b> ssm_smooth_state_get_mean</a></li>
-<li class="chapter" data-level="4.6.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_get_var"><i class="fa fa-check"></i><b>4.6.5</b> ssm_smooth_state_get_var</a></li>
-<li class="chapter" data-level="4.6.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state"><i class="fa fa-check"></i><b>4.6.6</b> ssm_smooth_state</a></li>
-<li class="chapter" data-level="4.6.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_size"><i class="fa fa-check"></i><b>4.6.7</b> ssm_smooth_eps_size</a></li>
-<li class="chapter" data-level="4.6.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_get_mean"><i class="fa fa-check"></i><b>4.6.8</b> ssm_smooth_eps_get_mean</a></li>
-<li class="chapter" data-level="4.6.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_get_var"><i class="fa fa-check"></i><b>4.6.9</b> ssm_smooth_eps_get_var</a></li>
-<li class="chapter" data-level="4.6.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps"><i class="fa fa-check"></i><b>4.6.10</b> ssm_smooth_eps</a></li>
-<li class="chapter" data-level="4.6.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta"><i class="fa fa-check"></i><b>4.6.11</b> ssm_smooth_eta</a></li>
-<li class="chapter" data-level="4.6.12" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta_get_mean"><i class="fa fa-check"></i><b>4.6.12</b> ssm_smooth_eta_get_mean</a></li>
-<li class="chapter" data-level="4.6.13" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta_get_var"><i class="fa fa-check"></i><b>4.6.13</b> ssm_smooth_eta_get_var</a></li>
-<li class="chapter" data-level="4.6.14" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta-1"><i class="fa fa-check"></i><b>4.6.14</b> ssm_smooth_eta</a></li>
-<li class="chapter" data-level="4.6.15" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_faststate"><i class="fa fa-check"></i><b>4.6.15</b> ssm_smooth_faststate</a></li>
+<li class="chapter" data-level="7.3" data-path="stan-functions.html"><a href="stan-functions.html#filtering-2"><i class="fa fa-check"></i><b>7.3</b> Filtering</a><ul>
+<li class="chapter" data-level="7.3.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_idx"><i class="fa fa-check"></i><b>7.3.1</b> ssm_filter_idx</a></li>
+<li class="chapter" data-level="7.3.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_size"><i class="fa fa-check"></i><b>7.3.2</b> ssm_filter_size</a></li>
+<li class="chapter" data-level="7.3.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_loglik"><i class="fa fa-check"></i><b>7.3.3</b> ssm_filter_get_loglik</a></li>
+<li class="chapter" data-level="7.3.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_v"><i class="fa fa-check"></i><b>7.3.4</b> ssm_filter_get_v</a></li>
+<li class="chapter" data-level="7.3.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_finv"><i class="fa fa-check"></i><b>7.3.5</b> ssm_filter_get_Finv</a></li>
+<li class="chapter" data-level="7.3.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_k"><i class="fa fa-check"></i><b>7.3.6</b> ssm_filter_get_K</a></li>
+<li class="chapter" data-level="7.3.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_a"><i class="fa fa-check"></i><b>7.3.7</b> ssm_filter_get_a</a></li>
+<li class="chapter" data-level="7.3.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_get_p"><i class="fa fa-check"></i><b>7.3.8</b> ssm_filter_get_P</a></li>
+<li class="chapter" data-level="7.3.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter"><i class="fa fa-check"></i><b>7.3.9</b> ssm_filter</a></li>
+<li class="chapter" data-level="7.3.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_miss"><i class="fa fa-check"></i><b>7.3.10</b> ssm_filter_miss</a></li>
+<li class="chapter" data-level="7.3.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states"><i class="fa fa-check"></i><b>7.3.11</b> ssm_filter_states</a></li>
+<li class="chapter" data-level="7.3.12" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_get_a"><i class="fa fa-check"></i><b>7.3.12</b> ssm_filter_states_get_a</a></li>
+<li class="chapter" data-level="7.3.13" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_get_p"><i class="fa fa-check"></i><b>7.3.13</b> ssm_filter_states_get_P</a></li>
+<li class="chapter" data-level="7.3.14" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_update_a"><i class="fa fa-check"></i><b>7.3.14</b> ssm_filter_states_update_a</a></li>
+<li class="chapter" data-level="7.3.15" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states_update_p"><i class="fa fa-check"></i><b>7.3.15</b> ssm_filter_states_update_P</a></li>
+<li class="chapter" data-level="7.3.16" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_states-1"><i class="fa fa-check"></i><b>7.3.16</b> ssm_filter_states</a></li>
 </ul></li>
-<li class="chapter" data-level="4.7" data-path="stan-functions.html"><a href="stan-functions.html#simulators-and-smoothing-simulators"><i class="fa fa-check"></i><b>4.7</b> Simulators and Smoothing Simulators</a><ul>
-<li class="chapter" data-level="4.7.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_idx"><i class="fa fa-check"></i><b>4.7.1</b> ssm_sim_idx</a></li>
-<li class="chapter" data-level="4.7.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_size"><i class="fa fa-check"></i><b>4.7.2</b> ssm_sim_size</a></li>
-<li class="chapter" data-level="4.7.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_y"><i class="fa fa-check"></i><b>4.7.3</b> ssm_sim_get_y</a></li>
-<li class="chapter" data-level="4.7.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_a"><i class="fa fa-check"></i><b>4.7.4</b> ssm_sim_get_a</a></li>
-<li class="chapter" data-level="4.7.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_eps"><i class="fa fa-check"></i><b>4.7.5</b> ssm_sim_get_eps</a></li>
-<li class="chapter" data-level="4.7.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_eta"><i class="fa fa-check"></i><b>4.7.6</b> ssm_sim_get_eta</a></li>
-<li class="chapter" data-level="4.7.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_rng"><i class="fa fa-check"></i><b>4.7.7</b> ssm_sim_rng</a></li>
+<li class="chapter" data-level="7.4" data-path="stan-functions.html"><a href="stan-functions.html#log-likelihood"><i class="fa fa-check"></i><b>7.4</b> Log-likelihood</a><ul>
+<li class="chapter" data-level="7.4.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_lpdf"><i class="fa fa-check"></i><b>7.4.1</b> ssm_lpdf</a></li>
+<li class="chapter" data-level="7.4.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_filter_miss-1"><i class="fa fa-check"></i><b>7.4.2</b> ssm_filter_miss</a></li>
 </ul></li>
-<li class="chapter" data-level="4.8" data-path="stan-functions.html"><a href="stan-functions.html#simulation-smoothers-1"><i class="fa fa-check"></i><b>4.8</b> Simulation Smoothers</a><ul>
-<li class="chapter" data-level="4.8.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_state_rng"><i class="fa fa-check"></i><b>4.8.1</b> ssm_simsmo_state_rng</a></li>
-<li class="chapter" data-level="4.8.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_eta_rng"><i class="fa fa-check"></i><b>4.8.2</b> ssm_simsmo_eta_rng</a></li>
-<li class="chapter" data-level="4.8.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_eps_rng"><i class="fa fa-check"></i><b>4.8.3</b> ssm_simsmo_eps_rng</a></li>
+<li class="chapter" data-level="7.5" data-path="stan-functions.html"><a href="stan-functions.html#time-invariant-kalman-filter"><i class="fa fa-check"></i><b>7.5</b> Time-Invariant Kalman Filter</a><ul>
+<li class="chapter" data-level="7.5.1" data-path="stan-functions.html"><a href="stan-functions.html#matrix_diff"><i class="fa fa-check"></i><b>7.5.1</b> matrix_diff</a></li>
+<li class="chapter" data-level="7.5.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_constant_lpdf"><i class="fa fa-check"></i><b>7.5.2</b> ssm_constant_lpdf</a></li>
 </ul></li>
-<li class="chapter" data-level="4.9" data-path="stan-functions.html"><a href="stan-functions.html#stationary"><i class="fa fa-check"></i><b>4.9</b> Stationary</a><ul>
-<li class="chapter" data-level="4.9.1" data-path="stan-functions.html"><a href="stan-functions.html#pacf_to_acf"><i class="fa fa-check"></i><b>4.9.1</b> pacf_to_acf</a></li>
-<li class="chapter" data-level="4.9.2" data-path="stan-functions.html"><a href="stan-functions.html#constrain_stationary"><i class="fa fa-check"></i><b>4.9.2</b> constrain_stationary</a></li>
-<li class="chapter" data-level="4.9.3" data-path="stan-functions.html"><a href="stan-functions.html#acf_to_pacf"><i class="fa fa-check"></i><b>4.9.3</b> acf_to_pacf</a></li>
-<li class="chapter" data-level="4.9.4" data-path="stan-functions.html"><a href="stan-functions.html#unconstrain_stationary"><i class="fa fa-check"></i><b>4.9.4</b> unconstrain_stationary</a></li>
-<li class="chapter" data-level="4.9.5" data-path="stan-functions.html"><a href="stan-functions.html#kronecker_prod"><i class="fa fa-check"></i><b>4.9.5</b> kronecker_prod</a></li>
-<li class="chapter" data-level="4.9.6" data-path="stan-functions.html"><a href="stan-functions.html#arima_stationary_cov"><i class="fa fa-check"></i><b>4.9.6</b> arima_stationary_cov</a></li>
+<li class="chapter" data-level="7.6" data-path="stan-functions.html"><a href="stan-functions.html#common-smoother-functions"><i class="fa fa-check"></i><b>7.6</b> Common Smoother Functions</a><ul>
+<li class="chapter" data-level="7.6.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_r"><i class="fa fa-check"></i><b>7.6.1</b> ssm_update_r</a></li>
+<li class="chapter" data-level="7.6.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_update_n"><i class="fa fa-check"></i><b>7.6.2</b> ssm_update_N</a></li>
+<li class="chapter" data-level="7.6.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_size"><i class="fa fa-check"></i><b>7.6.3</b> ssm_smooth_state_size</a></li>
+<li class="chapter" data-level="7.6.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_get_mean"><i class="fa fa-check"></i><b>7.6.4</b> ssm_smooth_state_get_mean</a></li>
+<li class="chapter" data-level="7.6.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_get_var"><i class="fa fa-check"></i><b>7.6.5</b> ssm_smooth_state_get_var</a></li>
+<li class="chapter" data-level="7.6.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state"><i class="fa fa-check"></i><b>7.6.6</b> ssm_smooth_state</a></li>
+<li class="chapter" data-level="7.6.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_size"><i class="fa fa-check"></i><b>7.6.7</b> ssm_smooth_eps_size</a></li>
+<li class="chapter" data-level="7.6.8" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_get_mean"><i class="fa fa-check"></i><b>7.6.8</b> ssm_smooth_eps_get_mean</a></li>
+<li class="chapter" data-level="7.6.9" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps_get_var"><i class="fa fa-check"></i><b>7.6.9</b> ssm_smooth_eps_get_var</a></li>
+<li class="chapter" data-level="7.6.10" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eps"><i class="fa fa-check"></i><b>7.6.10</b> ssm_smooth_eps</a></li>
+<li class="chapter" data-level="7.6.11" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta"><i class="fa fa-check"></i><b>7.6.11</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="7.6.12" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta_get_mean"><i class="fa fa-check"></i><b>7.6.12</b> ssm_smooth_eta_get_mean</a></li>
+<li class="chapter" data-level="7.6.13" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta_get_var"><i class="fa fa-check"></i><b>7.6.13</b> ssm_smooth_eta_get_var</a></li>
+<li class="chapter" data-level="7.6.14" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_eta-1"><i class="fa fa-check"></i><b>7.6.14</b> ssm_smooth_eta</a></li>
+<li class="chapter" data-level="7.6.15" data-path="stan-functions.html"><a href="stan-functions.html#ssm_smooth_state_mean"><i class="fa fa-check"></i><b>7.6.15</b> ssm_smooth_state_mean</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="stan-functions.html"><a href="stan-functions.html#simulators-and-smoothing-simulators"><i class="fa fa-check"></i><b>7.7</b> Simulators and Smoothing Simulators</a><ul>
+<li class="chapter" data-level="7.7.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_idx"><i class="fa fa-check"></i><b>7.7.1</b> ssm_sim_idx</a></li>
+<li class="chapter" data-level="7.7.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_size"><i class="fa fa-check"></i><b>7.7.2</b> ssm_sim_size</a></li>
+<li class="chapter" data-level="7.7.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_y"><i class="fa fa-check"></i><b>7.7.3</b> ssm_sim_get_y</a></li>
+<li class="chapter" data-level="7.7.4" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_a"><i class="fa fa-check"></i><b>7.7.4</b> ssm_sim_get_a</a></li>
+<li class="chapter" data-level="7.7.5" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_eps"><i class="fa fa-check"></i><b>7.7.5</b> ssm_sim_get_eps</a></li>
+<li class="chapter" data-level="7.7.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_get_eta"><i class="fa fa-check"></i><b>7.7.6</b> ssm_sim_get_eta</a></li>
+<li class="chapter" data-level="7.7.7" data-path="stan-functions.html"><a href="stan-functions.html#ssm_sim_rng"><i class="fa fa-check"></i><b>7.7.7</b> ssm_sim_rng</a></li>
+</ul></li>
+<li class="chapter" data-level="7.8" data-path="stan-functions.html"><a href="stan-functions.html#simulation-smoothers-1"><i class="fa fa-check"></i><b>7.8</b> Simulation Smoothers</a><ul>
+<li class="chapter" data-level="7.8.1" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_state_rng"><i class="fa fa-check"></i><b>7.8.1</b> ssm_simsmo_state_rng</a></li>
+<li class="chapter" data-level="7.8.2" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_eta_rng"><i class="fa fa-check"></i><b>7.8.2</b> ssm_simsmo_eta_rng</a></li>
+<li class="chapter" data-level="7.8.3" data-path="stan-functions.html"><a href="stan-functions.html#ssm_simsmo_eps_rng"><i class="fa fa-check"></i><b>7.8.3</b> ssm_simsmo_eps_rng</a></li>
+</ul></li>
+<li class="chapter" data-level="7.9" data-path="stan-functions.html"><a href="stan-functions.html#stationary"><i class="fa fa-check"></i><b>7.9</b> Stationary</a><ul>
+<li class="chapter" data-level="7.9.1" data-path="stan-functions.html"><a href="stan-functions.html#pacf_to_acf"><i class="fa fa-check"></i><b>7.9.1</b> pacf_to_acf</a></li>
+<li class="chapter" data-level="7.9.2" data-path="stan-functions.html"><a href="stan-functions.html#constrain_stationary"><i class="fa fa-check"></i><b>7.9.2</b> constrain_stationary</a></li>
+<li class="chapter" data-level="7.9.3" data-path="stan-functions.html"><a href="stan-functions.html#acf_to_pacf"><i class="fa fa-check"></i><b>7.9.3</b> acf_to_pacf</a></li>
+<li class="chapter" data-level="7.9.4" data-path="stan-functions.html"><a href="stan-functions.html#unconstrain_stationary"><i class="fa fa-check"></i><b>7.9.4</b> unconstrain_stationary</a></li>
+<li class="chapter" data-level="7.9.5" data-path="stan-functions.html"><a href="stan-functions.html#kronecker_prod"><i class="fa fa-check"></i><b>7.9.5</b> kronecker_prod</a></li>
+<li class="chapter" data-level="7.9.6" data-path="stan-functions.html"><a href="stan-functions.html#ssm_stationary_cov"><i class="fa fa-check"></i><b>7.9.6</b> ssm_stationary_cov</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>5</b> Other Software</a><ul>
-<li class="chapter" data-level="5.1" data-path="other-software.html"><a href="other-software.html#r-packages"><i class="fa fa-check"></i><b>5.1</b> R packages</a></li>
-<li class="chapter" data-level="5.2" data-path="other-software.html"><a href="other-software.html#other"><i class="fa fa-check"></i><b>5.2</b> Other</a><ul>
-<li class="chapter" data-level="5.2.1" data-path="other-software.html"><a href="other-software.html#stata"><i class="fa fa-check"></i><b>5.2.1</b> Stata</a></li>
-<li class="chapter" data-level="5.2.2" data-path="other-software.html"><a href="other-software.html#python"><i class="fa fa-check"></i><b>5.2.2</b> Python</a></li>
+<li class="chapter" data-level="8" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>8</b> Other Software</a><ul>
+<li class="chapter" data-level="8.1" data-path="other-software.html"><a href="other-software.html#r-packages"><i class="fa fa-check"></i><b>8.1</b> R packages</a></li>
+<li class="chapter" data-level="8.2" data-path="other-software.html"><a href="other-software.html#other"><i class="fa fa-check"></i><b>8.2</b> Other</a><ul>
+<li class="chapter" data-level="8.2.1" data-path="other-software.html"><a href="other-software.html#stata"><i class="fa fa-check"></i><b>8.2.1</b> Stata</a></li>
+<li class="chapter" data-level="8.2.2" data-path="other-software.html"><a href="other-software.html#python"><i class="fa fa-check"></i><b>8.2.2</b> Python</a></li>
 </ul></li>
 </ul></li>
 <li class="divider"></li>
@@ -267,11 +299,11 @@ $$
 
             <section class="normal" id="section-">
 <div id="other-software" class="section level1">
-<h1><span class="header-section-number">Chapter 5</span> Other Software</h1>
+<h1><span class="header-section-number">Chapter 8</span> Other Software</h1>
 <p>This a brief summary of other available software to estimate state space models with a focus on R and python.</p>
 <div id="r-packages" class="section level2">
-<h2><span class="header-section-number">5.1</span> R packages</h2>
-<p><span class="citation">Tusell (<a href="other-software.html#ref-Tusell2011">2011</a>)</span> reviews R packages for state space models (as of 2011). <span class="citation">Helske (<a href="other-software.html#ref-Helske2012">2012</a>)</span> includes an more recent review of R packages implementing state space models.</p>
+<h2><span class="header-section-number">8.1</span> R packages</h2>
+<p><span class="citation">Tusell (<a href="#ref-Tusell2011">2011</a>)</span> reviews R packages for state space models (as of 2011). <span class="citation">Helske (<a href="#ref-Helske2012">2012</a>)</span> includes an more recent review of R packages implementing state space models.</p>
 <ul>
 <li>The <strong>stats</strong> package includes functions for univariate Kalman filtering and smoothing (<code>KalmanLike</code>, <code>KalmanRun</code>, <code>KalmanSmooth</code>, <code>KalmanForecast</code>) which are used by <code>StructTS</code> and <code>arima</code>.</li>
 <li>dse</li>
@@ -284,119 +316,176 @@ $$
 </ul>
 </div>
 <div id="other" class="section level2">
-<h2><span class="header-section-number">5.2</span> Other</h2>
-<p>The <a href="https://www.jstatsoft.org/issue/view/v041">JSS Volume 41</a> <span class="citation">(Commandeur, Koopman, and Ooms <a href="other-software.html#ref-CommandeurKoopmanOoms2011">2011</a>)</span> contains articles on state space implementations in multiple languages</p>
+<h2><span class="header-section-number">8.2</span> Other</h2>
+<p>The <a href="https://www.jstatsoft.org/issue/view/v041">JSS Volume 41</a> <span class="citation">(Commandeur, Koopman, and Ooms <a href="#ref-CommandeurKoopmanOoms2011">2011</a>)</span> contains articles on state space implementations in multiple languages</p>
 <ul>
-<li>STAMP <span class="citation">(Mendelssohn <a href="other-software.html#ref-Mendelssohn2011a">2011</a>)</span></li>
-<li>Ox/SsfPack <span class="citation">(Pelagatti <a href="other-software.html#ref-Pelagatti2011a">2011</a>)</span></li>
-<li>R <span class="citation">(Petris and Petrone <a href="other-software.html#ref-PetrisPetrone2011a">2011</a>)</span></li>
-<li>SsfPack in S+FinMetrics <span class="citation">(Zivot <a href="other-software.html#ref-Zivot2011a">2011</a>)</span></li>
-<li>Matlab <span class="citation">(Peng and Aston <a href="other-software.html#ref-PengAston2011a">2011</a>)</span></li>
-<li>FORTRAN <span class="citation">(Bell <a href="other-software.html#ref-Bell2011a">2011</a>)</span></li>
-<li>eViews <span class="citation">(Bossche <a href="other-software.html#ref-Bossche2011a">2011</a>)</span></li>
-<li>RATS <span class="citation">(Doan <a href="other-software.html#ref-Doan2011a">2011</a>)</span></li>
-<li>Stata <span class="citation">(Drukker and Gates <a href="other-software.html#ref-DrukkerGates2011a">2011</a>)</span></li>
-<li>gretl <span class="citation">(Lucchetti <a href="other-software.html#ref-Lucchetti2011a">2011</a>)</span></li>
-<li>SAS <span class="citation">(Selukar <a href="other-software.html#ref-Selukar2011a">2011</a>)</span></li>
-<li>Ox <span class="citation">(Bos <a href="other-software.html#ref-Bos2011a">2011</a>)</span></li>
+<li>STAMP <span class="citation">(Mendelssohn <a href="#ref-Mendelssohn2011a">2011</a>)</span></li>
+<li>Ox/SsfPack <span class="citation">(Pelagatti <a href="#ref-Pelagatti2011a">2011</a>)</span></li>
+<li>R <span class="citation">(Petris and Petrone <a href="#ref-PetrisPetrone2011a">2011</a>)</span></li>
+<li>SsfPack in S+FinMetrics <span class="citation">(Zivot <a href="#ref-Zivot2011a">2011</a>)</span></li>
+<li>Matlab <span class="citation">(Peng and Aston <a href="#ref-PengAston2011a">2011</a>)</span></li>
+<li>FORTRAN <span class="citation">(Bell <a href="#ref-Bell2011a">2011</a>)</span></li>
+<li>eViews <span class="citation">(Bossche <a href="#ref-Bossche2011a">2011</a>)</span></li>
+<li>RATS <span class="citation">(Doan <a href="#ref-Doan2011a">2011</a>)</span></li>
+<li>Stata <span class="citation">(Drukker and Gates <a href="#ref-DrukkerGates2011a">2011</a>)</span></li>
+<li>gretl <span class="citation">(Lucchetti <a href="#ref-Lucchetti2011a">2011</a>)</span></li>
+<li>SAS <span class="citation">(Selukar <a href="#ref-Selukar2011a">2011</a>)</span></li>
+<li>Ox <span class="citation">(Bos <a href="#ref-Bos2011a">2011</a>)</span></li>
 </ul>
 <div id="stata" class="section level3">
-<h3><span class="header-section-number">5.2.1</span> Stata</h3>
+<h3><span class="header-section-number">8.2.1</span> Stata</h3>
 <p>Stata’s <a href="http://www.stata.com/manuals14/ts.pdf">timeseries</a> capabilities includes the command <code>ssmodels</code> to estimate general state space models, as well as common special cases: <code>arima</code> (SARIMAX models), <code>dfactor</code> (Dynamic Factor), and <code>ucm</code> (Unobserved Components Models).</p>
 </div>
 <div id="python" class="section level3">
-<h3><span class="header-section-number">5.2.2</span> Python</h3>
+<h3><span class="header-section-number">8.2.2</span> Python</h3>
 <p>The [statsmodels] module [statsmodels.tsa] contains functions and classes for time series analysis including autoregressive (AR), vector autoregressive (VAR), autoregressive moving avergage models (ARMA), and functions fo Kalman filtering. Currently the Kalman filter only handles the special univariate case for ARIMA.</p>
 <p>The <strong>statsmodels</strong> module <a href="http://www.statsmodels.org/dev/statespace.html#">statsmodels.tsa.statespace</a> contains more general state space code. The examples are very good.</p>
 <p>An <a href="http://pages.uoregon.edu/cfulton/posts/state_space_mh.html">example</a> of using <code>statsmodels.tsa.statespace</code> and <a href="http://pymcmc.readthedocs.io/en/latest/">PyMC</a> to simulate from the posterior of a state space model. See <a href="http://pages.uoregon.edu/cfulton/posts/state_space_python.html">State Space Modeling in Python</a>.</p>
-<p><span class="citation">Strickland et al. (<a href="other-software.html#ref-StricklandBurdettMengersenEtAl2014a">2014</a>)</span> introduce <a href="https://bitbucket.org/christophermarkstrickland/pyssm">PySSM</a> to simulate state space models using PyMCMC (not to be confused with the more popular PyMC).</p>
+<p><span class="citation">Strickland et al. (<a href="#ref-StricklandBurdettMengersenEtAl2014a">2014</a>)</span> introduce <a href="https://bitbucket.org/christophermarkstrickland/pyssm">PySSM</a> to simulate state space models using PyMCMC (not to be confused with the more popular PyMC).</p>
 
-<div class="references">
-<div id="ref-AnsleyKohn1986a">
-<p>Ansley, Craig F., and Robert Kohn. 1986. “A Note on Reparameterizing a Vector Autoregressive Moving Average Model to Enforce Stationarity.” <em>Journal of Statistical Computation and Simulation</em> 24 (2): 99–106. <a href="http://doi.org/10.1080/00949658608810893">doi:10.1080/00949658608810893</a>.</p>
+<div id="refs" class="references">
+<div>
+<p>Ansley, Craig F., and Robert Kohn. 1986. “A Note on Reparameterizing a Vector Autoregressive Moving Average Model to Enforce Stationarity.” <em>Journal of Statistical Computation and Simulation</em> 24 (2): 99–106. doi:<a href="https://doi.org/10.1080/00949658608810893">10.1080/00949658608810893</a>.</p>
 </div>
-<div id="ref-Bell2011a">
-<p>Bell, William. 2011. “REGCMPNT  a Fortran Program for Regression Models with ARIMA Component Errors.” <em>Journal of Statistical Software</em> 41 (1): 1–23. <a href="http://doi.org/10.18637/jss.v041.i07">doi:10.18637/jss.v041.i07</a>.</p>
+<div>
+<p>Balke, Nathan S. 1993. “Detecting Level Shifts in Time Series.” <em>Journal of Business &amp; Economic Statistics</em> 11 (1). American Statistical Association: 81–92. <a href="http://www.jstor.org/stable/1391308" class="uri">http://www.jstor.org/stable/1391308</a>.</p>
 </div>
-<div id="ref-Bos2011a">
-<p>Bos, Charles. 2011. “A Bayesian Analysis of Unobserved Component Models Using Ox.” <em>Journal of Statistical Software</em> 41 (1): 1–24. <a href="http://doi.org/10.18637/jss.v041.i13">doi:10.18637/jss.v041.i13</a>.</p>
+<div>
+<p>Bell, William. 2011. “REGCMPNT  a Fortran Program for Regression Models with ARIMA Component Errors.” <em>Journal of Statistical Software</em> 41 (1): 1–23. doi:<a href="https://doi.org/10.18637/jss.v041.i07">10.18637/jss.v041.i07</a>.</p>
 </div>
-<div id="ref-Bossche2011a">
-<p>Bossche, Filip Van den. 2011. “Fitting State Space Models with EViews.” <em>Journal of Statistical Software</em> 41 (1): 1–16. <a href="http://doi.org/10.18637/jss.v041.i08">doi:10.18637/jss.v041.i08</a>.</p>
+<div>
+<p>Bos, Charles. 2011. “A Bayesian Analysis of Unobserved Component Models Using Ox.” <em>Journal of Statistical Software</em> 41 (1): 1–24. doi:<a href="https://doi.org/10.18637/jss.v041.i13">10.18637/jss.v041.i13</a>.</p>
 </div>
-<div id="ref-CarterKohn1994">
-<p>Carter, R., C. K. And Kohn. 1994. “On Gibbs Sampling for State Space Models.” <em>Biometrika</em> 81 (3): 541–53. <a href="http://doi.org/10.1093/biomet/81.3.541">doi:10.1093/biomet/81.3.541</a>.</p>
+<div>
+<p>Bossche, Filip Van den. 2011. “Fitting State Space Models with EViews.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i08">10.18637/jss.v041.i08</a>.</p>
 </div>
-<div id="ref-CommandeurKoopmanOoms2011">
+<div>
+<p>Carter, R., C. K. And Kohn. 1994. “On Gibbs Sampling for State Space Models.” <em>Biometrika</em> 81 (3): 541–53. doi:<a href="https://doi.org/10.1093/biomet/81.3.541">10.1093/biomet/81.3.541</a>.</p>
+</div>
+<div>
+<p>Cobb, George W. 1978. “The Problem of the Nile: Conditional Solution to a Changepoint Problem.” <em>Biometrika</em> 65 (2): 243–51. doi:<a href="https://doi.org/10.1093/biomet/65.2.243">10.1093/biomet/65.2.243</a>.</p>
+</div>
+<div>
 <p>Commandeur, Jacques J. F., Siem Jan Koopman, and Marius Ooms. 2011. “Statistical Software for State Space Methods.” <em>Journal of Statistical Software</em> 41 (1): 1–18. <a href="http://www.jstatsoft.org/v41/i01" class="uri">http://www.jstatsoft.org/v41/i01</a>.</p>
 </div>
-<div id="ref-DeJongShephard1995">
-<p>De Jong, Piet, and Neil Shephard. 1995. “The Simulation Smoother for Time Series Models.” <em>Biometrika</em> 82 (2): 339–50. <a href="http://doi.org/10.1093/biomet/82.2.339">doi:10.1093/biomet/82.2.339</a>.</p>
+<div>
+<p>De Jong, Piet, and Neil Shephard. 1995. “The Simulation Smoother for Time Series Models.” <em>Biometrika</em> 82 (2): 339–50. doi:<a href="https://doi.org/10.1093/biomet/82.2.339">10.1093/biomet/82.2.339</a>.</p>
 </div>
-<div id="ref-Doan2011a">
-<p>Doan, Thomas. 2011. “State Space Methods in RATS.” <em>Journal of Statistical Software</em> 41 (1): 1–16. <a href="http://doi.org/10.18637/jss.v041.i09">doi:10.18637/jss.v041.i09</a>.</p>
+<div>
+<p>Doan, Thomas. 2011. “State Space Methods in RATS.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i09">10.18637/jss.v041.i09</a>.</p>
 </div>
-<div id="ref-DrukkerGates2011a">
-<p>Drukker, David, and Richard Gates. 2011. “State Space Methods in Stata.” <em>Journal of Statistical Software</em> 41 (1): 1–25. <a href="http://doi.org/10.18637/jss.v041.i10">doi:10.18637/jss.v041.i10</a>.</p>
+<div>
+<p>Drukker, David, and Richard Gates. 2011. “State Space Methods in Stata.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i10">10.18637/jss.v041.i10</a>.</p>
 </div>
-<div id="ref-DurbinKoopman2002">
+<div>
 <p>Durbin, J., and S. J. Koopman. 2002. “A Simple and Efficient Simulation Smoother for State Space Time Series Analysis.” <em>Biometrika</em> 89 (3). Biometrika Trust: 603–15. <a href="http://www.jstor.org/stable/4140605" class="uri">http://www.jstor.org/stable/4140605</a>.</p>
 </div>
-<div id="ref-DurbinKoopman2012">
+<div>
 <p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
 </div>
-<div id="ref-Fruehwirth-Schnatter1994">
-<p>Frühwirth-Schnatter, Sylvia. 1994. “Data Augmentation and Dynamic Linear Models.” <em>Journal of Time Series Analysis</em> 15 (2). Blackwell Publishing Ltd: 183–202. <a href="http://doi.org/10.1111/j.1467-9892.1994.tb00184.x">doi:10.1111/j.1467-9892.1994.tb00184.x</a>.</p>
+<div>
+<p>Frühwirth-Schnatter, Sylvia. 1994. “Data Augmentation and Dynamic Linear Models.” <em>Journal of Time Series Analysis</em> 15 (2). Blackwell Publishing Ltd: 183–202. doi:<a href="https://doi.org/10.1111/j.1467-9892.1994.tb00184.x">10.1111/j.1467-9892.1994.tb00184.x</a>.</p>
+</div>
+<div>
+<p>Helske, Jouni. 2012. “KFAS: Kalman Filter and Smoother for Exponential Family State Space Models.” <a href="http://CRAN.R-project.org/package=KFAS" class="uri">http://CRAN.R-project.org/package=KFAS</a>.</p>
+</div>
+<div>
+<p>Jones, M. C. 1987. “Randomly Choosing Parameters from the Stationarity and Invertibility Region of Autoregressive-Moving Average Models.” <em>Journal of the Royal Statistical Society. Series C (Applied Statistics)</em> 36 (2). [Wiley, Royal Statistical Society]: 134–38. <a href="http://www.jstor.org/stable/2347544" class="uri">http://www.jstor.org/stable/2347544</a>.</p>
+</div>
+<div>
+<p>Jones, Richard H. 1980. “Maximum Likelihood Fitting of ARMA Models to Time Series with Missing Observations.” <em>Technometrics</em> 22 (3). [Taylor &amp; Francis, Ltd., American Statistical Association, American Society for Quality]: 389–95. <a href="http://www.jstor.org/stable/1268324" class="uri">http://www.jstor.org/stable/1268324</a>.</p>
+</div>
+<div>
+<p>Lucchetti, Riccardo. 2011. “State Space Methods in gretl.” <em>Journal of Statistical Software</em> 41 (1): 1–22. doi:<a href="https://doi.org/10.18637/jss.v041.i11">10.18637/jss.v041.i11</a>.</p>
+</div>
+<div>
+<p>Mendelssohn, Roy. 2011. “The STAMP Software for State Space Models.” <em>Journal of Statistical Software</em> 41 (1): 1–18. doi:<a href="https://doi.org/10.18637/jss.v041.i02">10.18637/jss.v041.i02</a>.</p>
+</div>
+<div>
+<p>Monahan, John F. 1984. “A Note on Enforcing Stationarity in Autoregressive-Moving Average Models.” <em>Biometrika</em> 71 (2): 403–4. doi:<a href="https://doi.org/10.1093/biomet/71.2.403">10.1093/biomet/71.2.403</a>.</p>
+</div>
+<div>
+<p>Pelagatti, Matteo. 2011. “State Space Methods in Ox/SsfPack.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i03">10.18637/jss.v041.i03</a>.</p>
+</div>
+<div>
+<p>Peng, Jyh-Ying, and John Aston. 2011. “The State Space Models Toolbox for MATLAB.” <em>Journal of Statistical Software</em> 41 (1): 1–26. doi:<a href="https://doi.org/10.18637/jss.v041.i06">10.18637/jss.v041.i06</a>.</p>
+</div>
+<div>
+<p>Petris, Giovanni, and Sonia Petrone. 2011. “State Space Models in R.” <em>Journal of Statistical Software</em> 41 (4): 1–25. <a href="http://www.jstatsoft.org/v41/i04" class="uri">http://www.jstatsoft.org/v41/i04</a>.</p>
+</div>
+<div>
+<p>Selukar, Rajesh. 2011. “State Space Modeling Using SAS.” <em>Journal of Statistical Software</em> 41 (1): 1–13. doi:<a href="https://doi.org/10.18637/jss.v041.i12">10.18637/jss.v041.i12</a>.</p>
+</div>
+<div>
+<p>Strickland, Christopher, Robert Burdett, Kerrie Mengersen, and Robert Denham. 2014. “PySSM: A Python Module for Bayesian Inference of Linear Gaussian State Space Models.” <em>Journal of Statistical Software</em> 57 (1): 1–37. doi:<a href="https://doi.org/10.18637/jss.v057.i06">10.18637/jss.v057.i06</a>.</p>
+</div>
+<div>
+<p>Tusell, Fernando. 2011. “Kalman Filtering in R.” <em>Journal of Statistical Software</em> 39 (2): 1–27. <a href="http://www.jstatsoft.org/v39/i02" class="uri">http://www.jstatsoft.org/v39/i02</a>.</p>
+</div>
+<div>
+<p>Zivot, Eric. 2011. “State Space Modeling Using SsfPack in S+FinMetrics 3.0.” <em>Journal of Statistical Software</em> 41 (1): 1–27. doi:<a href="https://doi.org/10.18637/jss.v041.i05">10.18637/jss.v041.i05</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-Tusell2011">
+<p>Tusell, Fernando. 2011. “Kalman Filtering in R.” <em>Journal of Statistical Software</em> 39 (2): 1–27. <a href="http://www.jstatsoft.org/v39/i02" class="uri">http://www.jstatsoft.org/v39/i02</a>.</p>
 </div>
 <div id="ref-Helske2012">
 <p>Helske, Jouni. 2012. “KFAS: Kalman Filter and Smoother for Exponential Family State Space Models.” <a href="http://CRAN.R-project.org/package=KFAS" class="uri">http://CRAN.R-project.org/package=KFAS</a>.</p>
 </div>
-<div id="ref-Jones1987a">
-<p>Jones, M. C. 1987. “Randomly Choosing Parameters from the Stationarity and Invertibility Region of Autoregressive-Moving Average Models.” <em>Journal of the Royal Statistical Society. Series C (Applied Statistics)</em> 36 (2). [Wiley, Royal Statistical Society]: 134–38. <a href="http://www.jstor.org/stable/2347544" class="uri">http://www.jstor.org/stable/2347544</a>.</p>
-</div>
-<div id="ref-Jones1980a">
-<p>Jones, Richard H. 1980. “Maximum Likelihood Fitting of ARMA Models to Time Series with Missing Observations.” <em>Technometrics</em> 22 (3). [Taylor &amp; Francis, Ltd., American Statistical Association, American Society for Quality]: 389–95. <a href="http://www.jstor.org/stable/1268324" class="uri">http://www.jstor.org/stable/1268324</a>.</p>
-</div>
-<div id="ref-Lucchetti2011a">
-<p>Lucchetti, Riccardo. 2011. “State Space Methods in gretl.” <em>Journal of Statistical Software</em> 41 (1): 1–22. <a href="http://doi.org/10.18637/jss.v041.i11">doi:10.18637/jss.v041.i11</a>.</p>
+<div id="ref-CommandeurKoopmanOoms2011">
+<p>Commandeur, Jacques J. F., Siem Jan Koopman, and Marius Ooms. 2011. “Statistical Software for State Space Methods.” <em>Journal of Statistical Software</em> 41 (1): 1–18. <a href="http://www.jstatsoft.org/v41/i01" class="uri">http://www.jstatsoft.org/v41/i01</a>.</p>
 </div>
 <div id="ref-Mendelssohn2011a">
-<p>Mendelssohn, Roy. 2011. “The STAMP Software for State Space Models.” <em>Journal of Statistical Software</em> 41 (1): 1–18. <a href="http://doi.org/10.18637/jss.v041.i02">doi:10.18637/jss.v041.i02</a>.</p>
-</div>
-<div id="ref-Monahan1984a">
-<p>Monahan, John F. 1984. “A Note on Enforcing Stationarity in Autoregressive-Moving Average Models.” <em>Biometrika</em> 71 (2): 403–4. <a href="http://doi.org/10.1093/biomet/71.2.403">doi:10.1093/biomet/71.2.403</a>.</p>
+<p>Mendelssohn, Roy. 2011. “The STAMP Software for State Space Models.” <em>Journal of Statistical Software</em> 41 (1): 1–18. doi:<a href="https://doi.org/10.18637/jss.v041.i02">10.18637/jss.v041.i02</a>.</p>
 </div>
 <div id="ref-Pelagatti2011a">
-<p>Pelagatti, Matteo. 2011. “State Space Methods in Ox/SsfPack.” <em>Journal of Statistical Software</em> 41 (1): 1–25. <a href="http://doi.org/10.18637/jss.v041.i03">doi:10.18637/jss.v041.i03</a>.</p>
-</div>
-<div id="ref-PengAston2011a">
-<p>Peng, Jyh-Ying, and John Aston. 2011. “The State Space Models Toolbox for MATLAB.” <em>Journal of Statistical Software</em> 41 (1): 1–26. <a href="http://doi.org/10.18637/jss.v041.i06">doi:10.18637/jss.v041.i06</a>.</p>
+<p>Pelagatti, Matteo. 2011. “State Space Methods in Ox/SsfPack.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i03">10.18637/jss.v041.i03</a>.</p>
 </div>
 <div id="ref-PetrisPetrone2011a">
 <p>Petris, Giovanni, and Sonia Petrone. 2011. “State Space Models in R.” <em>Journal of Statistical Software</em> 41 (4): 1–25. <a href="http://www.jstatsoft.org/v41/i04" class="uri">http://www.jstatsoft.org/v41/i04</a>.</p>
 </div>
+<div id="ref-Zivot2011a">
+<p>Zivot, Eric. 2011. “State Space Modeling Using SsfPack in S+FinMetrics 3.0.” <em>Journal of Statistical Software</em> 41 (1): 1–27. doi:<a href="https://doi.org/10.18637/jss.v041.i05">10.18637/jss.v041.i05</a>.</p>
+</div>
+<div id="ref-PengAston2011a">
+<p>Peng, Jyh-Ying, and John Aston. 2011. “The State Space Models Toolbox for MATLAB.” <em>Journal of Statistical Software</em> 41 (1): 1–26. doi:<a href="https://doi.org/10.18637/jss.v041.i06">10.18637/jss.v041.i06</a>.</p>
+</div>
+<div id="ref-Bell2011a">
+<p>Bell, William. 2011. “REGCMPNT  a Fortran Program for Regression Models with ARIMA Component Errors.” <em>Journal of Statistical Software</em> 41 (1): 1–23. doi:<a href="https://doi.org/10.18637/jss.v041.i07">10.18637/jss.v041.i07</a>.</p>
+</div>
+<div id="ref-Bossche2011a">
+<p>Bossche, Filip Van den. 2011. “Fitting State Space Models with EViews.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i08">10.18637/jss.v041.i08</a>.</p>
+</div>
+<div id="ref-Doan2011a">
+<p>Doan, Thomas. 2011. “State Space Methods in RATS.” <em>Journal of Statistical Software</em> 41 (1): 1–16. doi:<a href="https://doi.org/10.18637/jss.v041.i09">10.18637/jss.v041.i09</a>.</p>
+</div>
+<div id="ref-DrukkerGates2011a">
+<p>Drukker, David, and Richard Gates. 2011. “State Space Methods in Stata.” <em>Journal of Statistical Software</em> 41 (1): 1–25. doi:<a href="https://doi.org/10.18637/jss.v041.i10">10.18637/jss.v041.i10</a>.</p>
+</div>
+<div id="ref-Lucchetti2011a">
+<p>Lucchetti, Riccardo. 2011. “State Space Methods in gretl.” <em>Journal of Statistical Software</em> 41 (1): 1–22. doi:<a href="https://doi.org/10.18637/jss.v041.i11">10.18637/jss.v041.i11</a>.</p>
+</div>
 <div id="ref-Selukar2011a">
-<p>Selukar, Rajesh. 2011. “State Space Modeling Using SAS.” <em>Journal of Statistical Software</em> 41 (1): 1–13. <a href="http://doi.org/10.18637/jss.v041.i12">doi:10.18637/jss.v041.i12</a>.</p>
+<p>Selukar, Rajesh. 2011. “State Space Modeling Using SAS.” <em>Journal of Statistical Software</em> 41 (1): 1–13. doi:<a href="https://doi.org/10.18637/jss.v041.i12">10.18637/jss.v041.i12</a>.</p>
+</div>
+<div id="ref-Bos2011a">
+<p>Bos, Charles. 2011. “A Bayesian Analysis of Unobserved Component Models Using Ox.” <em>Journal of Statistical Software</em> 41 (1): 1–24. doi:<a href="https://doi.org/10.18637/jss.v041.i13">10.18637/jss.v041.i13</a>.</p>
 </div>
 <div id="ref-StricklandBurdettMengersenEtAl2014a">
-<p>Strickland, Christopher, Robert Burdett, Kerrie Mengersen, and Robert Denham. 2014. “PySSM: A Python Module for Bayesian Inference of Linear Gaussian State Space Models.” <em>Journal of Statistical Software</em> 57 (1): 1–37. <a href="http://doi.org/10.18637/jss.v057.i06">doi:10.18637/jss.v057.i06</a>.</p>
-</div>
-<div id="ref-Tusell2011">
-<p>Tusell, Fernando. 2011. “Kalman Filtering in R.” <em>Journal of Statistical Software</em> 39 (2): 1–27. <a href="http://www.jstatsoft.org/v39/i02" class="uri">http://www.jstatsoft.org/v39/i02</a>.</p>
-</div>
-<div id="ref-Zivot2011a">
-<p>Zivot, Eric. 2011. “State Space Modeling Using SsfPack in S+FinMetrics 3.0.” <em>Journal of Statistical Software</em> 41 (1): 1–27. <a href="http://doi.org/10.18637/jss.v041.i05">doi:10.18637/jss.v041.i05</a>.</p>
+<p>Strickland, Christopher, Robert Burdett, Kerrie Mengersen, and Robert Denham. 2014. “PySSM: A Python Module for Bayesian Inference of Linear Gaussian State Space Models.” <em>Journal of Statistical Software</em> 57 (1): 1–37. doi:<a href="https://doi.org/10.18637/jss.v057.i06">10.18637/jss.v057.i06</a>.</p>
 </div>
 </div>
-</div>
-</div>
-</div>
-
-
-
-
-
-
             </section>
 
           </div>

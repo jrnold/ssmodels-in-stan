@@ -270,6 +270,8 @@ This was the simulation method developed in @CarterKohn1994 and @Fruehwirth-Schn
 
 ## Missing observations
 
+
+
 When all observations at time $t$ are missing, the filtering recursions become [@DurbinKoopman2012, Sec 4.10],
 $$
 \begin{aligned}[t]
@@ -279,11 +281,7 @@ $$
 \mat{P}_{t + 1} &= \mat{T}_t \mat{P}_t \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t\T
 \end{aligned}
 $$
-
 This is equivalent to setting $\mat{Z}_t = \mat{0}$ (implying also that $\mat{K}_t = \mat{0}$) in the filtering equations.
-
-
-
 For smoothing, also replace $\mat{Z}_t = \mat{0}$,
 $$
 \begin{aligned}[t]
@@ -310,17 +308,18 @@ $$
 and $\mat{W}_t$ is a selection matrix to select non-missing values.
 In smoothing the missing elements are estimated by the appropriate elements of $\mat{Z}_t \hat{\vec{alpha}}_t$, where $\hat{\vec{\alpha}}_t$ is the smoothed state.
 
-If $y_{t,j}$ is missing, then setting the relevant entries in the forecast precision matrix, $F^{-1}_{t,j,.} = \vec{0}$ and $F^{-1}_{t,.,j} = \vec{0}$, and Kalman gain matrix, $K_{t,.,j} = \vec{0}$, will handle missing values without having to directly pass that information to the smoother.
-When $K_{t,.,j} = 0$, it indicates that the observation $y_{t,j}$ provided no information.
+
+**Note** If $y_{t,j}$ is missing, then setting the relevant entries in the forecast precision matrix, $F^{-1}_{t,j,.} = \vec{0}$ and $F^{-1}_{t,.,j} = \vec{0}$, and Kalman gain matrix, $K_{t,.,j} = \vec{0}$, will handle missing values in the smoothers without having to pass that information to the smoother.
 However, it may be computationally more efficient if the values of the locations of the missing observations are known.
 
-However, the simulation smoothers using the mean correction method need to have the missing values indicated, so filtering of the unconditional simulations accounts for those missing values. 
-The missing values could be inferred from the values of $K_t$ or can be provided directly.
+**Note** For the disturbance and state simulation smoothers, I think the missing
+observations need to be indicated and used when doing the simulations on the
+state smoother.
 
 
 ## Forecasting matrices
 
-Forecasting future observations is the same as treating the future observations as missing [@DurbinKoopman2012, Sec 4.11],
+Forecasting future observations are the same as treating the future observations as missing [@DurbinKoopman2012, Sec 4.11],
 $$
 \begin{aligned}[t]
 \bar{\vec{y}}_{n + j} &= \mat{Z}_{n + j} \bar{\vec{a}}_{n + j} \\

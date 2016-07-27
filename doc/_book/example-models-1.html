@@ -8,7 +8,7 @@
   <title>State Space Models in Stan</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <meta name="description" content="Documentation for State Space Models in Stan.">
-  <meta name="generator" content="bookdown 0.0.73 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.1 and GitBook 2.6.7">
 
   <meta property="og:title" content="State Space Models in Stan" />
   <meta property="og:type" content="book" />
@@ -25,7 +25,7 @@
 
 <meta name="author" content="Jeffrey B. Arnold">
 
-<meta name="date" content="2016-06-21">
+<meta name="date" content="2016-07-16">
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
@@ -38,8 +38,8 @@ MathJax.Hub.Config({
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="canonical-representation.html">
-<link rel="next" href="nile.html">
+<link rel="prev" href="example-models.html">
+<link rel="next" href="stan-functions.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -113,7 +113,8 @@ $$
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\diag}{diag}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\VEC}{vec}
 
 \newcommand{\mat}[1]{\boldsymbol{#1}}
 \newcommand{\vec}[1]{\boldsymbol{#1}}
@@ -139,67 +140,19 @@ $$
 <li class="divider"></li>
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
 <li class="chapter" data-level="2" data-path="the-linear-state-space-model.html"><a href="the-linear-state-space-model.html"><i class="fa fa-check"></i><b>2</b> The Linear State Space Model</a></li>
-<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a><ul>
-<li class="chapter" data-level="3.1" data-path="filtering.html"><a href="filtering.html"><i class="fa fa-check"></i><b>3.1</b> Filtering</a></li>
-<li class="chapter" data-level="3.2" data-path="smoothing.html"><a href="smoothing.html"><i class="fa fa-check"></i><b>3.2</b> Smoothing</a><ul>
-<li class="chapter" data-level="3.2.1" data-path="smoothing.html"><a href="smoothing.html#state-smoothing"><i class="fa fa-check"></i><b>3.2.1</b> State Smoothing</a></li>
-<li class="chapter" data-level="3.2.2" data-path="smoothing.html"><a href="smoothing.html#updating-smoothed-states"><i class="fa fa-check"></i><b>3.2.2</b> Updating Smoothed States</a></li>
-<li class="chapter" data-level="3.2.3" data-path="smoothing.html"><a href="smoothing.html#disturbance-smoothing"><i class="fa fa-check"></i><b>3.2.3</b> Disturbance smoothing</a></li>
-<li class="chapter" data-level="3.2.4" data-path="smoothing.html"><a href="smoothing.html#fast-state-smoothing"><i class="fa fa-check"></i><b>3.2.4</b> Fast state smoothing</a></li>
-<li class="chapter" data-level="3.2.5" data-path="smoothing.html"><a href="smoothing.html#classical-state-smoothing"><i class="fa fa-check"></i><b>3.2.5</b> Classical state smoothing</a></li>
-</ul></li>
-<li class="chapter" data-level="3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html"><i class="fa fa-check"></i><b>3.3</b> Simulation smoothers</a><ul>
-<li class="chapter" data-level="3.3.1" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#mean-corrections"><i class="fa fa-check"></i><b>3.3.1</b> Mean corrections</a></li>
-<li class="chapter" data-level="3.3.2" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#de-jong-shephard-method"><i class="fa fa-check"></i><b>3.3.2</b> de Jong-Shephard method</a></li>
-<li class="chapter" data-level="3.3.3" data-path="simulation-smoothers.html"><a href="simulation-smoothers.html#forward-filter-backwards-smoother"><i class="fa fa-check"></i><b>3.3.3</b> Forward-Filter Backwards smoother</a></li>
-</ul></li>
-<li class="chapter" data-level="3.4" data-path="missing-observations.html"><a href="missing-observations.html"><i class="fa fa-check"></i><b>3.4</b> Missing observations</a></li>
-<li class="chapter" data-level="3.5" data-path="forecasting-matrices.html"><a href="forecasting-matrices.html"><i class="fa fa-check"></i><b>3.5</b> Forecasting matrices</a></li>
-</ul></li>
-<li class="chapter" data-level="4" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>4</b> Parameter Estimation</a><ul>
-<li class="chapter" data-level="4.1" data-path="log-log-likelihood.html"><a href="log-log-likelihood.html"><i class="fa fa-check"></i><b>4.1</b> Log log-likelihood</a></li>
-<li class="chapter" data-level="4.2" data-path="integrated-sampler.html"><a href="integrated-sampler.html"><i class="fa fa-check"></i><b>4.2</b> Integrated Sampler</a></li>
-<li class="chapter" data-level="4.3" data-path="diagnostic-checking.html"><a href="diagnostic-checking.html"><i class="fa fa-check"></i><b>4.3</b> Diagnostic Checking</a></li>
-</ul></li>
-<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a><ul>
-<li class="chapter" data-level="5.0.1" data-path="example-models.html"><a href="example-models.html#polynomial-trend-models"><i class="fa fa-check"></i><b>5.0.1</b> Polynomial Trend Models</a></li>
-<li class="chapter" data-level="5.0.2" data-path="example-models.html"><a href="example-models.html#seasonal-factor-models"><i class="fa fa-check"></i><b>5.0.2</b> Seasonal Factor Models</a></li>
-<li class="chapter" data-level="5.0.3" data-path="example-models.html"><a href="example-models.html#fourier-form-seasonal-models"><i class="fa fa-check"></i><b>5.0.3</b> Fourier Form Seasonal Models</a></li>
-<li class="chapter" data-level="5.0.4" data-path="example-models.html"><a href="example-models.html#arma-and-arima-models"><i class="fa fa-check"></i><b>5.0.4</b> ARMA and ARIMA Models</a></li>
-<li class="chapter" data-level="5.0.5" data-path="example-models.html"><a href="example-models.html#ar2"><i class="fa fa-check"></i><b>5.0.5</b> AR(2)</a></li>
-<li class="chapter" data-level="5.0.6" data-path="example-models.html"><a href="example-models.html#arp"><i class="fa fa-check"></i><b>5.0.6</b> AR(p)</a></li>
-<li class="chapter" data-level="5.1" data-path="armap-q-hamilton.html"><a href="armap-q-hamilton.html"><i class="fa fa-check"></i><b>5.1</b> ARMA(p, q) Hamilton</a></li>
-<li class="chapter" data-level="5.2" data-path="armap-q-harvey.html"><a href="armap-q-harvey.html"><i class="fa fa-check"></i><b>5.2</b> ARMA(p, q) Harvey</a></li>
-<li class="chapter" data-level="5.3" data-path="armap-q-akaike.html"><a href="armap-q-akaike.html"><i class="fa fa-check"></i><b>5.3</b> ARMA(p, q) Akaike</a></li>
-<li class="chapter" data-level="5.4" data-path="canonical-representation.html"><a href="canonical-representation.html"><i class="fa fa-check"></i><b>5.4</b> Canonical Representation</a></li>
-</ul></li>
+<li class="chapter" data-level="3" data-path="filtering-and-smoothing.html"><a href="filtering-and-smoothing.html"><i class="fa fa-check"></i><b>3</b> Filtering and Smoothing</a></li>
+<li class="chapter" data-level="4" data-path="parameter-estimation.html"><a href="parameter-estimation.html"><i class="fa fa-check"></i><b>4</b> Parameter Estimation</a></li>
+<li class="chapter" data-level="5" data-path="example-models.html"><a href="example-models.html"><i class="fa fa-check"></i><b>5</b> Example Models</a></li>
 <li class="chapter" data-level="6" data-path="example-models-1.html"><a href="example-models-1.html"><i class="fa fa-check"></i><b>6</b> Example Models</a><ul>
-<li class="chapter" data-level="6.1" data-path="nile.html"><a href="nile.html"><i class="fa fa-check"></i><b>6.1</b> Nile</a><ul>
-<li class="chapter" data-level="6.1.1" data-path="nile.html"><a href="nile.html#local-level-model-1"><i class="fa fa-check"></i><b>6.1.1</b> Local Level Model</a></li>
-</ul></li>
-<li class="chapter" data-level="6.2" data-path="airline-passenger-miles.html"><a href="airline-passenger-miles.html"><i class="fa fa-check"></i><b>6.2</b> Airline Passenger Miles</a></li>
-<li class="chapter" data-level="6.3" data-path="road-casualties-in-great-britain.html"><a href="road-casualties-in-great-britain.html"><i class="fa fa-check"></i><b>6.3</b> Road Casualties in Great Britain</a></li>
-<li class="chapter" data-level="6.4" data-path="uk-quarterly-gas-consumption.html"><a href="uk-quarterly-gas-consumption.html"><i class="fa fa-check"></i><b>6.4</b> UK Quarterly Gas Consumption</a></li>
-<li class="chapter" data-level="6.5" data-path="stata.html"><a href="stata.html"><i class="fa fa-check"></i><b>6.5</b> Stata</a></li>
-<li class="chapter" data-level="6.6" data-path="other-sources.html"><a href="other-sources.html"><i class="fa fa-check"></i><b>6.6</b> Other Sources</a></li>
-</ul></li>
-<li class="chapter" data-level="7" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>7</b> Stan Functions</a><ul>
-<li class="chapter" data-level="7.1" data-path="misc.html"><a href="misc.html"><i class="fa fa-check"></i><b>7.1</b> Misc</a><ul>
-<li class="chapter" data-level="7.1.1" data-path="misc.html"><a href="misc.html#make_symmetric_matrix"><i class="fa fa-check"></i><b>7.1.1</b> make_symmetric_matrix</a></li>
-<li class="chapter" data-level="7.1.2" data-path="misc.html"><a href="misc.html#to_matrix_colwise"><i class="fa fa-check"></i><b>7.1.2</b> to_matrix_colwise</a></li>
-<li class="chapter" data-level="7.1.3" data-path="misc.html"><a href="misc.html#to_matrix_rowwise"><i class="fa fa-check"></i><b>7.1.3</b> to_matrix_rowwise</a></li>
-<li class="chapter" data-level="7.1.4" data-path="misc.html"><a href="misc.html#to_vector_colwise"><i class="fa fa-check"></i><b>7.1.4</b> to_vector_colwise</a></li>
-<li class="chapter" data-level="7.1.5" data-path="misc.html"><a href="misc.html#to_vector_rowwise"><i class="fa fa-check"></i><b>7.1.5</b> to_vector_rowwise</a></li>
-</ul></li>
-<li class="chapter" data-level="7.2" data-path="filtering-1.html"><a href="filtering-1.html"><i class="fa fa-check"></i><b>7.2</b> Filtering</a></li>
-</ul></li>
-<li class="chapter" data-level="8" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>8</b> Software</a><ul>
-<li class="chapter" data-level="8.1" data-path="r-packages.html"><a href="r-packages.html"><i class="fa fa-check"></i><b>8.1</b> R packages</a></li>
-<li class="chapter" data-level="8.2" data-path="other.html"><a href="other.html"><i class="fa fa-check"></i><b>8.2</b> Other</a><ul>
-<li class="chapter" data-level="8.2.1" data-path="other.html"><a href="other.html#stata-1"><i class="fa fa-check"></i><b>8.2.1</b> Stata</a></li>
-<li class="chapter" data-level="8.2.2" data-path="other.html"><a href="other.html#python"><i class="fa fa-check"></i><b>8.2.2</b> Python</a></li>
+<li class="chapter" data-level="6.1" data-path="example-models-1.html"><a href="example-models-1.html#nile"><i class="fa fa-check"></i><b>6.1</b> Nile</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="example-models-1.html"><a href="example-models-1.html#local-level-model"><i class="fa fa-check"></i><b>6.1.1</b> Local Level Model</a></li>
+<li class="chapter" data-level="6.1.2" data-path="example-models-1.html"><a href="example-models-1.html#local-level-with-known-intervention-intercept"><i class="fa fa-check"></i><b>6.1.2</b> Local level with known intervention (intercept)</a></li>
+<li class="chapter" data-level="6.1.3" data-path="example-models-1.html"><a href="example-models-1.html#local-level-with-known-intervention-variance"><i class="fa fa-check"></i><b>6.1.3</b> Local Level with known intervention (variance)</a></li>
+<li class="chapter" data-level="6.1.4" data-path="example-models-1.html"><a href="example-models-1.html#local-level-model-with-sparse-state-disturbances"><i class="fa fa-check"></i><b>6.1.4</b> Local Level model with Sparse State Disturbances</a></li>
 </ul></li>
 </ul></li>
+<li class="chapter" data-level="7" data-path="stan-functions.html"><a href="stan-functions.html"><i class="fa fa-check"></i><b>7</b> Stan Functions</a></li>
+<li class="chapter" data-level="8" data-path="other-software.html"><a href="other-software.html"><i class="fa fa-check"></i><b>8</b> Other Software</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -221,15 +174,281 @@ $$
 
             <section class="normal" id="section-">
 <div id="example-models-1" class="section level1">
-<h1><span class="header-section-number">Chapter 6</span> Example Models</h1> 
+<h1><span class="header-section-number">Chapter 6</span> Example Models</h1>
+<div id="nile" class="section level2">
+<h2><span class="header-section-number">6.1</span> Nile</h2>
+<p>This is a short (<span class="math inline">\(n = 100\)</span>) univariate time series of the annual flow volumes of the Nile River at Aswan between 1871 and 1970. This series is described in <span class="citation">Durbin and Koopman (<a href="#ref-DurbinKoopman2012">2012</a>)</span> and had been analyzed by <span class="citation">Cobb (<a href="#ref-Cobb1978">1978</a>)</span> and <span class="citation">Balke (<a href="#ref-Balke1993">1993</a>)</span>, and in numerous time series textbooks. A notable feature of the series is a seeming structural break in 1899, around the time of the completion of the Aswan dam.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;Nile&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;datasets&quot;</span>)
+Nile_ &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">year =</span> <span class="kw">year</span>(<span class="kw">as.Date</span>(Nile)),
+                    <span class="dt">flow =</span> <span class="kw">as.numeric</span>(Nile),
+                    <span class="dt">obs =</span> <span class="kw">seq_along</span>(Nile))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(Nile_, <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> flow)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Annual Flow&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;&quot;</span>)</code></pre></div>
+<p><img src="example-Nile_files/figure-html/Nile_plot-1.png" width="672" /></p>
+<div id="local-level-model" class="section level3">
+<h3><span class="header-section-number">6.1.1</span> Local Level Model</h3>
+<p>The Nile data can be modeled as a local level model, <span class="math display">\[
+\begin{aligned}[t]
+y_t &amp;= \mu_t + \varepsilon_t &amp; \varepsilon_t &amp; \sim N(0, \sigma_{\varepsilon}^2) \\
+\mu_{t + 1} &amp;= \mu_t + \eta_t &amp;
+\eta_t &amp; \sim N(0, \sigma^2_{\eta})
+\end{aligned}
+\]</span></p>
+<pre><code>functions {
+  #include ssm.stan
+}
+data {
+  int&lt;lower = 1&gt; n;
+  vector[1] y[n];
+  vector&lt;lower = 0.0&gt;[1] a1;
+  cov_matrix[1] P1;
+  real&lt;lower = 0.0&gt; y_scale;
+}
+transformed data {
+  // system matrices
+  matrix[1, 1] T;
+  matrix[1, 1] Z;
+  matrix[1, 1] R;
+  vector[1] c;
+  vector[1] d;
+  int m;
+  int p;
+  int q;
+  int filter_sz;
+  m = 1;
+  p = 1;
+  q = 1;
+  T[1, 1] = 1.0;
+  Z[1, 1] = 1.0;
+  R[1, 1] = 1.0;
+  c[1] = 0.0;
+  d[1] = 0.0;
+  filter_sz = ssm_filter_size(m, p);
+}
+parameters {
+  real&lt;lower = 0.0&gt; sigma_eta;
+  real&lt;lower = 0.0&gt; sigma_epsilon;
+}
+transformed parameters {
+  matrix[1, 1] H;
+  matrix[1, 1] Q;
+  H[1, 1] = pow(sigma_epsilon, 2);
+  Q[1, 1] = pow(sigma_eta * sigma_epsilon, 2);
+}
+model {
+  y ~ ssm_constant_lpdf(d, Z, H, c, T, R, Q, a1, P1);
+  sigma_epsilon ~ cauchy(0.0, y_scale);
+  sigma_eta ~ cauchy(0.0, 1.0);
+}
+generated quantities {
+  vector[filter_sz] filtered[n];
+  vector[1] alpha[n];
+  vector[1] eta[n];
+  vector[1] eps[n];
+  // filtering
+  filtered = ssm_filter(y,
+    rep_array(d, 1),
+    rep_array(Z, 1),
+    rep_array(H, 1),
+    rep_array(c, 1),
+    rep_array(T, 1),
+    rep_array(R, 1),
+    rep_array(Q, 1), a1, P1);
+  // sampling states
+  alpha = ssm_simsmo_states_rng(filtered,
+    rep_array(d, 1),
+    rep_array(Z, 1),
+    rep_array(H, 1),
+    rep_array(c, 1),
+    rep_array(T, 1),
+    rep_array(R, 1),
+    rep_array(Q, 1), a1, P1);
+  eps = ssm_simsmo_eps_rng(filtered,
+    rep_array(d, 1),
+    rep_array(Z, 1),
+    rep_array(H, 1),
+    rep_array(c, 1),
+    rep_array(T, 1),
+    rep_array(R, 1),
+    rep_array(Q, 1), a1, P1);
+  eta = ssm_simsmo_eta_rng(filtered,
+    rep_array(d, 1),
+    rep_array(Z, 1),
+    rep_array(H, 1),
+    rep_array(c, 1),
+    rep_array(T, 1),
+    rep_array(R, 1),
+    rep_array(Q, 1), a1, P1);
+}</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">local_level_mod &lt;-<span class="st"> </span><span class="kw">ssm_stan_model</span>(<span class="st">&quot;local_level.stan&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_1_data &lt;-<span class="st"> </span><span class="kw">within</span>(<span class="kw">list</span>(), {
+  y &lt;-<span class="st"> </span><span class="kw">matrix</span>(Nile_$flow)
+  n &lt;-<span class="st"> </span><span class="kw">nrow</span>(y)
+  a1 &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dv">0</span>, <span class="dv">1</span>)
+  P1 &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">10</span> ^<span class="st"> </span><span class="dv">7</span>)
+  y_scale &lt;-<span class="st"> </span><span class="kw">sd</span>(Nile_$flow)
+})
+nile_1_samples &lt;-
+<span class="st">  </span><span class="kw">sampling</span>(local_level_mod,
+           <span class="dt">chains =</span> <span class="dv">1</span>,
+           <span class="dt">iter =</span> <span class="dv">500</span>,
+           <span class="dt">data =</span> nile_1_data)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; SAMPLING FOR MODEL &#39;local_level&#39; NOW (CHAIN 1).</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)</span>
+<span class="co">#&gt; Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)</span>
+<span class="co">#&gt; Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)</span>
+<span class="co">#&gt; Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)</span>
+<span class="co">#&gt; Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)</span>
+<span class="co">#&gt; Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)</span>
+<span class="co">#&gt; Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)</span>
+<span class="co">#&gt; Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)</span>
+<span class="co">#&gt; Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)</span>
+<span class="co">#&gt; Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)</span>
+<span class="co">#&gt; Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)</span>
+<span class="co">#&gt; Chain 1, Iteration: 500 / 500 [100%]  (Sampling)</span>
+<span class="co">#&gt;  Elapsed Time: 5.56571 seconds (Warm-up)</span>
+<span class="co">#&gt;                5.32206 seconds (Sampling)</span>
+<span class="co">#&gt;                10.8878 seconds (Total)</span></code></pre></div>
+<p>Now, summarize the MCMC samples using the <code>summary</code> function on the <code>stanfit</code> object. Additionally, I use the <code>tidy_stan_summary</code> function to make the results of <code>summary</code> easier to work with. This converts the results of <code>summary</code> from a list of matrices to a list of data frames, and also parses the parameter names so that it is easier to select particular parameter values by name. I also will only use only the summary statistics for the combined chains.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_1_summary &lt;-<span class="st"> </span><span class="kw">tidy_stan_summary</span>(<span class="kw">summary</span>(nile_1_samples))[[<span class="st">&quot;all&quot;</span>]] %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(Nile_, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;dim_1&quot;</span> =<span class="st"> &quot;obs&quot;</span>))</code></pre></div>
+<p>The estimated variances of the observation and state variances,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">filter</span>(nile_1_summary, parameter %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;H&quot;</span>, <span class="st">&quot;Q&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(parname, mean, se_mean, p2<span class="fl">.5</span>, p97<span class="fl">.5</span>, n_eff, Rhat)
+<span class="co">#&gt; # A tibble: 2 x 7</span>
+<span class="co">#&gt;   parname  mean se_mean  p2.5 p97.5 n_eff  Rhat</span>
+<span class="co">#&gt;     &lt;chr&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt; 1  H[1,1] 14096     350  8517 19898  77.7 0.996</span>
+<span class="co">#&gt; 2  Q[1,1]  2502     233   425  6828  61.5 0.996</span></code></pre></div>
+<p>are similar to the MLE estimates producted by <code>StructTS</code>,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">StructTS</span>(Nile_$flow, <span class="dt">type =</span> <span class="st">&quot;level&quot;</span>)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Call:</span>
+<span class="co">#&gt; StructTS(x = Nile_$flow, type = &quot;level&quot;)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Variances:</span>
+<span class="co">#&gt;   level  epsilon  </span>
+<span class="co">#&gt;    1469    15099</span></code></pre></div>
+<p>However, since the Bayesian estimates are means, the MLE estimates are modes, and the posterior distribution of the variances are right skewed, the means are larger than the posterior modes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">str_keep &lt;-<span class="st"> </span>function(string, pattern) {
+  string[<span class="kw">str_detect</span>(string, pattern)]
+}
+
+<span class="kw">ggplot</span>(<span class="kw">filter</span>(nile_1_summary, parameter ==<span class="st"> &quot;alpha&quot;</span>),
+       <span class="kw">aes</span>(<span class="dt">x =</span> year,
+           <span class="dt">ymin =</span> mean -<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd,
+           <span class="dt">ymax =</span> mean +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd)) +
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mean)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> flow)) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Annual river flow&quot;</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Observation&quot;</span>) +
+<span class="st">  </span><span class="kw">theme_minimal</span>()</code></pre></div>
+<p><img src="example-Nile_files/figure-html/nile_1_states-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(nile_1_summary, parameter ==<span class="st"> &quot;eta&quot;</span>),
+       <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> mean,
+           <span class="dt">ymin =</span> mean -<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd,
+           <span class="dt">ymax =</span> mean +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd)) +
+<span class="st">  </span><span class="kw">geom_pointrange</span>()</code></pre></div>
+<p><img src="example-Nile_files/figure-html/nile_1_eta-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(nile_1_summary, parameter ==<span class="st"> &quot;eps&quot;</span>),
+       <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> mean,
+           <span class="dt">ymin =</span> mean -<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd,
+           <span class="dt">ymax =</span> mean +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd)) +
+<span class="st">  </span><span class="kw">geom_pointrange</span>()</code></pre></div>
+<p><img src="example-Nile_files/figure-html/nile_1_eps-1.png" width="672" /></p>
+<p><strong>TODO</strong> Diagnostics. What are the relevant Bayesian analogs?</p>
+</div>
+<div id="local-level-with-known-intervention-intercept" class="section level3">
+<h3><span class="header-section-number">6.1.2</span> Local level with known intervention (intercept)</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_2_mod &lt;-<span class="st"> </span><span class="kw">ssm_stan_model</span>(<span class="st">&quot;local_level_reg.stan&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_2_data &lt;-<span class="st"> </span>nile_1_data
+nile_2_data[[<span class="st">&quot;x&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">as.integer</span>(Nile_$year &gt;<span class="st"> </span><span class="dv">1899</span>))
+nile_2_data[[<span class="st">&quot;k&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">ncol</span>(nile_2_data[[<span class="st">&quot;x&quot;</span>]])
+nile_2_samples &lt;-<span class="st"> </span><span class="kw">sampling</span>(nile_2_mod, <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="dv">500</span>,
+                           <span class="dt">data =</span> nile_2_data)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_2_summary &lt;-<span class="st"> </span><span class="kw">tidy_stan_summary</span>(<span class="kw">summary</span>(nile_2_samples))[[<span class="st">&quot;all&quot;</span>]] %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(Nile_, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;dim_1&quot;</span> =<span class="st"> &quot;obs&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(nile_2_summary, parameter ==<span class="st"> &quot;mu&quot;</span>),
+       <span class="kw">aes</span>(<span class="dt">x =</span> year,
+           <span class="dt">ymin =</span> mean -<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd,
+           <span class="dt">ymax =</span> mean +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd)) +
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mean)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> flow)) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Annual river flow&quot;</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Observation&quot;</span>) +
+<span class="st">  </span><span class="kw">theme_minimal</span>()</code></pre></div>
+<p><img src="example-Nile_files/figure-html/nile_2_states-1.png" width="672" /></p>
+</div>
+<div id="local-level-with-known-intervention-variance" class="section level3">
+<h3><span class="header-section-number">6.1.3</span> Local Level with known intervention (variance)</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_3_mod &lt;-<span class="st"> </span><span class="kw">ssm_stan_model</span>(<span class="st">&quot;local_level_interven.stan&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_3_data &lt;-<span class="st"> </span>nile_1_data
+nile_3_data[[<span class="st">&quot;s&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">ifelse</span>(Nile_$year ==<span class="st"> </span><span class="dv">1899</span>, <span class="dv">10</span>, <span class="dv">1</span>)
+nile_3_samples &lt;-<span class="st"> </span><span class="kw">sampling</span>(nile_3_mod, <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="dv">500</span>,
+                           <span class="dt">data =</span> nile_3_data)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_3_summary &lt;-<span class="st"> </span><span class="kw">tidy_stan_summary</span>(<span class="kw">summary</span>(nile_3_samples))[[<span class="st">&quot;all&quot;</span>]] %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(Nile_, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;dim_1&quot;</span> =<span class="st"> &quot;obs&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(nile_3_summary, parameter ==<span class="st"> &quot;alpha&quot;</span>),
+       <span class="kw">aes</span>(<span class="dt">x =</span> year,
+           <span class="dt">ymin =</span> mean -<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd,
+           <span class="dt">ymax =</span> mean +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd)) +
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mean)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> flow)) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Annual river flow&quot;</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Observation&quot;</span>) +
+<span class="st">  </span><span class="kw">theme_minimal</span>()</code></pre></div>
+<p><img src="example-Nile_files/figure-html/nile_3_states-1.png" width="672" /></p>
+</div>
+<div id="local-level-model-with-sparse-state-disturbances" class="section level3">
+<h3><span class="header-section-number">6.1.4</span> Local Level model with Sparse State Disturbances</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_4_mod &lt;-<span class="st"> </span><span class="kw">ssm_stan_model</span>(<span class="st">&quot;local_level_tvvar.stan&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_4_data &lt;-<span class="st"> </span>nile_1_data
+nile_4_data[[<span class="st">&quot;s&quot;</span>]] &lt;-<span class="st"> </span><span class="dv">1</span> /<span class="st"> </span><span class="kw">nrow</span>(Nile_)
+nile_4_samples &lt;-<span class="st"> </span><span class="kw">sampling</span>(nile_4_mod, <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="dv">500</span>,
+                           <span class="dt">data =</span> nile_4_data)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nile_4_summary &lt;-<span class="st"> </span><span class="kw">tidy_stan_summary</span>(<span class="kw">summary</span>(nile_4_samples))[[<span class="st">&quot;all&quot;</span>]] %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(Nile_, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;dim_1&quot;</span> =<span class="st"> &quot;obs&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(nile_4_summary, parameter ==<span class="st"> &quot;alpha&quot;</span>),
+       <span class="kw">aes</span>(<span class="dt">x =</span> year,
+           <span class="dt">ymin =</span> mean -<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd,
+           <span class="dt">ymax =</span> mean +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>sd)) +
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mean)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> flow)) +
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;Annual river flow&quot;</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Observation&quot;</span>) +
+<span class="st">  </span><span class="kw">theme_minimal</span>()</code></pre></div>
+<p><img src="example-Nile_files/figure-html/nile_4_states-1.png" width="672" /></p>
+
+</div>
+</div>
+</div>
+<h3> Other Software</h3>
+<div id="refs" class="references">
+<div id="ref-DurbinKoopman2012">
+<p>Durbin, J., and S.J. Koopman. 2012. <em>Time Series Analysis by State Space Methods: Second Edition</em>. Oxford Statistical Science Series. OUP Oxford. <a href="http://books.google.com/books?id=fOq39Zh0olQC" class="uri">http://books.google.com/books?id=fOq39Zh0olQC</a>.</p>
+</div>
+<div id="ref-Cobb1978">
+<p>Cobb, George W. 1978. “The Problem of the Nile: Conditional Solution to a Changepoint Problem.” <em>Biometrika</em> 65 (2): 243–51. doi:<a href="https://doi.org/10.1093/biomet/65.2.243">10.1093/biomet/65.2.243</a>.</p>
+</div>
+<div id="ref-Balke1993">
+<p>Balke, Nathan S. 1993. “Detecting Level Shifts in Time Series.” <em>Journal of Business &amp; Economic Statistics</em> 11 (1). American Statistical Association: 81–92. <a href="http://www.jstor.org/stable/1391308" class="uri">http://www.jstor.org/stable/1391308</a>.</p>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="canonical-representation.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="nile.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="example-models.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="stan-functions.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
@@ -256,7 +475,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/examples.Rmd",
+"link": "https://github.com/jrnold/ssmodels-in-stan/edit/master/example-Nile.Rmd",
 "text": "Edit"
 },
 "download": ["ssmodels-in-stan.pdf"],

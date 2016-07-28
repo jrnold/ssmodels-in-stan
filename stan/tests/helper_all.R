@@ -64,6 +64,19 @@ rand_transition_mat <- function(n) {
   x
 }
 
+rdirichlet <- function(a) {
+  y <- rgamma(length(a), a, 1)
+  return(y / sum(y))
+}
+
+rand_simplex <- function(m) {
+  rdirichlet(rep(1, m))
+}
+
+rand_kalman_gain <- function(m, p) {
+  t(replicate(m, rand_simplex(p)))
+}
+
 #' random positive definite matrix
 rand_spd_mat <- function(n, df = n + 2) {
   x <- rWishart(1, df = df, diag(n))

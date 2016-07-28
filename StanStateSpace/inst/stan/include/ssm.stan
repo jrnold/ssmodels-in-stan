@@ -295,12 +295,12 @@ matrix ssm_update_P(matrix P, matrix Z, matrix T,
 }
 matrix ssm_update_P_u1(matrix P, real Finv, vector K) {
   matrix[rows(P), cols(P)] P_new;
-  P_new = to_symmetric_matrix(P -  crossprod(to_matrix(K)) / Finv);
+  P_new = to_symmetric_matrix(P -  tcrossprod(to_matrix(K)) / Finv);
   return P_new;
 }
 matrix ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
   matrix[rows(P), cols(P)] P_new;
-  P_new = to_symmetric_matrix(quad_form(P, T) + RQR);
+  P_new = to_symmetric_matrix(quad_form(P, T') + RQR);
   return P_new;
 }
 vector ssm_update_v(vector y, vector a, vector d, matrix Z) {

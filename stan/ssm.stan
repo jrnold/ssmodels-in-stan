@@ -828,7 +828,7 @@ Update the variance of the state in a univariate filter after observing $y_{t,i}
 */
 matrix ssm_update_P_u1(matrix P, real Finv, vector K) {
   matrix[rows(P), cols(P)] P_new;
-  P_new = to_symmetric_matrix(P -  crossprod(to_matrix(K)) / Finv);
+  P_new = to_symmetric_matrix(P -  tcrossprod(to_matrix(K)) / Finv);
   return P_new;
 }
 
@@ -850,7 +850,7 @@ Update the variance of the state in $t + 1$ in a univariate filter after observi
 */
 matrix ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
   matrix[rows(P), cols(P)] P_new;
-  P_new = to_symmetric_matrix(quad_form(P, T) + RQR);
+  P_new = to_symmetric_matrix(quad_form(P, T') + RQR);
   return P_new;
 }
 

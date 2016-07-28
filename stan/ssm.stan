@@ -746,7 +746,7 @@ returns: An $m \\times 1$ vector with the predicted state $\\vec{a}_{t, i + 1}$.
 Update $\vec{a}_{t,i + 1}$ from $\vec{a}_{t, i}$ in the unvariate filter.
 
 */
-vector ssm_update_a_u1(vector a, real v, row_vector K) {
+vector ssm_update_a_u1(vector a, real v, vector K) {
   vector[num_elements(a)] a_new;
   a_new = a + K * v;
   return a_new;
@@ -826,7 +826,7 @@ returns: An $m \times m$ matrix with the variance of the state, $\vec{P}_{t, i +
 Update the variance of the state in a univariate filter after observing $y_{t,i}$, $\mat{P}_{t, i + 1} = \Var(\alpha_{t} | \vec{y}_{1:t - 1}, y_{t,i}, \dots, y_{t,i})$.
 
 */
-vector ssm_update_P_u1(matrix P, real Finv, vector K) {
+matrix ssm_update_P_u1(matrix P, real Finv, vector K) {
   matrix[rows(P), cols(P)] P_new;
   P_new = to_symmetric_matrix(P -  crossprod(to_matrix(K)) / Finv);
   return P_new;
@@ -848,7 +848,7 @@ returns: An $m \times m$ matrix with the variance of the state at $t + 1$ after 
 Update the variance of the state in $t + 1$ in a univariate filter after observing $y_{t}$, $\mat{P}_{t, 1} = \Var(\alpha_{t + 1} | \vec{y}_{1:t})$.
 
 */
-vector ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
+matrix ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
   matrix[rows(P), cols(P)] P_new;
   P_new = to_symmetric_matrix(quad_form(P, T) + RQR);
   return P_new;

@@ -277,7 +277,7 @@ vector ssm_update_a(vector a, vector c, matrix T, vector v, matrix K) {
   a_new = T * a + K * v + c;
   return a_new;
 }
-vector ssm_update_a_u1(vector a, real v, row_vector K) {
+vector ssm_update_a_u1(vector a, real v, vector K) {
   vector[num_elements(a)] a_new;
   a_new = a + K * v;
   return a_new;
@@ -293,12 +293,12 @@ matrix ssm_update_P(matrix P, matrix Z, matrix T,
   P_new = to_symmetric_matrix(T * P * (T - K * Z)' + RQR);
   return P_new;
 }
-vector ssm_update_P_u1(matrix P, real Finv, vector K) {
+matrix ssm_update_P_u1(matrix P, real Finv, vector K) {
   matrix[rows(P), cols(P)] P_new;
   P_new = to_symmetric_matrix(P -  crossprod(to_matrix(K)) / Finv);
   return P_new;
 }
-vector ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
+matrix ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
   matrix[rows(P), cols(P)] P_new;
   P_new = to_symmetric_matrix(quad_form(P, T) + RQR);
   return P_new;

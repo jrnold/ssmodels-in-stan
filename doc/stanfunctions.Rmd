@@ -823,7 +823,7 @@ Update $\vec{a}_{t,i + 1}$ from $\vec{a}_{t, i}$ in the unvariate filter.
 
 
 ```stan
-vector ssm_update_a_u1(vector a, real v, row_vector K) {
+vector ssm_update_a_u1(vector a, real v, vector K) {
   vector[num_elements(a)] a_new;
   a_new = a + K * v;
   return a_new;
@@ -912,7 +912,7 @@ Update the variance of the state in a univariate filter after observing $y_{t,i}
 
 
 ```stan
-vector ssm_update_P_u1(matrix P, real Finv, vector K) {
+matrix ssm_update_P_u1(matrix P, real Finv, vector K) {
   matrix[rows(P), cols(P)] P_new;
   P_new = to_symmetric_matrix(P -  crossprod(to_matrix(K)) / Finv);
   return P_new;
@@ -938,7 +938,7 @@ Update the variance of the state in $t + 1$ in a univariate filter after observi
 
 
 ```stan
-vector ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
+matrix ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
   matrix[rows(P), cols(P)] P_new;
   P_new = to_symmetric_matrix(quad_form(P, T) + RQR);
   return P_new;

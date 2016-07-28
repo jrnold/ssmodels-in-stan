@@ -4,18 +4,16 @@
 
 context("ssm_smooth_eta_get")
 test_that("It works", {
-  f <- function(p, x) {
+  f <- function(q, x) {
     modfit <- test_stan_function("ssm_smooth_eta_get",
-                                 data = list(p = p, x = x,
+                                 data = list(q = q, x = x,
                                              xsz = length(x)))
     rstan::extract(modfit)
   }
-  # m = 3, p = 4 are hardcoded in some later tests
-  m <- 3L
-  p <- 4L
-  xsz <- 14
+  q <- 3L
+  xsz <- 9L
   x <- seq_len(xsz)
-  output <- f(p, x)
+  output <- f(q, x)
   expect_equal(as.numeric(output[["sz"]]), length(x))
   expect_equal(as.numeric(output[["eta_mean"]]), 1:3)
   expect_equal(output[["eta_var"]][1, , ],

@@ -270,7 +270,6 @@ This was the simulation method developed in @CarterKohn1994 and @Fruehwirth-Schn
 ## Missing observations
 
 
-
 When all observations at time $t$ are missing, the filtering recursions become [@DurbinKoopman2012, Sec 4.10],
 $$
 \begin{aligned}[t]
@@ -325,3 +324,74 @@ $$
 \bar{\mat{F}}_{n + j} &= \mat{Z}_{n + j} \bar{\mat{P}}_{n + j} \mat{Z}_{n + j}\T + \mat{H}_{n + j} .
 \end{aligned}
 $$
+
+
+## Univariate Representation of Multivariate Series
+
+See [@DurbinKoopman2012, Ch 6]
+
+If $\mat{H}_t$ is diagonal, then the vector series can be treated as a univariate series for filtering and smoothing.
+This simplifies and has computational benefits over the classic filtering and smoothing algorithm because it avoids inverting $\mat{F}_t$.
+Let,
+$$
+\begin{aligned}[t]
+\vec{y}_t &= \mat{Z} \vec{\alpha}_t + \vec{\varepsilon} & \vec{\varepsilon}_t &\sim N(\vec{0}, \mat{H}_t) \\
+\vec{alpha}_{t + 1} &= \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}_t & \vec{\eta}_t & \sim N(\vec{0}, \mat{Q}_t) \\
+\alpha_1 & \sim N(\vec{a}_1, \mat{P}_1)
+\end{aligned}
+$$
+where $\mat{H}_t$ is diagonal.
+The dimensions observation vector are allowed to vary over time, with $p_t$ being
+the size of the observation vector at time $t$.
+In this formulation, $y_{t,i}$, $\varepsilon_{t,i}$ and $\sigma^2_{t,i}$ are scalars, and $\vec{Z}_{t,i}$ is a length $p_t$ row vector.
+
+Write the univariate representation of this model as,
+$$
+y_{t,i} &= d_{t,i} + \vec{Z}_{t,i} \vec{\alpha}_t + \varepsilon_{t,i}, & i = 1, \dots, p_t, & t = 1, \dots, n ,
+$$
+The state equation is
+$$
+\begin{aligned}
+\alpha_{t, i + 1} &= \alpha_t, & i &= 1, \dots, p_{t} - 1, \\
+\alpha_{t + 1, 1} &= \vec{c}_t + \mat{T}_t \alpha_t, & t &= 1, \dotas, n
+\end{aligned}
+$$
+
+Define the predicted and filtered expected values and variances of the states as
+$$
+\begin{aligned}[t]
+a_{t,1} &= \E(\alpha_{t,1} | \vec{y}_{1:t-1}) \\
+P_{t,1} &= \Var(\alpha_{t,1} | \vec{y}_{1:t-1}) \\
+a_{t,i} &= \E(\alpha_{t,1} | \vec{y}_{1:t-1}, y_{t,1}, \dots, y_{t,i - 1} \\
+P_{t,i} &= \Var(\alpha_{t,1} | \vec{y}_{1:t-1}, y_{t,1}, \dots, y_{t,i - 1} \\  
+\end{aligned}
+$$
+
+The univariate series is
+$$
+y_{1,1}, \dots, y_{1,p_1}, y_{2,1}, \dots, y_{n - 1, p_{n -1}}, y_{n,1}, \dots, y_{n, p_n} .
+$$
+With this univariate series the filtering update steps as each $y_{t,i}$ is processed are, for $i = 1, \dots, p_t$,
+$$
+\begin{aligned}[t]
+v_{t,i} &= y_{t,i} - \vec{Z}_{t,i} \vec{a}_{t,i} - d_{t,i}, \\
+F_{t,i} &= \vec{Z}_{t,i} \mat{P}_{t,i} \vec{Z}_{t,i}\T + \sigma^2_{t,i}, \\
+\vec{K}_{t, i} &= \mat{P}_{t,i} \vec{Z}_{t,i}\T F^{-1}_{t,i}, \\
+\vec{a}_{t, i + 1} &= \vec{a}_{t,i} + \vec{K}_{t,i} v_{t,i}, \\
+\mat{P}_{t, i + 1} &= \mat{P}_{t,i} - \vec{K}_{t,i} F_{t,i} \vec{K}_{t,i}\T .
+\end{aligned}
+$$
+The prediction update step to transition from time $t$ to $t + 1$ is,
+$$
+\begin{aligned}[t]
+\vec{a}_{t + 1, 1} &= \mat{T}_t \vec{a}_{t, p_t + 1} \\
+\mat{P}_{t + 1, 1} &= \mat{T}_t \mat{P}_{t,p_t + 1} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t \T .
+\end{aligned}
+$$
+The values of $\vec{a}_{t + 1, 1}$ and $\mat{P}_{t + 1, 1}$ are the same as the
+values of $\vec{a}_{t + 1}$ and $\mat{P}_{t + 1}$ in the standard Kalman filter.
+However, the values of $v_{t,i}$, $\vec{K}_{t,i}$, and $F_{t,i}^{-1}$ are nnot the same.
+
+**smoothing**, state smoothing, and observation disturbances.
+
+The mean correction simulation smoother relies on the filter and smoother, and thus does not need to be altered apart from using the univariate forms of each.

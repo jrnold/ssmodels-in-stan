@@ -730,6 +730,20 @@ vector ssm_update_a(vector a, vector c, matrix T, vector v, matrix K) {
   return a_new;
 }
 
+vector ssm_update_a_u1(vector a, vector c, matrix T, real v, row_vector K) {
+  vector[num_elements(a)] a_new;
+  a_new = a + K * v;
+  return a_new;
+}
+
+vector ssm_update_a_u2(vector a, vector c, matrix T) {
+  vector[num_elements(a)] a_new;
+  a_new = T * a + c;
+  return a_new;
+}
+
+
+
 /**
 ---
 function: ssm_update_P
@@ -764,6 +778,18 @@ matrix ssm_update_P(matrix P, matrix Z, matrix T,
   return P_new;
 }
 
+vector ssm_update_P_u1(matrix P, real Finv, vector K) {
+  matrix[rows(P), cols(P)] P_new;
+  P_new = to_symmetric_matrix(P -  crossprod(to_matrix(K)) / Finv);
+  return P_new;
+}
+
+vector ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
+  matrix[rows(P), cols(P)] P_new;
+  P_new = to_symmetric_matrix(quad_form(P, T) + RQR);
+  return P_new;
+}
+
 /**
 ---
 function: ssm_update_v
@@ -792,6 +818,31 @@ $$
 vector ssm_update_v(vector y, vector a, vector d, matrix Z) {
   vector[num_elements(y)] v;
   v = y - Z * a - d;
+  return v;
+}
+
+
+/**
+---
+function: ssm_update_v_u
+args:
+- name: y
+  description: An observation, $y_{t, j}$.
+- name: a
+  description: A $m \times 1$ vector of the states, $\vec{a}_t$.
+- name: d
+  description: The observation intercept, $d_{t,j}$.
+- name: Z
+  description: A $1 \times m$ vector from the design matrix, $\vec{Z}_{t, j}$.
+returns: The forecast errors, $v_{t,j}$.
+---
+
+Update the forcast error in univariate filtering.
+
+*/
+real ssm_update_v_u(real y, vector a, real d, row_vector Z) {
+  real v;
+  v = y - dot_product(Z, a) - d;
   return v;
 }
 
@@ -911,6 +962,47 @@ matrix ssm_update_Finv(matrix P, matrix Z, matrix H) {
 
 /**
 ---
+function: ssm_update_F_u
+args:
+- name: P
+  description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
+- name: Z
+  description: A $p \times 1$ row vector from the design matrix, $\mat{Z}_{t,i}$.
+- name: h
+  description: A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
+returns: The univariate forecast error, $f_{t,j}$.
+---
+
+Update the variance of the univariate forcast error, $f^{-1}_{t,i}$.
+
+*/
+real ssm_update_F_u(matrix P, row_vector Z, real H) {
+  return quad_form(P, Z') + H;
+}
+
+
+/**
+---
+function: ssm_update_Finv_u
+args:
+- name: P
+  description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
+- name: Z
+  description: A $p \times 1$ row vector from the design matrix, $\mat{Z}_{t,j}$.
+- name: h
+  description: A $p \times p$ matrix with the observation covariance matrix, $\mat{H}_t$.
+returns: The univariate forecast precision, $f^{-1}_{t,j}$.
+---
+
+Update the precision of the univariate forcast error, $f^{-1}_{t,j}$.
+
+*/
+real ssm_update_Finv_u(matrix P, row_vector Z, real H) {
+  return 1. / quad_form(P, Z') + H;
+}
+
+/**
+---
 function: ssm_update_Finv_miss
 args:
 - name: P
@@ -991,6 +1083,31 @@ matrix ssm_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
   K = T * P * Z' * Finv;
   return K;
 }
+
+/**
+---
+function: ssm_update_K_u
+args:
+- name: P
+  description: An $m \times m$ vector with the variance of the predicted state, $P_t$.
+- name: Z
+  description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
+- name: T
+  description: An $m \times m$ matrix with the transition matrix, $\mat{T}_t$.
+- name: Finv
+  description: $ matrix
+returns: An $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
+---
+
+Update the Kalman gain, $\mat{K}_t$, in univiariate filtering.
+*/
+
+vector ssm_update_K_u(matrix P, row_vector Z, matrix T, real Finv) {
+  vector[num_elements(Z)] K;
+  K = P * Z' * Finv;
+  return K;
+}
+
 
 /**
 ---
@@ -1096,6 +1213,33 @@ real ssm_update_loglik_miss(vector v, matrix Finv, int p_t, int[] y_idx) {
   }
   return ll;
 }
+
+/**
+---
+function: ssm_update_loglik_u
+args:
+- name: v
+  description: The forecast error, $v_{t,i}$.
+- name: Finv
+  description: The forecast error, $f^{-1}_{t,i}$.
+returns: The log-likelihood
+---
+
+Calculate the log-likelihood of a single observation using univariate filtering.
+
+*/
+
+real ssm_update_loglik_u(real v, real Finv) {
+  real ll;
+  // det(A^{-1}) = 1 / det(A) -> log det(A^{-1}) = - log det(A)
+  ll = (- 0.5 * (
+         log(2 * pi())
+         - log(Finv)
+         + Finv * pow(v, 2)
+       ));
+  return ll;
+}
+
 
 /**
 `r render_section("Filtering")`
@@ -1265,7 +1409,7 @@ args:
   description: The number of states
 - name: p
   description: The size of the observation vector $\vec{y}_t$.
-returns: A $m \times p$ matrix with the Kalman gain, $\mat{F}^{-1}_t$.
+returns: A $m \times p$ matrix with the Kalman gain, $\mat{K}_t$.
 ---
 
 Get the Kalman gain from the results of `ssm_filter`.
@@ -1968,7 +2112,7 @@ real ssm_lpdf(vector[] y,
 
 /**
 ---
-function: ssm_filter_miss
+function: ssm_miss_lpdf
 args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.

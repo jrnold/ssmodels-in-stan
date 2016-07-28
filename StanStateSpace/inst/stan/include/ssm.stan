@@ -277,15 +277,40 @@ vector ssm_update_a(vector a, vector c, matrix T, vector v, matrix K) {
   a_new = T * a + K * v + c;
   return a_new;
 }
+vector ssm_update_a_u1(vector a, vector c, matrix T, real v, row_vector K) {
+  vector[num_elements(a)] a_new;
+  a_new = a + K * v;
+  return a_new;
+}
+vector ssm_update_a_u2(vector a, vector c, matrix T) {
+  vector[num_elements(a)] a_new;
+  a_new = T * a + c;
+  return a_new;
+}
 matrix ssm_update_P(matrix P, matrix Z, matrix T,
                            matrix RQR, matrix K) {
   matrix[rows(P), cols(P)] P_new;
   P_new = to_symmetric_matrix(T * P * (T - K * Z)' + RQR);
   return P_new;
 }
+vector ssm_update_P_u1(matrix P, real Finv, vector K) {
+  matrix[rows(P), cols(P)] P_new;
+  P_new = to_symmetric_matrix(P -  crossprod(to_matrix(K)) / Finv);
+  return P_new;
+}
+vector ssm_update_P_u2(matrix P, matrix T, matrix RQR) {
+  matrix[rows(P), cols(P)] P_new;
+  P_new = to_symmetric_matrix(quad_form(P, T) + RQR);
+  return P_new;
+}
 vector ssm_update_v(vector y, vector a, vector d, matrix Z) {
   vector[num_elements(y)] v;
   v = y - Z * a - d;
+  return v;
+}
+real ssm_update_v_u(real y, vector a, real d, row_vector Z) {
+  real v;
+  v = y - dot_product(Z, a) - d;
   return v;
 }
 vector ssm_update_v_miss(vector y, vector a, vector d, matrix Z,
@@ -321,6 +346,12 @@ matrix ssm_update_Finv(matrix P, matrix Z, matrix H) {
   Finv = inverse_spd(to_symmetric_matrix(quad_form(P, Z') + H));
   return Finv;
 }
+real ssm_update_F_u(matrix P, row_vector Z, real H) {
+  return quad_form(P, Z') + H;
+}
+real ssm_update_Finv_u(matrix P, row_vector Z, real H) {
+  return 1. / quad_form(P, Z') + H;
+}
 matrix ssm_update_Finv_miss(matrix P, matrix Z, matrix H,
                                    int p_t, int[] y_idx) {
   matrix[rows(H), cols(H)] Finv;
@@ -347,6 +378,11 @@ matrix ssm_update_Finv_miss(matrix P, matrix Z, matrix H,
 matrix ssm_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
   matrix[cols(Z), rows(Z)] K;
   K = T * P * Z' * Finv;
+  return K;
+}
+vector ssm_update_K_u(matrix P, row_vector Z, matrix T, real Finv) {
+  vector[num_elements(Z)] K;
+  K = P * Z' * Finv;
   return K;
 }
 matrix ssm_update_L(matrix Z, matrix T, matrix K) {
@@ -382,6 +418,15 @@ real ssm_update_loglik_miss(vector v, matrix Finv, int p_t, int[] y_idx) {
     v_star = v[idx];
     ll = ssm_update_loglik(v_star, Finv_star);
   }
+  return ll;
+}
+real ssm_update_loglik_u(real v, real Finv) {
+  real ll;
+  ll = (- 0.5 * (
+         log(2 * pi())
+         - log(Finv)
+         + Finv * pow(v, 2)
+       ));
   return ll;
 }
 int[,] ssm_filter_idx(int m, int p) {

@@ -43,7 +43,7 @@ matrix_pow_params[[4]] <- within(list(), {
   info <- "m = 2, n = 3"
 })
 
-matrix_pow_params[[4]] <- within(list(), {
+matrix_pow_params[[5]] <- within(list(), {
   m <- 2
   A <- matrix(0, m, m)
   n <- 3
@@ -51,15 +51,15 @@ matrix_pow_params[[4]] <- within(list(), {
   info <- "a zero matrix"
 })
 
-matrix_pow_params[[5]] <- within(list(), {
+matrix_pow_params[[6]] <- within(list(), {
   m <- 5
-  A <- rand_mat(3)
+  A <- rand_mat(m)
   n <- 3
   expected <- A %*% A %*% A
   info <- "m = 5, n = 3"
 })
 
-matrix_pow_params[[5]] <- within(list(), {
+matrix_pow_params[[7]] <- within(list(), {
   m <- 3
   A <- rand_mat(m)
   n <- 5
@@ -67,7 +67,7 @@ matrix_pow_params[[5]] <- within(list(), {
   info <- "m = 3, n = 5"
 })
 
-matrix_pow_params[[7]] <- within(list(), {
+matrix_pow_params[[8]] <- within(list(), {
   m <- 3
   A <- rand_mat(m)
   n <- 4

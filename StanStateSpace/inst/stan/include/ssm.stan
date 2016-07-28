@@ -884,6 +884,182 @@ real ssm_miss_lpdf(vector[] y,
   }
   return ll;
 }
+real ssm_ufilter_lpdf(vector[] y,
+                        vector[] d, matrix[] Z, vector[] H,
+                        vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                        vector a1, matrix P1) {
+  real ll;
+  int q;
+  int n;
+  int p;
+  int m;
+  n = size(y);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  q = dims(Q)[2];
+  {
+    vector[p] d_t;
+    real d_ti;
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    vector[p] H_t;
+    real h_ti;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    vector[m] a;
+    matrix[m, m] P;
+    real v;
+    real Finv;
+    vector[m] K;
+    matrix[n, p] ll_obs;
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t ');
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (size(c) > 1) {
+          c_t = c[t];
+        }
+        if (size(T) > 1) {
+          T_t = T[t];
+        }
+        if (size(R) > 1) {
+          R_t = R[t];
+        }
+        if (size(Q) > 1) {
+          Q_t = Q[t];
+        }
+        if (size(R) > 1 || size(Q) > 1) {
+          RQR = quad_form_sym(Q_t, R_t ');
+        }
+      }
+      for (i in 1:p) {
+        Z_ti = row(Z_t, i);
+        v = ssm_update_v_u(y[t, i], a, d_t[i], Z_ti);
+        Finv = ssm_update_Finv_u(P, Z_ti, H_t[i]);
+        K = ssm_update_K_u(P, Z_ti, Finv);
+        ll[t, i] = ssm_update_loglik_u(v, Finv);
+        a = ssm_update_a_u1(a, v, K);
+        P = ssm_update_P_u1(P, Finv, K);
+      }
+      if (t < n) {
+        a = ssm_update_a_u2(a, c_t, T_t);
+        P = ssm_update_P_u2(P, T_t, RQR);
+      }
+    }
+    ll = sum(ll_obs);
+  }
+  return ll;
+}
+real ssm_ufilter_miss_lpdf(vector[] y,
+                          vector[] d, matrix[] Z, vector[] H,
+                          vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                          vector a1, matrix P1, int[,] miss) {
+  real ll;
+  int q;
+  int n;
+  int p;
+  int m;
+  n = size(y);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  q = dims(Q)[2];
+  {
+    vector[p] d_t;
+    real d_ti;
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    vector[p] H_t;
+    real h_ti;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    vector[m] a;
+    matrix[m, m] P;
+    real v;
+    real Finv;
+    vector[m] K;
+    matrix[n, p] ll_obs;
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t ');
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (size(c) > 1) {
+          c_t = c[t];
+        }
+        if (size(T) > 1) {
+          T_t = T[t];
+        }
+        if (size(R) > 1) {
+          R_t = R[t];
+        }
+        if (size(Q) > 1) {
+          Q_t = Q[t];
+        }
+        if (size(R) > 1 || size(Q) > 1) {
+          RQR = quad_form_sym(Q_t, R_t ');
+        }
+      }
+      for (i in 1:p) {
+        if (miss[i, p]) {
+          ll_obs[t, i] = 0.;
+        } else {
+          Z_ti = row(Z_t, i);
+          v = ssm_update_v_u(y[t, i], a, d_t[i], Z_ti);
+          Finv = ssm_update_Finv_u(P, Z_ti, H_t[i]);
+          K = ssm_update_K_u(P, Z_ti, Finv);
+          ll_obs[t, i] = ssm_update_loglik_u(v, Finv);
+          a = ssm_update_a_u1(a, v, K);
+          P = ssm_update_P_u1(P, Finv, K);
+        }
+      }
+      if (t < n) {
+        a = ssm_update_a_u2(a, c_t, T_t);
+        P = ssm_update_P_u2(P, T_t, RQR);
+      }
+    }
+    ll = sum(ll_obs);
+  }
+  return ll;
+}
 real matrix_diff(matrix A, matrix B) {
   real eps;
   real norm_AB;

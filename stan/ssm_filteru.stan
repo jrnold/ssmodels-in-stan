@@ -324,7 +324,7 @@ vector[] ssm_ufilter(vector[] y,
     vector[p] Finv;
     vector[m] K_i;
     matrix[m, p] K;
-    real ll;
+    vector[p] ll;
     int idx[6, 3];
 
     idx = ssm_ufilter_idx(m, p);
@@ -396,45 +396,11 @@ vector[] ssm_ufilter(vector[] y,
   return res;
 }
 
-/**
----
-function: ssm_ufilter_miss
-args:
-- name: y
-  description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
-- name: d
-  description: Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
-- name: Z
-  description: Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
-- name: H
-  description: Diagonal of the bservation covariance matrix, $\diag(\vec{h}_t) = \mat{H}_t$. An array of $p \times 1$ vectors.
-- name: c
-  description: State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
-- name: T
-  description: Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
-- name: R
-  description: State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
-- name: Q
-  description: State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
-- name: a1
-  description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
-- name: P1
-  description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-- name: p_t
-  description: Number of non-missing observations at time $t$.
-- name: y_idx
-  description: An array of integers with the indexes of the non-missing elements of $\vec{y}_t$. This is zero-padded so the length is $p$.
-returns: Same as `ssm_ufilter`.
----
-
-The function `ssm_ufilter_miss` runs a Kalman filter like `ssm_ufilter`, except that it allows for missing values.
-
-*/
 
 vector[] ssm_ufilter_miss(vector[] y,
-                          vector[] d, matrix[] Z, vector[] H,
-                          vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-                          vector a1, matrix P1, int[,] y_obs) {
+                    vector[] d, matrix[] Z, vector[] H,
+                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                    vector a1, matrix P1, int[,] miss) {
 
   // returned data
   vector[ssm_ufilter_size(dims(Z)[3], dims(Z)[2])] res[size(y)];
@@ -453,8 +419,11 @@ vector[] ssm_ufilter_miss(vector[] y,
   {
     // system matrices for current iteration
     vector[p] d_t;
+    real d_ti;
     matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
     vector[p] H_t;
+    real h_ti;
     vector[m] c_t;
     matrix[m, m] T_t;
     matrix[m, q] R_t;
@@ -465,10 +434,13 @@ vector[] ssm_ufilter_miss(vector[] y,
     matrix[m, m] P;
     vector[p] v;
     vector[p] Finv;
+    vector[m] K_i;
     matrix[m, p] K;
-    real ll;
+    vector[p] ll;
     int idx[6, 3];
+
     idx = ssm_ufilter_idx(m, p);
+
     d_t = d[1];
     Z_t = Z[1];
     H_t = H[1];
@@ -480,6 +452,10 @@ vector[] ssm_ufilter_miss(vector[] y,
     a = a1;
     P = P1;
     for (t in 1:n) {
+      # Save predictes for a_{t,1} and P_{t,1}
+      res[t, idx[5, 2]:idx[5, 3]] = a;
+      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
+
       if (t > 1) {
         if (size(d) > 1) {
           d_t = d[t];
@@ -507,21 +483,32 @@ vector[] ssm_ufilter_miss(vector[] y,
         }
       }
       // updating
-      v = ssm_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
-      Finv = ssm_update_Finv_miss(P, Z_t, H_t, p_t[t], y_idx[t]);
-      K = ssm_update_K(P, Z_t, T_t, Finv);
-      ll = ssm_update_loglik_miss(v, Finv, p_t[t], y_idx[t]);
+      for (i in 1:p) {
+        if (miss[t, i]) {
+          v[i] = 0.;
+          Finv[i] = 0.;
+          K[:, i] = rep_vector(0., m);
+          ll[i] = 0.;
+        } else {
+          Z_ti = row(Z_t, i);
+          v[i] = ssm_update_v_u(y[t, i], a, d_t[i], Z_ti);
+          Finv[i] = ssm_update_Finv_u(P, Z_ti, H_t[i]);
+          K_i = ssm_update_K_u(P, Z_ti, Finv);
+          K[:, i] = K_i;
+          ll[i] = ssm_update_loglik_u(v[i], Finv[i]);
+          a = ssm_update_a_u1(a, v[i], K_i);
+          P = ssm_update_P_u1(P, Finv[i], K_i);
+        }
+      }
       // saving
-      res[t, 1] = ll;
+      res[t, idx[1, 2]:idx[1, d]]] = ll;
       res[t, idx[2, 2]:idx[2, 3]] = v;
-      res[t, idx[3, 2]:idx[3, 3]] = symmat_to_vector(Finv);
+      res[t, idx[3, 2]:idx[3, 3]] = Finv;
       res[t, idx[4, 2]:idx[4, 3]] = to_vector(K);
-      res[t, idx[5, 2]:idx[5, 3]] = a;
-      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
       // predict a_{t + 1}, P_{t + 1}
       if (t < n) {
-        a = ssm_update_a(a, c_t, T_t, v, K);
-        P = ssm_update_P(P, Z_t, T_t, RQR, K);
+        a = ssm_update_a_u2(a, c_t, T_t);
+        P = ssm_update_P_u2(P, T_t, RQR);
       }
     }
   }
@@ -721,253 +708,4 @@ vector[] ssm_ufilter_states(vector[] filter, matrix[] Z) {
     }
   }
   return res;
-}
-
-
-/**
----
-function: ssm_u_lpdf
-args:
-- name: y
-  description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
-- name: d
-  description: Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
-- name: Z
-  description: Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
-- name: H
-  description: Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
-- name: c
-  description: State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
-- name: T
-  description: Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
-- name: R
-  description: State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
-- name: Q
-  description: State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
-- name: a1
-  description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
-- name: P1
-  description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-returns: The log-likelihood, $p(\vec{y}_{1:n} | \vec{d}, \mat{Z}, \mat{H}, \vec{c}, \mat{T}, \mat{R}, \mat{Q})$, marginalized over the latent states.
----
-
-Log-likelihood of a Linear Gaussian State Space Model
-
-
-For `d`, `Z`, `H`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
-not time-varying, or a size of $n$ (for `d`, `Z`, `H`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
-if it is time varying.
-
-The log-likelihood of a linear Gaussian state space model is,
-If the the system matrices and initial conditions are known, the log likelihood is
-$$
-\begin{aligned}[t]
-\log L(\mat{Y}_n) &= \log p(\vec{y}_1, \dots, \vec{y}_n) = \sum_{t = 1}^n \log p(\vec{y}_t | \mat{Y}_{t - 1}) \\
-&= - \frac{np}{2} \log 2 \pi - \frac{1}{2} \sum_{t = 1}^n \left( \log \left| \mat{F}_t \right| + \vec{v}\T \mat{F}_t^{-1} \vec{v}_t \right)
-\end{aligned} ,
-$$
-where $\mat{F}_t$ and $\mat{V}_t$ come from a forward pass of the Kalman filter.
-
-*/
-
-real ssm_u_lpdf(vector[] y,
-               vector[] d, matrix[] Z, vector[] H,
-               vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-               vector a1, matrix P1) {
-  real ll;
-  int n;
-  int m;
-  int p;
-  int q;
-  n = size(y); // number of obs
-  m = dims(Z)[3];
-  p = dims(Z)[2];
-  q = dims(Q)[2];
-  {
-    // system matrices for current iteration
-    vector[p] d_t;
-    matrix[p, m] Z_t;
-    vector[p] H_t;
-    vector[m] c_t;
-    matrix[m, m] T_t;
-    matrix[m, q] R_t;
-    matrix[q, q] Q_t;
-    matrix[m, m] RQR;
-    // result matricees for each iteration
-    matrix[n, p] ll_obs;
-    vector[m] a;
-    matrix[m, m] P;
-    vector[p] v;
-    vector[p] Finv;
-    matrix[m, p] K;
-
-    d_t = d[1];
-    Z_t = Z[1];
-    H_t = H[1];
-    c_t = c[1];
-    T_t = T[1];
-    R_t = R[1];
-    Q_t = Q[1];
-    RQR = quad_form_sym(Q_t, R_t ');
-
-    a = a1;
-    P = P1;
-    for (t in 1:n) {
-      if (t > 1) {
-        if (size(d) > 1) {
-          d_t = d[t];
-        }
-        if (size(Z) > 1) {
-          Z_t = Z[t];
-        }
-        if (size(H) > 1) {
-          H_t = H[t];
-        }
-        if (size(c) > 1) {
-          c_t = c[t];
-        }
-        if (size(T) > 1) {
-          T_t = T[t];
-        }
-        if (size(R) > 1) {
-          R_t = R[t];
-        }
-        if (size(Q) > 1) {
-          Q_t = Q[t];
-        }
-        if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t ');
-        }
-      }
-      v = ssm_update_v(y[t], a, d_t, Z_t);
-      Finv = ssm_update_Finv(P, Z_t, H_t);
-      K = ssm_update_K(P, T_t, Z_t, Finv);
-      ll_obs[t] = ssm_update_loglik(v, Finv);
-      // don't save a, P for last iteration
-      if (t < n) {
-        a = ssm_update_a(a, c_t, T_t, v, K);
-        P = ssm_update_P(P, Z_t, T_t, RQR, K);
-      }
-    }
-    ll = sum(ll_obs);
-  }
-  return ll;
-}
-
-/**
----
-function: ssm_u_miss_lpdf
-args:
-- name: y
-  description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
-- name: d
-  description: Observation intercept, $\vec{d}_t$. An array of $p \times 1$ vectors.
-- name: Z
-  description: Design matrix, $\mat{Z}_t$. An array of $p \times m$ matrices.
-- name: H
-  description: Observation covariance matrix, $\mat{H}_t$. An array of $p \times p$ matrices.
-- name: c
-  description: State intercept, $\vec{c}_t$. An array of $m \times 1$ vectors.
-- name: T
-  description: Transition matrix, $\mat{T}_t$. An array of $m \times m$ matrices.
-- name: R
-  description: State covariance selection matrix, $\mat{R} _t$. An array of $p \times q$ matrices.
-- name: Q
-  description: State covariance matrix, $\mat{Q}_t$. An array of $q \times q$ matrices.
-- name: a1
-  description: Expected value of the intial state, $a_1 = \E(\alpha_1)$. An $m \times 1$ matrix.
-- name: P1
-  description: Variance of the initial state, $P_1 = \Var(\alpha_1)$. An $m \times m$ matrix.
-- name: p_t
-  description: Number of non-missing observations at time $t$.
-- name: y_idx
-  description: An array of integers with the indexes of the non-missing elements of $\vec{y}_t$. This is zero-padded so the length is $p$.
-returns: The log-likelihood $p(\vec{y}_{1:n} | \vec{d}_{1:n}, \mat{Z}_{1:n}, \mat{H}_{1:n}, \vec{c}_{1:n}, \mat{T}_{1:n}, \mat{R}_{1:n}, \mat{Q}_{1:n})$.
----
-
-
-*/
-
-real ssm_u_miss_lpdf(vector[] y,
-                   vector[] d, matrix[] Z, vector[] H,
-                   vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-                   vector a1, matrix P1, int[] p_t, int[,] y_idx) {
-  real ll;
-  int n;
-  int m;
-  int p;
-  int q;
-  n = size(y); // number of obs
-  m = dims(Z)[3];
-  p = dims(Z)[2];
-  q = dims(Q)[2];
-  {
-    // system matrices for current iteration
-    vector[p] d_t;
-    matrix[p, m] Z_t;
-    vector[p] H_t;
-    vector[m] c_t;
-    matrix[m, m] T_t;
-    matrix[m, q] R_t;
-    matrix[q, q] Q_t;
-    matrix[m, m] RQR;
-    // result matricees for each iteration
-    matrix[n, p] ll_obs;
-    vector[m] a;
-    matrix[m, m] P;
-    vector[p] v;
-    vector[p] Finv;
-    matrix[m, p] K;
-
-    d_t = d[1];
-    Z_t = Z[1];
-    H_t = H[1];
-    c_t = c[1];
-    T_t = T[1];
-    R_t = R[1];
-    Q_t = Q[1];
-    RQR = quad_form_sym(Q_t, R_t ');
-
-    a = a1;
-    P = P1;
-    for (t in 1:n) {
-      if (t > 1) {
-        if (size(d) > 1) {
-          d_t = d[t];
-        }
-        if (size(Z) > 1) {
-          Z_t = Z[t];
-        }
-        if (size(H) > 1) {
-          H_t = H[t];
-        }
-        if (size(c) > 1) {
-          c_t = c[t];
-        }
-        if (size(T) > 1) {
-          T_t = T[t];
-        }
-        if (size(R) > 1) {
-          R_t = R[t];
-        }
-        if (size(Q) > 1) {
-          Q_t = Q[t];
-        }
-        if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t ');
-        }
-      }
-      v = ssm_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
-      Finv = ssm_update_Finv_miss(P, Z_t, H_t, p_t[t], y_idx[t]);
-      K = ssm_update_K(P, Z_t, T_t, Finv);
-      ll_obs[t] = ssm_update_loglik_miss(v, Finv, p_t[t], y_idx[t]);
-      // don't save a, P for last iteration
-      if (t < n) {
-        a = ssm_update_a(a, c_t, T_t, v, K);
-        P = ssm_update_P(P, Z_t, T_t, RQR, K);
-      }
-    }
-    ll = sum(ll_obs);
-  }
-  return ll;
 }

@@ -1343,17 +1343,6 @@ vector ssm_ufilter_states_get_a(vector x, int m) {
 matrix ssm_ufilter_states_get_P(vector x, int m) {
   return ssm_filter_states_get_P(x, m);
 }
-vector ssm_ufilter_states_update_a(vector a, matrix P, matrix Z,
-                                  vector v, vector Finv) {
-  vector[num_elements(a)] aa;
-  aa = a + P * Z ' * Finv * v;
-  return aa;
-}
-matrix ssm_ufilter_states_update_P(matrix P, matrix Z, vector Finv) {
-  matrix[rows(P), cols(P)] PP;
-  PP = to_symmetric_matrix(P - P * quad_form_sym(Finv, Z) * P);
-  return PP;
-}
 vector[] ssm_ufilter_states(vector[] filter, matrix[] Z) {
   vector[ssm_ufilter_states_size(dims(Z)[3])] res[size(filter)];
   int n;
@@ -1383,9 +1372,11 @@ vector[] ssm_ufilter_states(vector[] filter, matrix[] Z) {
       a = ssm_ufilter_get_a(filter[t], m, p);
       P = ssm_ufilter_get_P(filter[t], m, p);
       for (i in 1:p) {
-        K_i = col(K, i);
-        a = ssm_update_a_u1(a, v[i], K_i);
-        P = ssm_update_P_u1(P, Finv[i], K_i);
+        if (Finv[i] > 0) {
+          K_i = col(K, i);
+          a = ssm_update_a_u1(a, v[i], K_i);
+          P = ssm_update_P_u1(P, Finv[i], K_i);
+        }
       }
       res[t, :m] = a;
       res[t, (m + 1): ] = symmat_to_vector(P);
@@ -1547,9 +1538,9 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
     }
     r = rep_vector(0.0, m);
     N = rep_matrix(0.0, m, m);
-    for (i in 0:(n - 1)) {
+    for (s in 0:(n - 1)) {
       int t;
-      t = n - i;
+      t = n - s;
       if (size(Z) > 1) {
         Z_t = Z[t];
       }
@@ -1568,6 +1559,72 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
       V = to_symmetric_matrix(P - P * N * P);
       res[t, :m] = alpha;
       res[t, (m + 1): ] = symmat_to_vector(V);
+    }
+  }
+  return res;
+}
+vector[] ssm_usmooth_state(vector[] filter, matrix[] Z, matrix[] T) {
+  vector[ssm_smooth_state_size(dims(Z)[3])] res[size(filter)];
+  int n;
+  int m;
+  int p;
+  n = size(filter);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  {
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    matrix[m, m] T_t;
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[m] alpha;
+    matrix[m, m] V;
+    vector[p] v;
+    matrix[m, p] K;
+    vector[m] K_i;
+    vector[p] Finv;
+    vector[m] a;
+    matrix[m, m] P;
+    if (size(Z) == 1) {
+      Z_t = Z[1];
+    }
+    if (size(T) == 1) {
+      T_t = T[1];
+    }
+    r = rep_vector(0.0, m);
+    N = rep_matrix(0.0, m, m);
+    for (s in 0:(n - 1)) {
+      int t;
+      t = n - s;
+      if (size(Z) > 1) {
+        Z_t = Z[t];
+      }
+      K = ssm_ufilter_get_K(filter[t], m, p);
+      v = ssm_ufilter_get_v(filter[t], m, p);
+      Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      a = ssm_ufilter_get_a(filter[t], m, p);
+      P = ssm_ufilter_get_P(filter[t], m, p);
+      for (i in 1:p) {
+        if (Finv[i] > 0) {
+          Z_ti = row(Z_t, i);
+          K_i = col(K, i);
+          L = ssm_update_L_u(Z_ti, K_i);
+          r = ssm_update_r_u1(r, Z_ti, v[i], Finv[i], L);
+          N = ssm_update_N_u1(N, Z_ti, Finv[i], L);
+        }
+      }
+      alpha = a + P * r;
+      V = to_symmetric_matrix(P - P * N * P);
+      res[t, :m] = alpha;
+      res[t, (m + 1): ] = symmat_to_vector(V);
+      if (t > 1) {
+        if (size(T) > 1) {
+          T_t = T[t - 1];
+        }
+        r = ssm_update_r_u2(r, T_t);
+        N = ssm_update_N_u2(N, T_t);
+      }
     }
   }
   return res;
@@ -1644,6 +1701,88 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
   }
   return res;
 }
+int ssm_usmooth_eps_size(int p) {
+  int sz;
+  sz = 2 * p;
+  return sz;
+}
+vector ssm_usmooth_eps_get_mean(vector x, int p) {
+  vector[p] eps;
+  eps = x[ :p];
+  return eps;
+}
+vector ssm_usmooth_eps_get_var(vector x, int p) {
+  vector[p] eps_var;
+  eps_var = x[(p + 1): ];
+  return eps_var;
+}
+vector[] ssm_usmooth_eps(vector[] filter, matrix[] Z, vector[] H, matrix[] T) {
+  vector[ssm_usmooth_eps_size(dims(Z)[2])] res[size(filter)];
+  int n;
+  int m;
+  int p;
+  n = size(filter);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  {
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[p] eps;
+    vector[p] var_eps;
+    vector[p] v;
+    matrix[m, p] K;
+    vector[m] K_i;
+    vector[p] Finv;
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    vector[p] H_t;
+    matrix[m, m] T_t;
+    if (size(Z) == 1) {
+      Z_t = Z[1];
+    }
+    if (size(H) == 1) {
+      H_t = H[1];
+    }
+    if (size(T) == 1) {
+      T_t = T[1];
+    }
+    r = rep_vector(0.0, m);
+    N = rep_matrix(0.0, m, m);
+    for (s in 1:n) {
+      int t;
+      t = n - s + 1;
+      if (size(Z) > 1) {
+        Z_t = Z[t];
+      }
+      if (size(H) > 1) {
+        H_t = H[t];
+      }
+      K = ssm_ufilter_get_K(filter[t], m, p);
+      v = ssm_ufilter_get_v(filter[t], m, p);
+      Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      for (i in 1:p) {
+        Z_ti = row(Z_t, i);
+        K_i = col(K, i);
+        L = ssm_update_L_u(Z_ti, K_i);
+        r = ssm_update_r_u1(r, Z_ti, v[i], Finv[i], L);
+        N = ssm_update_N_u1(N, Z_ti, Finv[i], L);
+        eps[i] = H_t[i] * Finv[i] * (v[i] - K_i ' * r);
+        var_eps[i] = pow(H_t[i], 2) * Finv[i] * (1. + Finv[i] * quad_form(N, K_i));
+      }
+      res[t, :p] = eps;
+      res[t, (p + 1): ] = var_eps;
+      if (t > 1) {
+        if (size(T) > 1) {
+          T_t = T[t - 1];
+        }
+        r = ssm_update_r_u2(r, T_t);
+        N = ssm_update_N_u2(N, T_t);
+      }
+    }
+  }
+  return res;
+}
 int ssm_smooth_eta_size(int q) {
   int sz;
   sz = q + symmat_size(q);
@@ -1713,7 +1852,7 @@ vector[] ssm_smooth_eta(vector[] filter,
       if (size(Q) > 1) {
         Q_t = Q[t];
       }
-      K = ssm_filter_get_K(filter[t], m, p);
+      K = ssm_ufilter_get_K(filter[t], m, p);
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       L = ssm_update_L(Z_t, T_t, K);
@@ -1723,6 +1862,84 @@ vector[] ssm_smooth_eta(vector[] filter,
       var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form_sym(N, R_t) * Q_t);
       res[t, :q] = eta;
       res[t, (q + 1): ] = symmat_to_vector(var_eta);
+    }
+  }
+  return res;
+}
+vector[] ssm_usmooth_eta(vector[] filter,
+                        matrix[] Z, matrix[] T,
+                        matrix[] R, matrix[] Q) {
+  vector[ssm_smooth_eta_size(dims(Q)[2])] res[size(filter)];
+  int n;
+  int m;
+  int p;
+  int q;
+  n = size(filter);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  q = dims(Q)[2];
+  {
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[q] eta;
+    matrix[q, q] var_eta;
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    vector[p] v;
+    matrix[m, p] K;
+    vector[m] K_i;
+    vector[p] Finv;
+    if (size(Z) == 1) {
+      Z_t = Z[1];
+    }
+    if (size(T) == 1) {
+      T_t = T[1];
+    }
+    if (size(R) == 1) {
+      R_t = R[1];
+    }
+    if (size(Q) == 1) {
+      Q_t = Q[1];
+    }
+    r = rep_vector(0.0, m);
+    N = rep_matrix(0.0, m, m);
+    for (s in 0:(n - 1)) {
+      int t;
+      t = n - s;
+      if (size(Z) > 1) {
+        Z_t = Z[t];
+      }
+      if (size(R) > 1) {
+        R_t = R[t];
+      }
+      if (size(Q) > 1) {
+        Q_t = Q[t];
+      }
+      K = ssm_ufilter_get_K(filter[t], m, p);
+      v = ssm_ufilter_get_v(filter[t], m, p);
+      Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      for (i in 1:p) {
+        Z_ti = row(Z_t, i);
+        K_i = col(K, i);
+        L = ssm_update_L_u(Z_ti, K_i);
+        r = ssm_update_r_u1(r, Z_ti, v[i], Finv[i], L);
+        N = ssm_update_N_u1(N, Z_ti, Finv[i], L);
+      }
+      eta = Q_t * R_t ' * r;
+      var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form_sym(N, R_t) * Q_t);
+      res[t, :q] = eta;
+      res[t, (q + 1): ] = symmat_to_vector(var_eta);
+      if (t > 1) {
+        if (size(T) > 1) {
+          T_t = T[t - 1];
+        }
+        r = ssm_update_r_u2(r, T_t);
+        N = ssm_update_N_u2(N, T_t);
+      }
     }
   }
   return res;

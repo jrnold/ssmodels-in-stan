@@ -50,11 +50,19 @@ model {
                     miss);
 }
 generated quantities {
-  //vector[1] alpha[n];
-    vector[filter_sz] filtered[n];
+  vector[2] alpha[n];
+  vector[2] a[n];
+  vector[2] eta[n];
+  vector[2 * p] eps[n];
+  vector[filter_sz] filtered[n];
+
     // filtering
     filtered = ssm_ufilter_miss(y, d, Z, H, c, T, R, Q,
                                a1, P1, miss);
+    a = ssm_ufilter_states(filtered, Z);
+    alpha = ssm_usmooth_state(filtered, Z, T);
+    eps = ssm_usmooth_eps(filtered, Z, H, T);
+    eta = ssm_usmooth_eta(filtered, Z, T, R, Q);
     // // sampling states
     // alpha = ssm_simsmo_states_miss_rng(filtered, d, Z, H,
     //                                    c, T, R, Q,

@@ -358,7 +358,7 @@ and $\vec{J} = j_1, ...j_q$, return a $m \times n$ matrix where $m \geq p$, $n \
 $$
 Y_{k, l} =
 \begin{cases}
-X_{i, j} & \text{if $k = i$, $l = j$, for some $i \in \vec{I}$, $j \in \vec{J}$,} \
+X_{i, j} & \text{if $k = i$, $l = j$, for some $i \in \vec{I}$, $j \in \vec{J}$,} \\
 a & \text{otherwise} .
 \end{cases}
 $$
@@ -393,7 +393,7 @@ Given an $m \times 1$ vector $\vec{x}$, an integer $n \geq m$, a default value $
 and indexes $\vec{I} = i_1, ..., i_m \in 1:n$, return a $n \times 1$ vector where
 y_{j} =
 \begin{cases}
-x_{i} & \text{if $j = i$ for some $i \in \vec{I}$,} \
+x_{i} & \text{if $j = i$ for some $i \in \vec{I}$,} \\
 a & \text{otherwise}
 \end{cases} .
 $$
@@ -938,7 +938,7 @@ The elements of the forecast error $\vec{v}_t$ is
 $$
 \vec{v}_t =
 \begin{cases}
-  y_{j,t} - \vec{Z}_{j,.,t} \vec{a}_t - d_{j,t} & \text{if $y_{j,t} not missing.} \
+  y_{j,t} - \vec{Z}_{j,.,t} \vec{a}_t - d_{j,t} & \text{if $y_{j,t} not missing.} \\
   0 & \text{if $y_{j,t}$ is missing.}
 \end{cases}
 $$
@@ -1879,7 +1879,6 @@ returns: The size of the vector
 ---
 
 Length of the vectors returned by `ssm_filter_states`.
-
 
 */
 
@@ -3150,70 +3149,6 @@ matrix ssm_ufilter_states_get_P(vector x, int m) {
   return ssm_filter_states_get_P(x, m);
 }
 
-/**
----
-function: ssm_ufilter_states_update_a
-args:
-- name: a
-  description: An $m \times 1$ vector with the expected value of the predicted state, $\vec{a}_t$.
-- name: P
-  description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
-- name: Z
-  description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
-- name: v
-  description: A $p \times 1$ vector with the forecast errors, $\vec{v}_t$
-- name: Finv
-  description: A $p \times 1$ vector with the forecast prediction, $\vec{f}_{t}^{-1}$.
-returns: An $m \times 1$ matrix the expected value of the fitered states, $\E(\vec{alpha}_t | \vec{y}_{1:t}) = \vec{a}_{t|t}$.
----
-
-
-Calculate filtered state values [@DurbinKoopman2012, Sec 4.3.2], from the results of
-a univariate filter (`ssm_`ufilter` or `ssm_ufilter_miss`):
-$$
-\E(\vec{alpha}_t | \vec{y}_{1:t}) = \vec{a}_{t|t} = ....
-$$
-
-
-*/
-
-vector ssm_ufilter_states_update_a(vector a, matrix P, matrix Z,
-                                  vector v, vector Finv) {
-  vector[num_elements(a)] aa;
-  aa = a + P * Z ' * Finv * v;
-  return aa;
-}
-
-/**
----
-function: ssm_ufilter_states_update_P
-args:
-- name: P
-  description: An $m \times m$ vector with the variance of the predicted state, $\mat{P}_t$.
-- name: Z
-  description: A $p \times m$ matrix with the design matrix, $\mat{Z}_t$.
-- name: Finv
-  description: A $p \times p$ matrix with the forecast prediction, $\mat{F}_{t}^{-1}$.
-returns: An $m \times m$ matrix with variance of the filtered states, $\Var(\vec{alpha}_t | \vec{y}_{1:t}) = \mat{P}_{t|t}$.
----
-
-
-Calculate filtered state variance values [@DurbinKoopman2012, Sec 4.3.2], from the reults of
-a univariate filter (`ssm_ufilter` or `ssm_ufilter_miss`):
-$$
-\Var(\vec{alpha}_t | \vec{y}_{1:t}) = \mat{P}_{t|t} = ...
-$$
-
-
-
-*/
-
-matrix ssm_ufilter_states_update_P(matrix P, matrix Z, vector Finv) {
-  matrix[rows(P), cols(P)] PP;
-  PP = to_symmetric_matrix(P - P * quad_form_sym(Finv, Z) * P);
-  return PP;
-}
-
 
 /**
 ---
@@ -3276,9 +3211,11 @@ vector[] ssm_ufilter_states(vector[] filter, matrix[] Z) {
       a = ssm_ufilter_get_a(filter[t], m, p);
       P = ssm_ufilter_get_P(filter[t], m, p);
       for (i in 1:p) {
-        K_i = col(K, i);
-        a = ssm_update_a_u1(a, v[i], K_i);
-        P = ssm_update_P_u1(P, Finv[i], K_i);
+        if (Finv[i] > 0) {
+          K_i = col(K, i);
+          a = ssm_update_a_u1(a, v[i], K_i);
+          P = ssm_update_P_u1(P, Finv[i], K_i);
+        }
       }
       res[t, :m] = a;
       res[t, (m + 1): ] = symmat_to_vector(P);
@@ -3612,7 +3549,7 @@ returns: An $m \times m$ matrix with $\vec{N}_{t-1,p}
 
 Update smoothing variance from $t$ to $t - 1$, $\mat{N}_{t,0}$ to $\mat{N}_{t - 1, p}
 $$
-\mat{N}_{t,i-1} =  \mat{T}_{t-1}' \mat{N}_{t,0} \mat{T}_{t-1} .
+\mat{N}_{t - 1,p} =  \mat{T}_{t-1}' \mat{N}_{t,0} \mat{T}_{t-1} .
 $$
 
 See [@DurbinKoopman2012, Eq. 6.15, p. 157]
@@ -3763,13 +3700,14 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
     r = rep_vector(0.0, m);
     N = rep_matrix(0.0, m, m);
     // move backwards in time: t, ..., 1
-    for (i in 0:(n - 1)) {
+    for (s in 0:(n - 1)) {
       int t;
-      t = n - i;
+      t = n - s;
       // set time-varying system matrices
       if (size(Z) > 1) {
         Z_t = Z[t];
       }
+      // does this require a value for T_n ?
       if (size(T) > 1) {
         T_t = T[t];
       }
@@ -3791,6 +3729,91 @@ vector[] ssm_smooth_state(vector[] filter, matrix[] Z, matrix[] T) {
       // saving
       res[t, :m] = alpha;
       res[t, (m + 1): ] = symmat_to_vector(V);
+    }
+  }
+  return res;
+}
+
+
+vector[] ssm_usmooth_state(vector[] filter, matrix[] Z, matrix[] T) {
+  vector[ssm_smooth_state_size(dims(Z)[3])] res[size(filter)];
+  int n;
+  int m;
+  int p;
+  n = size(filter);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  {
+    // system matrices for current iteration
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    matrix[m, m] T_t;
+    // smoother results
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[m] alpha;
+    matrix[m, m] V;
+    // results
+    vector[p] v;
+    matrix[m, p] K;
+    vector[m] K_i;
+    vector[p] Finv;
+    vector[m] a;
+    matrix[m, m] P;
+
+    if (size(Z) == 1) {
+      Z_t = Z[1];
+    }
+    if (size(T) == 1) {
+      T_t = T[1];
+    }
+    // initialize smoother
+    // r_{n,p} and N_{n,p}
+    r = rep_vector(0.0, m);
+    N = rep_matrix(0.0, m, m);
+    // move backwards in time: t, ..., 1
+    for (s in 0:(n - 1)) {
+      int t;
+      t = n - s;
+      // set time-varying system matrices
+      if (size(Z) > 1) {
+        Z_t = Z[t];
+      }
+      // get filtered values
+      K = ssm_ufilter_get_K(filter[t], m, p);
+      v = ssm_ufilter_get_v(filter[t], m, p);
+      Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      a = ssm_ufilter_get_a(filter[t], m, p);
+      P = ssm_ufilter_get_P(filter[t], m, p);
+      for (i in 1:p) {
+        # Only bother updating if there is information in the
+        # observation
+        if (Finv[i] > 0) {
+          // updating
+          Z_ti = row(Z_t, i);
+          K_i = col(K, i);
+          // L_{t, i}
+          L = ssm_update_L_u(Z_ti, K_i);
+          // r_{i - 1, t} and N_{i - 1, t}
+          r = ssm_update_r_u1(r, Z_ti, v[i], Finv[i], L);
+          N = ssm_update_N_u1(N, Z_ti, Finv[i], L);
+        }
+      }
+      // now r_{t, 0}, N_{t, 0}
+      alpha = a + P * r;
+      V = to_symmetric_matrix(P - P * N * P);
+      // saving
+      res[t, :m] = alpha;
+      res[t, (m + 1): ] = symmat_to_vector(V);
+      // transition to r_{t - 1, p}, N_{t - 1, p}
+      if (t > 1) {
+        if (size(T) > 1) {
+          T_t = T[t - 1];
+        }
+        r = ssm_update_r_u2(r, T_t);
+        N = ssm_update_N_u2(N, T_t);
+      }
     }
   }
   return res;
@@ -3827,7 +3850,6 @@ args:
   description: The length of the observation vectors, $\vec{y}_t$.
 returns: A $p \times 1$ vector with $\hat{\vec{\varepsilon}}_t$.
 ---
-
 
 Extract $\hat{\vec{\varepsilon}}_t$ from vectors returned by `ssm_smooth_eps`
 
@@ -3971,6 +3993,155 @@ vector[] ssm_smooth_eps(vector[] filter, matrix[] Z, matrix[] H, matrix[] T) {
       // saving
       res[t, :p] = eps;
       res[t, (p + 1): ] = symmat_to_vector(var_eps);
+    }
+  }
+  return res;
+}
+
+/**
+---
+function: ssm_usmooth_eps_size
+args:
+- name: p
+  description: The length of the observation vectors, $\vec{y}_t$.
+returns: The size of the vectors is $p + p (p + 1) / 2$.
+---
+
+The size of the vectors returned by `ssm_usmooth_eps`
+
+
+*/
+
+int ssm_usmooth_eps_size(int p) {
+  int sz;
+  sz = 2 * p;
+  return sz;
+}
+
+/**
+---
+function: ssm_usmooth_eps_get_mean
+args:
+- name: x
+  description: vector from the results of `ssm_smooth_eps`.
+- name: p
+  description: The length of the observation vectors, $\vec{y}_t$.
+returns: A $p \times 1$ vector with $\hat{\vec{\varepsilon}}_t$.
+---
+
+
+Extract $\hat{\vec{\varepsilon}}_t$ from vectors returned by `ssm_usmooth_eps`
+
+*/
+
+vector ssm_usmooth_eps_get_mean(vector x, int p) {
+  vector[p] eps;
+  eps = x[ :p];
+  return eps;
+}
+
+/**
+---
+function: ssm_usmooth_eps_get_var
+args:
+- name: x
+  description: A vector returned by `ssm_smooth_eps`
+- name: p
+  description: The length of the observation vectors, $\vec{y}_t$.
+returns: A $p \times 1$ matrix with the diagonal of $\Var(\vec{\varepsilon}_t | \vec{y}_{1:n})$
+---
+
+Extract $\Var(\varepsilon_t|\vec{y}_{1:n})$ from vectors returned by `ssm_usmooth_eps`
+
+
+*/
+
+vector ssm_usmooth_eps_get_var(vector x, int p) {
+  vector[p] eps_var;
+  eps_var = x[(p + 1): ];
+  return eps_var;
+}
+
+vector[] ssm_usmooth_eps(vector[] filter, matrix[] Z, vector[] H, matrix[] T) {
+  vector[ssm_usmooth_eps_size(dims(Z)[2])] res[size(filter)];
+  int n;
+  int m;
+  int p;
+  n = size(filter);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  {
+    // smoother values
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[p] eps;
+    vector[p] var_eps;
+    // filter results
+    vector[p] v;
+    matrix[m, p] K;
+    vector[m] K_i;
+    vector[p] Finv;
+    // system matrices
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    vector[p] H_t;
+    matrix[m, m] T_t;
+
+    // set matrices if time-invariant
+    if (size(Z) == 1) {
+      Z_t = Z[1];
+    }
+    if (size(H) == 1) {
+      H_t = H[1];
+    }
+    if (size(T) == 1) {
+      T_t = T[1];
+    }
+    // initialize smoother
+    // r and N go from n, n - 1, ..., 1, 0.
+    // r_n and N_n
+    r = rep_vector(0.0, m);
+    N = rep_matrix(0.0, m, m);
+    for (s in 1:n) {
+      int t;
+      // move backwards in time
+      t = n - s + 1;
+      // update time-varying system matrices
+      if (size(Z) > 1) {
+        Z_t = Z[t];
+      }
+      if (size(H) > 1) {
+        H_t = H[t];
+      }
+      // get values from filter
+      K = ssm_ufilter_get_K(filter[t], m, p);
+      v = ssm_ufilter_get_v(filter[t], m, p);
+      Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      for (i in 1:p) {
+        // updating
+        Z_ti = row(Z_t, i);
+        K_i = col(K, i);
+        // L_{t, i}
+        L = ssm_update_L_u(Z_ti, K_i);
+        // r_{i - 1, t} and N_{i - 1, t}
+        r = ssm_update_r_u1(r, Z_ti, v[i], Finv[i], L);
+        N = ssm_update_N_u1(N, Z_ti, Finv[i], L);
+        // eps_{t,i} and V(eps_{t,i}|y)
+        eps[i] = H_t[i] * Finv[i] * (v[i] - K_i ' * r);
+        var_eps[i] = pow(H_t[i], 2) * Finv[i] * (1. + Finv[i] * quad_form(N, K_i));
+      }
+      // saving
+      res[t, :p] = eps;
+      res[t, (p + 1): ] = var_eps;
+      // transition to r_{t - 1, p}, N_{t - 1, p}
+      if (t > 1) {
+        if (size(T) > 1) {
+          T_t = T[t - 1];
+        }
+        r = ssm_update_r_u2(r, T_t);
+        N = ssm_update_N_u2(N, T_t);
+      }
     }
   }
   return res;
@@ -4145,7 +4316,7 @@ vector[] ssm_smooth_eta(vector[] filter,
         Q_t = Q[t];
       }
       // get values from filter
-      K = ssm_filter_get_K(filter[t], m, p);
+      K = ssm_ufilter_get_K(filter[t], m, p);
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       // update smoother
@@ -4162,6 +4333,101 @@ vector[] ssm_smooth_eta(vector[] filter,
   return res;
 }
 
+
+vector[] ssm_usmooth_eta(vector[] filter,
+                        matrix[] Z, matrix[] T,
+                        matrix[] R, matrix[] Q) {
+  vector[ssm_smooth_eta_size(dims(Q)[2])] res[size(filter)];
+  int n;
+  int m;
+  int p;
+  int q;
+  n = size(filter);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  q = dims(Q)[2];
+  {
+    // smoother matrices
+    vector[m] r;
+    matrix[m, m] N;
+    matrix[m, m] L;
+    vector[q] eta;
+    matrix[q, q] var_eta;
+    // system matrices
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    // filter matrices
+    vector[p] v;
+    matrix[m, p] K;
+    vector[m] K_i;
+    vector[p] Finv;
+
+    // set time-invariant matrices
+    if (size(Z) == 1) {
+      Z_t = Z[1];
+    }
+    if (size(T) == 1) {
+      T_t = T[1];
+    }
+    if (size(R) == 1) {
+      R_t = R[1];
+    }
+    if (size(Q) == 1) {
+      Q_t = Q[1];
+    }
+    // initialize smoother
+    r = rep_vector(0.0, m);
+    N = rep_matrix(0.0, m, m);
+    for (s in 0:(n - 1)) {
+      int t;
+      // move backwards in time
+      t = n - s;
+      // update time-varying system matrices
+      if (size(Z) > 1) {
+        Z_t = Z[t];
+      }
+      if (size(R) > 1) {
+        R_t = R[t];
+      }
+      if (size(Q) > 1) {
+        Q_t = Q[t];
+      }
+      // get values from filter
+      K = ssm_ufilter_get_K(filter[t], m, p);
+      v = ssm_ufilter_get_v(filter[t], m, p);
+      Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      // update r_{t,p} and N_{t,p} ... to r_{t,0}, N_{t,0}
+      for (i in 1:p) {
+        // updating
+        Z_ti = row(Z_t, i);
+        K_i = col(K, i);
+        // L_{t, i}
+        L = ssm_update_L_u(Z_ti, K_i);
+        // r_{i - 1, t} and N_{i - 1, t}
+        r = ssm_update_r_u1(r, Z_ti, v[i], Finv[i], L);
+        N = ssm_update_N_u1(N, Z_ti, Finv[i], L);
+      }
+      // now r_{t,0}, N_{t,0} and use standard smoothing updates
+      eta = Q_t * R_t ' * r;
+      var_eta = to_symmetric_matrix(Q_t - Q_t * quad_form_sym(N, R_t) * Q_t);
+      // saving
+      res[t, :q] = eta;
+      res[t, (q + 1): ] = symmat_to_vector(var_eta);
+      // transition to r_{t - 1, p}, N_{t - 1, p}
+      if (t > 1) {
+        if (size(T) > 1) {
+          T_t = T[t - 1];
+        }
+        r = ssm_update_r_u2(r, T_t);
+        N = ssm_update_N_u2(N, T_t);
+      }
+    }
+  }
+  return res;
+}
 
 /**
 ---
@@ -5320,8 +5586,8 @@ The Kronecker product of a $\mat{A}$ and $\mat{B}$ is
 $$
 \mat{A} \otimes \mat{B} =
 \begin{bmatrix}
-a_{11} \mat{B} \cdots a_{1n} \mat{B} \
-\vdots & \ddots & vdots \
+a_{11} \mat{B} \cdots a_{1n} \mat{B} \\
+\vdots & \ddots & vdots \\
 a_{m1} \mat{B} & \cdots & a_{mn} \mat{B}
 \end{bmatrix} .
 $$

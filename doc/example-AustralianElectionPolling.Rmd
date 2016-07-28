@@ -120,6 +120,9 @@ aus_elec_data <-
 
 ```{r}
 polling_mod <- ssm_stan_model("polling.stan")
+```
+
+```{r}
 polling_samples <-
   sampling(polling_mod, data = aus_elec_data, iter = 2000, chains = 1,
            init = list(list(delta = rep(0, aus_elec_data[["p"]] - 1),
@@ -141,7 +144,7 @@ ggplot(aus_polling, aes(x = date, y = y,
 polling_samples <- polling_summary[["all"]] %>%
   left_join(datelist, by = c("dim_1" = "time"))
 
-states <- filter(polling_samples, parameter == "filtered", dim_2 == 16)
+states <- filter(polling_samples, parameter == "filtered", dim_2 == 8, dim_1 > 3)
 
 ggplot() +
   geom_ribbon(data = states,

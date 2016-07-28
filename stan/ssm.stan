@@ -1064,7 +1064,7 @@ Update the precision of the univariate forcast error, $f^{-1}_{t,j}$.
 
 */
 real ssm_update_Finv_u(matrix P, row_vector Z, real H) {
-  return 1. / quad_form(P, Z') + H;
+  return 1. / (quad_form(P, Z') + H);
 }
 
 /**
@@ -1158,8 +1158,6 @@ args:
   description: An $m \\times m$ vector with the variance of the predicted state, $P_t$.
 - name: Z
   description: A $p \\times m$ matrix with the design matrix, $\\mat{Z}_t$.
-- name: T
-  description: An $m \\times m$ matrix with the transition matrix, $\\mat{T}_t$.
 - name: Finv
   description: $ matrix
 returns: An $m \\times p$ matrix with the Kalman gain, $\\mat{K}_t$.
@@ -1168,7 +1166,7 @@ returns: An $m \\times p$ matrix with the Kalman gain, $\\mat{K}_t$.
 Update the Kalman gain, $\\mat{K}_t$, in univiariate filtering.
 */
 
-vector ssm_update_K_u(matrix P, row_vector Z, matrix T, real Finv) {
+vector ssm_update_K_u(matrix P, row_vector Z, real Finv) {
   vector[num_elements(Z)] K;
   K = P * Z' * Finv;
   return K;

@@ -350,7 +350,7 @@ real ssm_update_F_u(matrix P, row_vector Z, real H) {
   return quad_form(P, Z') + H;
 }
 real ssm_update_Finv_u(matrix P, row_vector Z, real H) {
-  return 1. / quad_form(P, Z') + H;
+  return 1. / (quad_form(P, Z') + H);
 }
 matrix ssm_update_Finv_miss(matrix P, matrix Z, matrix H,
                                    int p_t, int[] y_idx) {
@@ -380,7 +380,7 @@ matrix ssm_update_K(matrix P, matrix Z, matrix T, matrix Finv) {
   K = T * P * Z' * Finv;
   return K;
 }
-vector ssm_update_K_u(matrix P, row_vector Z, matrix T, real Finv) {
+vector ssm_update_K_u(matrix P, row_vector Z, real Finv) {
   vector[num_elements(Z)] K;
   K = P * Z' * Finv;
   return K;

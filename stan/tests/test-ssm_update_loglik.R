@@ -1,8 +1,8 @@
 #function: ssm_update_loglik
 context("ssm_update_loglik")
-test_that("Stan function ssm_update_ll works", {
+test_that("Stan function ssm_update_loglik works", {
   f <- function(m, p, v, Finv) {
-    modfit <- test_stan_function("ssm_update_ll",
+    modfit <- test_stan_function("ssm_update_loglik",
                                  data = list(m = m, p = p, v = v, Finv = Finv))
     ret <- rstan::extract(modfit, "output")[[1]]
     as.numeric(ret)

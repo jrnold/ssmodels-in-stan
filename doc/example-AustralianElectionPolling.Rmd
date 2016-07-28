@@ -100,10 +100,11 @@ polling_sd <-
 aus_elec_data <-
   within(list(), {
     y <- as.matrix(select(polling_values, -date))
-    missing <- ssm_process_na(y)
-    p_t <- missing$n
-    y_idx <- missing$idx
-    rm(missing)
+    # missing <- ssm_process_na(y)
+    # p_t <- missing$n
+    # y_idx <- missing$idx
+    miss <- matrix(as.integer(is.na(y)), nrow = nrow(y), ncol = ncol(y))
+    #rm(missing)
     y[is.na(y)] <- 0
     n <- nrow(y)
     p <- ncol(y)
@@ -136,16 +137,18 @@ ggplot(aus_polling, aes(x = date, y = y,
   theme_minimal()
 ```
 
-```{r capm-state-plot}
+```{r}
 polling_samples <- polling_summary[["all"]] %>%
   left_join(datelist, by = c("dim_1" = "time"))
 
+states <- filter(polling_samples, parameter == "filtered", dim_2 == 16)
+
 ggplot() +
-  geom_ribbon(data = filter(polling_samples, parameter == "alpha"),
+  geom_ribbon(data = states,
               aes(x = date, ymin = mean - 2 * sd, ymax = mean + 2 * sd), alpha = 0.3) +
-  geom_line(data = filter(polling_samples, parameter == "alpha"),
+  geom_line(data = states,
             aes(x = date, y = mean)) +
-  geom_point(data = aus_polling, aes(x = date, y = y, colour = org)) +
+  #geom_point(data = aus_polling, aes(x = date, y = y, colour = org)) +
   theme_minimal()
 ```
 

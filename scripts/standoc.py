@@ -31,7 +31,7 @@ def parse_stan_function_defs(text):
         format(basic_types = '|'.join(basic_types), brackets = brackets)
     arg = r'{type}\s+{name}'.format(type = arg_type, name = identifier)
     arglist = r'(?:{arg})(?:\s*,\s*(?:{arg}))*'.format(arg = arg)
-    function_def = r''.join((r'^\s*(?P<return>{return_type})',
+    function_def = r''.join((r'\s*(?P<return>{return_type})',
                              r'\s+(?P<func>{function_name})',
                              r'\s*\(\s*(?P<arglist>{arglist})?\s*\)')).\
         format(return_type = return_types, function_name = identifier,
@@ -40,8 +40,8 @@ def parse_stan_function_defs(text):
     for fun_def in re.finditer(function_def, text, re.M):
         newfun = {'return_type': fun_def.group('return'),
                   'args': []}
-        for arg in re.findall(arg, fun_def.group('arglist')):
-            argtype, argname = re.split('\s+', arg)
+        for x in re.findall(arg, fun_def.group('arglist')):
+            argtype, argname = re.split('\s+', x)
             newfun['args'].append({'type': argtype, 'name': argname})
         functions[fun_def.group('func')] = newfun
     return functions
@@ -250,14 +250,11 @@ def parse(f):
 
 def create_docfile(src, dst):
     doc = parse(src)
-    undocumented_functions = doc.undocumented_functions()
-    if len(undocumented_functions):
-        print("WARNING: Undocumented functions: " +
-              ", ".join(undocumented_functions), file = sys.stderr)
     undefined_functions = doc.undefined_functions()
     if len(undefined_functions):
         print("WARNING: Undefined functions: " + ", ".join(undefined_functions),
               file = sys.stderr)
+    #print("Existing functions: " + str(doc.code_functions()))
     doc.update_functions()
     dst.write(doc.format())
 

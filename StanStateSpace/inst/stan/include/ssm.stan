@@ -728,6 +728,272 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
   }
   return res;
 }
+int[,] ssm_ufilter_idx(int m, int p) {
+  int sz[6, 3];
+  sz[1, 1] = p;
+  sz[2, 1] = p;
+  sz[3, 1] = p;
+  sz[4, 1] = m * p;
+  sz[5, 1] = m;
+  sz[6, 1] = symmat_size(m);
+  sz[1, 2] = 1;
+  sz[1, 3] = sz[1, 2] + sz[1, 1] - 1;
+  for (i in 2:6) {
+    sz[i, 2] = sz[i - 1, 3] + 1;
+    sz[i, 3] = sz[i, 2] + sz[i, 1] - 1;
+  }
+  return sz;
+}
+int ssm_ufilter_size(int m, int p) {
+  int sz;
+  int idx[6, 3];
+  idx = ssm_ufilter_idx(m, p);
+  sz = idx[6, 3];
+  return sz;
+}
+vector ssm_ufilter_get_loglik(vector x, int m, int p) {
+  vector[p] y;
+  int idx[6, 3];
+  idx = ssm_ufilter_idx(m, p);
+  y = segment(x, idx[1, 2], idx[1, 1]);
+  return y;
+}
+vector ssm_ufilter_get_v(vector x, int m, int p) {
+  vector[p] y;
+  int idx[6, 3];
+  idx = ssm_ufilter_idx(m, p);
+  y = segment(x, idx[2, 2], idx[2, 1]);
+  return y;
+}
+vector ssm_ufilter_get_Finv(vector x, int m, int p) {
+  vector[p] y;
+  int idx[6, 3];
+  idx = ssm_ufilter_idx(m, p);
+  y = segment(x, idx[3, 2], idx[3, 1]);
+  return y;
+}
+matrix ssm_ufilter_get_K(vector x, int m, int p) {
+  matrix[m, p] y;
+  int idx[6, 3];
+  idx = ssm_ufilter_idx(m, p);
+  y = to_matrix_colwise(segment(x, idx[4, 2], idx[4, 1]), m, p);
+  return y;
+}
+vector ssm_ufilter_get_a(vector x, int m, int p) {
+  vector[m] y;
+  int idx[6, 3];
+  idx = ssm_ufilter_idx(m, p);
+  y = segment(x, idx[5, 2], idx[5, 1]);
+  return y;
+}
+matrix ssm_ufilter_get_P(vector x, int m, int p) {
+  matrix[m, m] y;
+  int idx[6, 3];
+  idx = ssm_ufilter_idx(m, p);
+  y = vector_to_symmat(segment(x, idx[6, 2], idx[6, 1]), m);
+  return y;
+}
+vector[] ssm_ufilter(vector[] y,
+                    vector[] d, matrix[] Z, vector[] H,
+                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                    vector a1, matrix P1) {
+  vector[ssm_ufilter_size(dims(Z)[3], dims(Z)[2])] res[size(y)];
+  int q;
+  int n;
+  int p;
+  int m;
+  n = size(y);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  q = dims(Q)[2];
+  {
+    vector[p] d_t;
+    real d_ti;
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    vector[p] H_t;
+    real h_ti;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    vector[p] Finv;
+    vector[m] K_i;
+    matrix[m, p] K;
+    vector[p] ll;
+    int idx[6, 3];
+    idx = ssm_ufilter_idx(m, p);
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t ');
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      res[t, idx[5, 2]:idx[5, 3]] = a;
+      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (t < n) {
+          if (size(c) > 1) {
+            c_t = c[t];
+          }
+          if (size(T) > 1) {
+            T_t = T[t];
+          }
+          if (size(R) > 1) {
+            R_t = R[t];
+          }
+          if (size(Q) > 1) {
+            Q_t = Q[t];
+          }
+          if (size(R) > 1 || size(Q) > 1) {
+            RQR = quad_form_sym(Q_t, R_t ');
+          }
+        }
+      }
+      for (i in 1:p) {
+        Z_ti = row(Z_t, i);
+        v[i] = ssm_update_v_u(y[t, i], a, d_t[i], Z_ti);
+        Finv[i] = ssm_update_Finv_u(P, Z_ti, H_t[i]);
+        K_i = ssm_update_K_u(P, Z_ti, Finv[i]);
+        K[:, i] = K_i;
+        ll[i] = ssm_update_loglik_u(v[i], Finv[i]);
+        a = ssm_update_a_u1(a, v[i], K_i);
+        P = ssm_update_P_u1(P, Finv[i], K_i);
+      }
+      res[t, idx[1, 2]:idx[1, 3]] = ll;
+      res[t, idx[2, 2]:idx[2, 3]] = v;
+      res[t, idx[3, 2]:idx[3, 3]] = Finv;
+      res[t, idx[4, 2]:idx[4, 3]] = to_vector(K);
+      if (t < n) {
+        a = ssm_update_a_u2(a, c_t, T_t);
+        P = ssm_update_P_u2(P, T_t, RQR);
+      }
+    }
+  }
+  return res;
+}
+vector[] ssm_ufilter_miss(vector[] y,
+                    vector[] d, matrix[] Z, vector[] H,
+                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                    vector a1, matrix P1, int[,] miss) {
+  vector[ssm_ufilter_size(dims(Z)[3], dims(Z)[2])] res[size(y)];
+  int q;
+  int n;
+  int p;
+  int m;
+  n = size(y);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  q = dims(Q)[2];
+  {
+    vector[p] d_t;
+    real d_ti;
+    matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
+    vector[p] H_t;
+    real h_ti;
+    vector[m] c_t;
+    matrix[m, m] T_t;
+    matrix[m, q] R_t;
+    matrix[q, q] Q_t;
+    matrix[m, m] RQR;
+    vector[m] a;
+    matrix[m, m] P;
+    vector[p] v;
+    vector[p] Finv;
+    vector[m] K_i;
+    matrix[m, p] K;
+    vector[p] ll;
+    int idx[6, 3];
+    idx = ssm_ufilter_idx(m, p);
+    d_t = d[1];
+    Z_t = Z[1];
+    H_t = H[1];
+    c_t = c[1];
+    T_t = T[1];
+    R_t = R[1];
+    Q_t = Q[1];
+    RQR = quad_form_sym(Q_t, R_t ');
+    a = a1;
+    P = P1;
+    for (t in 1:n) {
+      res[t, idx[5, 2]:idx[5, 3]] = a;
+      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
+      if (t > 1) {
+        if (size(d) > 1) {
+          d_t = d[t];
+        }
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+        if (size(H) > 1) {
+          H_t = H[t];
+        }
+        if (t < n) {
+          if (size(c) > 1) {
+            c_t = c[t];
+          }
+          if (size(T) > 1) {
+            T_t = T[t];
+          }
+          if (size(R) > 1) {
+            R_t = R[t];
+          }
+          if (size(Q) > 1) {
+            Q_t = Q[t];
+          }
+          if (size(R) > 1 || size(Q) > 1) {
+            RQR = quad_form_sym(Q_t, R_t ');
+          }
+        }
+      }
+      for (i in 1:p) {
+        if (miss[t, i]) {
+          v[i] = 0.;
+          Finv[i] = 0.;
+          K[:, i] = rep_vector(0., m);
+          ll[i] = 0.;
+        } else {
+          Z_ti = row(Z_t, i);
+          v[i] = ssm_update_v_u(y[t, i], a, d_t[i], Z_ti);
+          Finv[i] = ssm_update_Finv_u(P, Z_ti, H_t[i]);
+          K_i = ssm_update_K_u(P, Z_ti, Finv[i]);
+          K[:, i] = K_i;
+          ll[i] = ssm_update_loglik_u(v[i], Finv[i]);
+          a = ssm_update_a_u1(a, v[i], K_i);
+          P = ssm_update_P_u1(P, Finv[i], K_i);
+        }
+      }
+      res[t, idx[1, 2]:idx[1, 3]] = ll;
+      res[t, idx[2, 2]:idx[2, 3]] = v;
+      res[t, idx[3, 2]:idx[3, 3]] = Finv;
+      res[t, idx[4, 2]:idx[4, 3]] = to_vector(K);
+      if (t < n) {
+        a = ssm_update_a_u2(a, c_t, T_t);
+        P = ssm_update_P_u2(P, T_t, RQR);
+      }
+    }
+  }
+  return res;
+}
 real ssm_lpdf(vector[] y,
                vector[] d, matrix[] Z, matrix[] H,
                vector[] c, matrix[] T, matrix[] R, matrix[] Q,
@@ -777,20 +1043,22 @@ real ssm_lpdf(vector[] y,
         if (size(H) > 1) {
           H_t = H[t];
         }
-        if (size(c) > 1) {
-          c_t = c[t];
-        }
-        if (size(T) > 1) {
-          T_t = T[t];
-        }
-        if (size(R) > 1) {
-          R_t = R[t];
-        }
-        if (size(Q) > 1) {
-          Q_t = Q[t];
-        }
-        if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t ');
+        if (t < n) {
+          if (size(c) > 1) {
+            c_t = c[t];
+          }
+          if (size(T) > 1) {
+            T_t = T[t];
+          }
+          if (size(R) > 1) {
+            R_t = R[t];
+          }
+          if (size(Q) > 1) {
+            Q_t = Q[t];
+          }
+          if (size(R) > 1 || size(Q) > 1) {
+            RQR = quad_form_sym(Q_t, R_t ');
+          }
         }
       }
       v = ssm_update_v(y[t], a, d_t, Z_t);
@@ -855,20 +1123,22 @@ real ssm_miss_lpdf(vector[] y,
         if (size(H) > 1) {
           H_t = H[t];
         }
-        if (size(c) > 1) {
-          c_t = c[t];
-        }
-        if (size(T) > 1) {
-          T_t = T[t];
-        }
-        if (size(R) > 1) {
-          R_t = R[t];
-        }
-        if (size(Q) > 1) {
-          Q_t = Q[t];
-        }
-        if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t ');
+        if (t < n) {
+          if (size(c) > 1) {
+            c_t = c[t];
+          }
+          if (size(T) > 1) {
+            T_t = T[t];
+          }
+          if (size(R) > 1) {
+            R_t = R[t];
+          }
+          if (size(Q) > 1) {
+            Q_t = Q[t];
+          }
+          if (size(R) > 1 || size(Q) > 1) {
+            RQR = quad_form_sym(Q_t, R_t ');
+          }
         }
       }
       v = ssm_update_v_miss(y[t], a, d_t, Z_t, p_t[t], y_idx[t]);
@@ -936,20 +1206,22 @@ real ssm_ufilter_lpdf(vector[] y,
         if (size(H) > 1) {
           H_t = H[t];
         }
-        if (size(c) > 1) {
-          c_t = c[t];
-        }
-        if (size(T) > 1) {
-          T_t = T[t];
-        }
-        if (size(R) > 1) {
-          R_t = R[t];
-        }
-        if (size(Q) > 1) {
-          Q_t = Q[t];
-        }
-        if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t ');
+        if (t < n) {
+          if (size(c) > 1) {
+            c_t = c[t];
+          }
+          if (size(T) > 1) {
+            T_t = T[t];
+          }
+          if (size(R) > 1) {
+            R_t = R[t];
+          }
+          if (size(Q) > 1) {
+            Q_t = Q[t];
+          }
+          if (size(R) > 1 || size(Q) > 1) {
+            RQR = quad_form_sym(Q_t, R_t ');
+          }
         }
       }
       for (i in 1:p) {
@@ -957,7 +1229,7 @@ real ssm_ufilter_lpdf(vector[] y,
         v = ssm_update_v_u(y[t, i], a, d_t[i], Z_ti);
         Finv = ssm_update_Finv_u(P, Z_ti, H_t[i]);
         K = ssm_update_K_u(P, Z_ti, Finv);
-        ll[t, i] = ssm_update_loglik_u(v, Finv);
+        ll_obs[t, i] = ssm_update_loglik_u(v, Finv);
         a = ssm_update_a_u1(a, v, K);
         P = ssm_update_P_u1(P, Finv, K);
       }
@@ -1022,24 +1294,26 @@ real ssm_ufilter_miss_lpdf(vector[] y,
         if (size(H) > 1) {
           H_t = H[t];
         }
-        if (size(c) > 1) {
-          c_t = c[t];
-        }
-        if (size(T) > 1) {
-          T_t = T[t];
-        }
-        if (size(R) > 1) {
-          R_t = R[t];
-        }
-        if (size(Q) > 1) {
-          Q_t = Q[t];
-        }
-        if (size(R) > 1 || size(Q) > 1) {
-          RQR = quad_form_sym(Q_t, R_t ');
+        if (t < n) {
+          if (size(c) > 1) {
+            c_t = c[t];
+          }
+          if (size(T) > 1) {
+            T_t = T[t];
+          }
+          if (size(R) > 1) {
+            R_t = R[t];
+          }
+          if (size(Q) > 1) {
+            Q_t = Q[t];
+          }
+          if (size(R) > 1 || size(Q) > 1) {
+            RQR = quad_form_sym(Q_t, R_t ');
+          }
         }
       }
       for (i in 1:p) {
-        if (miss[i, p]) {
+        if (miss[t, i]) {
           ll_obs[t, i] = 0.;
         } else {
           Z_ti = row(Z_t, i);
@@ -1059,6 +1333,65 @@ real ssm_ufilter_miss_lpdf(vector[] y,
     ll = sum(ll_obs);
   }
   return ll;
+}
+int ssm_ufilter_states_size(int m) {
+  return ssm_filter_states_size(m);
+}
+vector ssm_ufilter_states_get_a(vector x, int m) {
+  return ssm_filter_states_get_a(x, m);
+}
+matrix ssm_ufilter_states_get_P(vector x, int m) {
+  return ssm_filter_states_get_P(x, m);
+}
+vector ssm_ufilter_states_update_a(vector a, matrix P, matrix Z,
+                                  vector v, vector Finv) {
+  vector[num_elements(a)] aa;
+  aa = a + P * Z ' * Finv * v;
+  return aa;
+}
+matrix ssm_ufilter_states_update_P(matrix P, matrix Z, vector Finv) {
+  matrix[rows(P), cols(P)] PP;
+  PP = to_symmetric_matrix(P - P * quad_form_sym(Finv, Z) * P);
+  return PP;
+}
+vector[] ssm_ufilter_states(vector[] filter, matrix[] Z) {
+  vector[ssm_ufilter_states_size(dims(Z)[3])] res[size(filter)];
+  int n;
+  int m;
+  int p;
+  n = size(filter);
+  m = dims(Z)[3];
+  p = dims(Z)[2];
+  {
+    matrix[p, m] Z_t;
+    vector[p] v;
+    vector[p] Finv;
+    matrix[m, p] K;
+    vector[m] K_i;
+    vector[m] a;
+    matrix[m, m] P;
+    Z_t = Z[1];
+    for (t in 1:n) {
+      if (t > 1) {
+        if (size(Z) > 1) {
+          Z_t = Z[t];
+        }
+      }
+      v = ssm_ufilter_get_v(filter[t], m, p);
+      Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      K = ssm_ufilter_get_K(filter[t], m, p);
+      a = ssm_ufilter_get_a(filter[t], m, p);
+      P = ssm_ufilter_get_P(filter[t], m, p);
+      for (i in 1:p) {
+        K_i = col(K, i);
+        a = ssm_update_a_u1(a, v[i], K_i);
+        P = ssm_update_P_u1(P, Finv[i], K_i);
+      }
+      res[t, :m] = a;
+      res[t, (m + 1): ] = symmat_to_vector(P);
+    }
+  }
+  return res;
 }
 real matrix_diff(matrix A, matrix B) {
   real eps;

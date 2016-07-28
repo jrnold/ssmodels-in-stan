@@ -6,8 +6,7 @@ data {
   int<lower = 1> p;
   vector<lower = 0., upper = 1.>[p] y[n];
   vector<lower = 0., upper = 0.25>[p] sigma_eps[n];
-  int p_t[n];
-  int y_idx[n, p];
+  int miss[n, p];
 
   vector<lower = 0.>[1] a1;
   cov_matrix[1] P1;
@@ -18,7 +17,7 @@ transformed data {
   // system matrices
   matrix[1, 1] T[1];
   matrix[p, 1] Z[1];
-  matrix[p, p] H[n];
+  vector[p] H[n];
   matrix[1, 1] R[1];
   vector[1] c[1];
   int filter_sz;
@@ -27,10 +26,10 @@ transformed data {
   R[1] = rep_matrix(1., 1, 1);
   c[1] = rep_vector(0., 1);
   for (t in 1:n) {
-    H[t] = diag_matrix(sigma_eps[t] .* sigma_eps[t]);
+    H[t] = sigma_eps[t] .* sigma_eps[t];
   }
   # Calculates the size of the vectors returned by ssm_filter
-  filter_sz = ssm_filter_size(1, p);
+  filter_sz = ssm_ufilter_size(1, p);
 }
 parameters {
   real<lower = 0.> sigma_eta;
@@ -46,20 +45,19 @@ transformed parameters {
 model {
   delta ~ normal(0., sigma_delta);
   sigma_eta ~ cauchy(0., zeta);
-  y ~ ssm_miss_lpdf(d, Z, H,
+  y ~ ssm_ufilter_miss_lpdf(d, Z, H,
                     c, T, R, Q, a1, P1,
-                    p_t, y_idx);
+                    miss);
 }
 generated quantities {
-  vector[1] alpha[n];
-  {
+  //vector[1] alpha[n];
     vector[filter_sz] filtered[n];
     // filtering
-    filtered = ssm_filter_miss(y, d, Z, H, c, T, R, Q,
-                               a1, P1, p_t, y_idx);
-    // sampling states
-    alpha = ssm_simsmo_states_miss_rng(filtered, d, Z, H,
-                                       c, T, R, Q,
-                                       a1, P1, p_t, y_idx);
-  }
+    filtered = ssm_ufilter_miss(y, d, Z, H, c, T, R, Q,
+                               a1, P1, miss);
+    // // sampling states
+    // alpha = ssm_simsmo_states_miss_rng(filtered, d, Z, H,
+    //                                    c, T, R, Q,
+    //                                    a1, P1, p_t, y_idx);
+
 }

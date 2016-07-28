@@ -1,8 +1,7 @@
 
 ## CAPM
 
-This is a simplified example of CAPM model from @Petris2010a using data from Berndt (1991).
-
+This is a simplified example of CAPM model from @Petris2010a.
 A simplified capital-asset pricicing model (CAPM) model is a model of the excess
 return (return relative to a risk-free asset) of stocks. In this example,
 the excess return of a stock is proportional to the market return (return of a portfolio of stocks representing the whole market).
@@ -21,8 +20,7 @@ each $\vec{\beta}_j$ following a random walk.[^alpha]
 However, both the observation disturbances ($\mat{\Sigma}_{\varepsilon}$ and state disturbances ($\mat{\Sigma}_{\eta}$) allow for correlation between the stocks.
 In the model estimated here, the intercepts for each stock are assumed to be zero.
 
-The data, originally from Berndt (1991), are the monthly returns of four stocks
-(Mobil, IBM, Weyer, and Citicorp) from January 1978 to December 1987.
+The data, originally from @Berndt1991a, are the monthly returns of four stocks (Mobil, IBM, Weyer, and Citicorp) from January 1978 to December 1987.
 The interest rate on 30-day Treasury Bill is used as the risk free rate (`rkfree`), and the value-weighted average returns of all stocks listed on the New York and American Stock Exchanges as the market return (`market`).
 
 ```r

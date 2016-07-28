@@ -138,9 +138,10 @@ polling_sd <-
 aus_elec_data <-
   within(list(), {
     y <- as.matrix(select(polling_values, -date))
-    missing <- ssm_process_na(y)
-    p_t <- missing$n
-    y_idx <- missing$idx
+    # missing <- ssm_process_na(y)
+    # p_t <- missing$n
+    # y_idx <- missing$idx
+    miss <- as.integer(is.na(y))
     rm(missing)
     y[is.na(y)] <- 0
     n <- nrow(y)
@@ -152,6 +153,7 @@ aus_elec_data <-
     a1 <- array(0.5)
     P1 <- matrix(0.25, 1, 1)
   })
+#> Warning in rm(missing): object 'missing' not found
 ```
 
 

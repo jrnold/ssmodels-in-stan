@@ -390,6 +390,13 @@ matrix ssm_update_L(matrix Z, matrix T, matrix K) {
   L = T - K * Z;
   return L;
 }
+matrix ssm_update_L_u(row_vector Z, vector K) {
+  matrix[num_elements(Z), num_elements(Z)] L;
+  int m;
+  m = num_elements(Z);
+  L = diag_matrix(rep_vector(1., m)) - K * Z;
+  return L;
+}
 real ssm_update_loglik(vector v, matrix Finv) {
   real ll;
   int p;

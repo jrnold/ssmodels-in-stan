@@ -1203,6 +1203,33 @@ matrix ssm_update_L(matrix Z, matrix T, matrix K) {
 
 /**
 ---
+function: ssm_update_L_u
+args:
+- name: Z
+  description: A $1 \\times m$ row vector from the design matrix, $\\vec{Z}_{t,i}$
+- name: K
+  description: An $m \\times 1$ matrix with the Kalman gain, $\\vec{K}_{t,i}$.
+returns: An $m \\times m$ matrix, $\\mat{L}_{t,i}$.
+---
+
+Update $L_t$ for univariate filtering,
+$$
+\\mat{L}_t = \\mat{I}_m - \\vec{K}_{t,i}\\vec{Z}_{t,i}
+$$
+See []@DurbinKoopman2012, p. 157]
+
+*/
+
+matrix ssm_update_L_u(row_vector Z, vector K) {
+  matrix[num_elements(Z), num_elements(Z)] L;
+  int m;
+  m = num_elements(Z);
+  L = diag_matrix(rep_vector(1., m)) - K * Z;
+  return L;
+}
+
+/**
+---
 function: ssm_update_loglik
 args:
 - name: v

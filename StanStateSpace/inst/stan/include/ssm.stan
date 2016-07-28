@@ -705,8 +705,6 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
   p = dims(Z)[2];
   {
     matrix[p, m] Z_t;
-    vector[m] aa;
-    matrix[m, m] PP;
     vector[p] v;
     matrix[p, p] Finv;
     vector[m] a;
@@ -722,10 +720,10 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
       Finv = ssm_filter_get_Finv(filter[t], m, p);
       a = ssm_filter_get_a(filter[t], m, p);
       P = ssm_filter_get_P(filter[t], m, p);
-      aa = ssm_filter_states_update_a(a, P, Z_t, v, Finv);
-      PP = ssm_filter_states_update_P(P, Z_t, Finv);
-      res[t, :m] = aa;
-      res[t, (m + 1): ] = symmat_to_vector(PP);
+      a = ssm_filter_states_update_a(a, P, Z_t, v, Finv);
+      P = ssm_filter_states_update_P(P, Z_t, Finv);
+      res[t, :m] = a;
+      res[t, (m + 1): ] = symmat_to_vector(P);
     }
   }
   return res;
@@ -971,9 +969,29 @@ vector ssm_update_r(vector r, matrix Z, vector v, matrix Finv,
   r_new = Z ' * Finv * v + L ' * r;
   return r_new;
 }
+vector ssm_update_r_u1(vector r, row_vector Z, real v, real Finv, matrix L) {
+  vector[num_elements(r)] r_new;
+  r_new = Z ' * Finv * v + L ' * r;
+  return r_new;
+}
+vector ssm_update_r_u2(vector r, matrix T) {
+  vector[num_elements(r)] r_new;
+  r_new = T ' * r;
+  return r_new;
+}
 matrix ssm_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   matrix[rows(N), cols(N)] N_new;
   N_new = quad_form_sym(Finv, Z) + quad_form_sym(N, L);
+  return N_new;
+}
+matrix ssm_update_N_u1(matrix N, row_vector Z, real Finv, matrix L) {
+  matrix[rows(N), cols(N)] N_new;
+  N_new = crossprod(to_matrix(Z)) * Finv + quad_form_sym(N, L);
+  return N_new;
+}
+matrix ssm_update_N_u2(matrix N, matrix T) {
+  matrix[rows(N), cols(N)] N_new;
+  N_new = quad_form_sym(N, T);
   return N_new;
 }
 int ssm_smooth_state_size(int m) {

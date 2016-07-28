@@ -143,6 +143,11 @@ class Document(object):
         code_fun = self.code_functions()
         return code_fun - doc_fun
 
+    def undefined_functions(self):
+        doc_fun = self.documented_functions()
+        code_fun = self.code_functions()
+        return doc_fun - code_fun
+
     def code_blocks(self):
         for block in self.data:
             if isinstance(block, CodeBlock):
@@ -160,7 +165,8 @@ class Document(object):
         for block in self.doc_blocks():
             if block.function is not None:
                 if block.function in doc_functions:
-                    print("WARNING: function %s documented twice" % block.function)
+                    print("WARNING: function %s documented twice" % block.function,
+                          file = sys.stderr)
                 else:
                     doc_functions[block.function] = block
         # Loop through all functions and add stuff
@@ -169,16 +175,19 @@ class Document(object):
                 try:
                     docblock = doc_functions[k]
                 except KeyError:
-                    print("WARNING: function %s not documented." % k)
+                    print("WARNING: function %s not documented." % k,
+                          file = sys.stderr)
                     continue
                 docblock.signature = v
                 args_doc = [x['name'] for x in docblock.args]
                 args_sig = [x['name'] for x in v['args']]
                 if args_doc != args_sig:
-                    print("WARNING: Arguments of %s documented incorrectly:" % k)
-                    print("    Signature: %s" % args_sig)
-                    print("    Documentation: %s" % args_doc)
-
+                    msg = ''.join((
+                      "WARNING: Arguments of %s documented incorrectly:\n" % k,
+                      "    Signature: %s" % args_sig,
+                      "    Documentation: %s" % args_doc
+                    ))
+                    print(msg, file = sys.stderr)
 
     def format(self):
         txt = '\n'.join([x.format() for x in self.data if not x.is_empty()])
@@ -241,8 +250,14 @@ def parse(f):
 
 def create_docfile(src, dst):
     doc = parse(src)
-    #print(doc.documented_functions())
-    #print(doc.code_functions())
+    undocumented_functions = doc.undocumented_functions()
+    if len(undocumented_functions):
+        print("WARNING: Undocumented functions: " +
+              ", ".join(undocumented_functions), file = sys.stderr)
+    undefined_functions = doc.undefined_functions()
+    if len(undefined_functions):
+        print("WARNING: Undefined functions: " + ", ".join(undefined_functions),
+              file = sys.stderr)
     doc.update_functions()
     dst.write(doc.format())
 

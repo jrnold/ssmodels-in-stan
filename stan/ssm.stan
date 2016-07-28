@@ -2036,8 +2036,6 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
     // system matrices for current iteration
     matrix[p, m] Z_t;
     // filter matrices
-    vector[m] aa; // filtered values of the state, a_{t|t}
-    matrix[m, m] PP; // filtered values of the variance of the state, P_{t|t}
     vector[p] v;
     matrix[p, p] Finv;
     vector[m] a;
@@ -2056,11 +2054,11 @@ vector[] ssm_filter_states(vector[] filter, matrix[] Z) {
       a = ssm_filter_get_a(filter[t], m, p);
       P = ssm_filter_get_P(filter[t], m, p);
       // calcualte filtered values
-      aa = ssm_filter_states_update_a(a, P, Z_t, v, Finv);
-      PP = ssm_filter_states_update_P(P, Z_t, Finv);
+      a = ssm_filter_states_update_a(a, P, Z_t, v, Finv);
+      P = ssm_filter_states_update_P(P, Z_t, Finv);
       // saving
-      res[t, :m] = aa;
-      res[t, (m + 1): ] = symmat_to_vector(PP);
+      res[t, :m] = a;
+      res[t, (m + 1): ] = symmat_to_vector(P);
     }
   }
   return res;
@@ -2497,7 +2495,6 @@ returns: An $m \\times 1$ vector with $\\vec{r}_t$.
 
 Update $\\vec{r}_t$ in smoothing recursions
 
-
 In smoothing recursions, the vector $\\vec{r}_t$ is updated with,
 $$
 \\vec{r}_{t - 1} = \\mat{Z}' \\mat{F}^{-1}_t \\vec{v}_t + \\mat{L}' \\vec{r}_{t} .
@@ -2510,6 +2507,64 @@ vector ssm_update_r(vector r, matrix Z, vector v, matrix Finv,
                            matrix L) {
   vector[num_elements(r)] r_new;
   r_new = Z ' * Finv * v + L ' * r;
+  return r_new;
+}
+
+/**
+
+`r render_section("Common Smoother Functions")`
+
+*/
+
+/**
+---
+function: ssm_update_r_u1
+args:
+- name: r
+  description: An $m \\times 1$ vector with $\\vec{r}_{t,i}$
+- name: Z
+  description: A $1 \\times m$ row vector of the design matix $\\mat{Z}_{t,i}$
+- name: v
+  description: The forecast error, $\\vec{v}_{t,i}$.
+- name: Finv
+  description: The $forecast precision, $\\mat{F}^{-1}_{t,i}$.
+- name: L
+  description: An $m \\times m$ matrix with $\\mat{L}_{t,i}$.
+returns: An $m \\times 1$ vector with $\\vec{r}_{t,i-1}$.
+---
+
+Update $\\vec{r}_{t,i-1}$ from $\\vec{r}_{t,i}$ in univariate smoothing recursions.
+
+See [@KoopmanDurbin2012, p. 157]
+
+*/
+
+vector ssm_update_r_u1(vector r, row_vector Z, real v, real Finv, matrix L) {
+  vector[num_elements(r)] r_new;
+  r_new = Z ' * Finv * v + L ' * r;
+  return r_new;
+}
+
+/**
+---
+function: ssm_update_r_u2
+args:
+- name: r
+  description: An $m \\times 1$ vector with $\\vec{r}_{t,i}$
+- name: T
+  description: A $m \\times m$ row vector with the transition matrix $\\mat{T}_{t-1}$
+returns: An $m \\times 1$ vector with $\\vec{r}_{t - 1,p}$.
+---
+
+Update $\\vec{r}_{t-1,p}$ from $\\vec{r}_{t,0}$ in univariate smoothing recursions.
+
+See [@KoopmanDurbin2012, p. 157]
+
+*/
+
+vector ssm_update_r_u2(vector r, matrix T) {
+  vector[num_elements(r)] r_new;
+  r_new = T ' * r;
   return r_new;
 }
 
@@ -2530,7 +2585,6 @@ returns: An $m \\times m$ matrix with $\\vec{N}_t$.
 
 Update $\\mat{N}_t$ in smoothing recursions
 
-
 In smoothing recursions, the matrix $\\vec{N}_t$ is updated with,
 $$
 \\mat{N}_{t - 1} = \\mat{Z}_t' \\mat{F}^{-1}_t \\mat{Z}_t + \\mat{L}_t' \\mat{N}_t \\mat{L}_t .
@@ -2543,6 +2597,62 @@ matrix ssm_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
   matrix[rows(N), cols(N)] N_new;
   # may not need this to_symmetric_matrix
   N_new = quad_form_sym(Finv, Z) + quad_form_sym(N, L);
+  return N_new;
+}
+
+/**
+---
+function: ssm_update_N_u1
+args:
+- name: N
+  description: An $m \\times 1$ vector with $\\vec{N}_{t,i}$
+- name: Z
+  description: A $1 \\times m$ vector with $\\mat{Z}_{t,i}$
+- name: Finv
+  description: The forecast precision, $\\mat{F}^{-1}_{t,i}$.
+- name: L
+  description: An $m \\times m$ matrix with $\\mat{L}_t$.
+returns: An $m \\times m$ matrix with $\\vec{N}_t$.
+---
+
+Filter $\\mat{N}_{t,i}$ after observing $y_{t,i}$ in univariate smoothing recursions,
+$$
+\\mat{N}_{t,i-1} = \\mat{Z}_{t,i}' \\mat{F}^{-1}_{t,i} \\mat{Z}_{t,i} + \\mat{L}_{t,i}' \\mat{N}_{t,i} \\mat{L}_{t,i} .
+$$
+
+See [@DurbinKoopman2012, Eq. 6.15, p. 157]
+*/
+
+matrix ssm_update_N_u1(matrix N, row_vector Z, real Finv, matrix L) {
+  matrix[rows(N), cols(N)] N_new;
+  # may not need this to_symmetric_matrix
+  N_new = crossprod(to_matrix(Z)) * Finv + quad_form_sym(N, L);
+  return N_new;
+}
+
+/**
+---
+function: ssm_update_N_u2
+args:
+- name: N
+  description: An $m \\times 1$ vector with $\\vec{N}_{t,0}$
+- name: T
+  description: The $m \\times m$ transition matrix $\\mat{T}_{t - 1}$
+returns: An $m \\times m$ matrix with $\\vec{N}_{t-1,p}
+---
+
+Update smoothing variance from $t$ to $t - 1$, $\\mat{N}_{t,0}$ to $\\mat{N}_{t - 1, p}
+$$
+\\mat{N}_{t,i-1} =  \\mat{T}_{t-1}' \\mat{N}_{t,0} \\mat{T}_{t-1} .
+$$
+
+See [@DurbinKoopman2012, Eq. 6.15, p. 157]
+*/
+
+matrix ssm_update_N_u2(matrix N, matrix T) {
+  matrix[rows(N), cols(N)] N_new;
+  # may not need this to_symmetric_matrix
+  N_new = quad_form_sym(N, T);
   return N_new;
 }
 
@@ -2640,8 +2750,8 @@ from the returned vectors.
 
 value                                        length          start                 end
 -------------------------------------------- --------------- --------------------- --------------------
-$\\hat{\\vec{\\alpha}}_t$                       $m$             $1$                   $m$
-$\\mat{V}_t$                                  $m (m + 1) / 2$ $m + 1$               $m + m (m + 1) / 2$
+$\\hat{\\vec{\\alpha}}_t$                    $m$             $1$                   $m$
+$\\mat{V}_t$                                 $m (m + 1) / 2$ $m + 1$               $m + m (m + 1) / 2$
 
 
 See @DurbinKoopman2012, Eq 4.44 and eq 4.69.
@@ -2814,10 +2924,10 @@ $$
 (\\hat{\\vec{\\varepsilon}}_t', \\VEC(\\Var(\\vec{\\varepsilon}_t | \\vec{y}_{1:n}))' )'
 $$
 
-value                                        length          start                 end
--------------------------------------------- --------------- --------------------- --------------------
-$\\hat{\\vec{\\varepsilon}}_t$                  $p$             $1$                   $p$
-$\\Var(\\vec{\\varepsilon}_t | \\vec{y}_{1:n})$  $p (p + 1) / 2$ $p + 1$               $p + p (p + 1) / 2$
+value                                            length          start                 end
+------------------------------------------------ --------------- --------------------- --------------------
+$\\hat{\\vec{\\varepsilon}}_t$                   $p$             $1$                 $p$
+$\\Var(\\vec{\\varepsilon}_t | \\vec{y}_{1:n})$  $p (p + 1) / 2$ $p + 1$            $p + p (p + 1) / 2$
 
 
 See [@DurbinKoopman2012, Sec 4.5.3 (eq 4.69)]
@@ -4074,9 +4184,7 @@ args:
 returns: A vector of coefficients of an Autocorrelation function
 ---
 
-
 Partial Autocorrelations to Autocorrelations
-
 
 */
 
@@ -4165,9 +4273,7 @@ returns: A vector of coefficients of the corresponding partial autocorrelation f
 
 Convert coefficients of an autocorrelation function to partial autocorrelations.
 
-
 */
-
 
 // from R function invpartrans in arima.c
 // https://github.com/wch/r-source/blob/e5b21d0397c607883ff25cca379687b86933d730/src/library/stats/src/arima.c#L525

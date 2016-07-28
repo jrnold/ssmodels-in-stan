@@ -307,8 +307,11 @@ vector[] ssm_ufilter(vector[] y,
   {
     // system matrices for current iteration
     vector[p] d_t;
+    real d_ti;
     matrix[p, m] Z_t;
+    row_vector[m] Z_ti;
     vector[p] H_t;
+    real h_ti;
     vector[m] c_t;
     matrix[m, m] T_t;
     matrix[m, q] R_t;
@@ -319,6 +322,7 @@ vector[] ssm_ufilter(vector[] y,
     matrix[m, m] P;
     vector[p] v;
     vector[p] Finv;
+    vector[m] K_i;
     matrix[m, p] K;
     real ll;
     int idx[6, 3];
@@ -336,6 +340,10 @@ vector[] ssm_ufilter(vector[] y,
     a = a1;
     P = P1;
     for (t in 1:n) {
+      # Save predictes for a_{t,1} and P_{t,1}
+      res[t, idx[5, 2]:idx[5, 3]] = a;
+      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
+
       if (t > 1) {
         if (size(d) > 1) {
           d_t = d[t];
@@ -363,21 +371,25 @@ vector[] ssm_ufilter(vector[] y,
         }
       }
       // updating
-      v = ssm_update_v(y[t], a, d_t, Z_t);
-      Finv = ssm_update_Finv(P, Z_t, H_t);
-      K = ssm_update_K(P, Z_t, T_t, Finv);
-      ll = ssm_update_loglik(v, Finv);
+      for (i in 1:p) {
+        Z_ti = row(Z_t, i);
+        v[i] = ssm_update_v_u(y[t, i], a, d_t[i], Z_ti);
+        Finv[i] = ssm_update_Finv_u(P, Z_ti, H_t[i]);
+        K_i = ssm_update_K_u(P, Z_ti, Finv);
+        K[:, i] = K_i;
+        ll[i] = ssm_update_loglik_u(v[i], Finv[i]);
+        a = ssm_update_a_u1(a, v[i], K_i);
+        P = ssm_update_P_u1(P, Finv[i], K_i);
+      }
       // saving
-      res[t, 1] = ll;
+      res[t, idx[1, 2]:idx[1, d]]] = ll;
       res[t, idx[2, 2]:idx[2, 3]] = v;
-      res[t, idx[3, 2]:idx[3, 3]] = symmat_to_vector(Finv);
+      res[t, idx[3, 2]:idx[3, 3]] = Finv;
       res[t, idx[4, 2]:idx[4, 3]] = to_vector(K);
-      res[t, idx[5, 2]:idx[5, 3]] = a;
-      res[t, idx[6, 2]:idx[6, 3]] = symmat_to_vector(P);
       // predict a_{t + 1}, P_{t + 1}
       if (t < n) {
-        a = ssm_update_a(a, c_t, T_t, v, K);
-        P = ssm_update_P(P, Z_t, T_t, RQR, K);
+        a = ssm_update_a_u2(a, c_t, T_t);
+        P = ssm_update_P_u2(P, T_t, RQR);
       }
     }
   }
@@ -679,10 +691,10 @@ vector[] ssm_ufilter_states(vector[] filter, matrix[] Z) {
     // system matrices for current iteration
     matrix[p, m] Z_t;
     // filter matrices
-    vector[m] aa; // filtered values of the state, a_{t|t}
-    matrix[m, m] PP; // filtered values of the variance of the state, P_{t|t}
     vector[p] v;
     vector[p] Finv;
+    matrix[m, p] K;
+    vector[m] K_i;
     vector[m] a;
     matrix[m, m] P;
 
@@ -696,14 +708,16 @@ vector[] ssm_ufilter_states(vector[] filter, matrix[] Z) {
       // extract values from the filter
       v = ssm_ufilter_get_v(filter[t], m, p);
       Finv = ssm_ufilter_get_Finv(filter[t], m, p);
+      K = ssm_ufilter_get_K(filter[t], m, p);
       a = ssm_ufilter_get_a(filter[t], m, p);
       P = ssm_ufilter_get_P(filter[t], m, p);
-      // calcualte filtered values
-      aa = ssm_ufilter_states_update_a(a, P, Z_t, v, Finv);
-      PP = ssm_ufilter_states_update_P(P, Z_t, Finv);
-      // saving
-      res[t, :m] = aa;
-      res[t, (m + 1): ] = symmat_to_vector(PP);
+      for (i in 1:p) {
+        K_i = col(K, i);
+        a = ssm_update_a_u1(a, v[i], K_i);
+        P = ssm_update_P_u1(P, Finv[i], K_i);
+      }
+      res[t, :m] = a;
+      res[t, (m + 1): ] = symmat_to_vector(P);
     }
   }
   return res;

@@ -277,7 +277,7 @@ vector ssm_update_a(vector a, vector c, matrix T, vector v, matrix K) {
   a_new = T * a + K * v + c;
   return a_new;
 }
-vector ssm_update_a_u1(vector a, vector c, matrix T, real v, row_vector K) {
+vector ssm_update_a_u1(vector a, real v, row_vector K) {
   vector[num_elements(a)] a_new;
   a_new = a + K * v;
   return a_new;

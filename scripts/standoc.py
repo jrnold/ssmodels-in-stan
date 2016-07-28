@@ -30,7 +30,7 @@ def parse_stan_function_defs(text):
     arg_type = r'(?:{basic_types})\s*(?:{brackets})?'.\
         format(basic_types = '|'.join(basic_types), brackets = brackets)
     arg = r'{type}\s+{name}'.format(type = arg_type, name = identifier)
-    arglist = r'({arg})(?:\s*,\s*({arg}))*'.format(arg = arg)
+    arglist = r'(?:{arg})(?:\s*,\s*(?:{arg}))*'.format(arg = arg)
     function_def = r''.join((r'^\s*(?P<return>{return_type})',
                              r'\s+(?P<func>{function_name})',
                              r'\s*\(\s*(?P<arglist>{arglist})?\s*\)')).\
@@ -40,10 +40,9 @@ def parse_stan_function_defs(text):
     for fun_def in re.finditer(function_def, text, re.M):
         newfun = {'return_type': fun_def.group('return'),
                   'args': []}
-        for arg in re.match(arglist, fun_def.group('arglist')).groups():
-            if arg:
-                argtype, argname = re.split('\s+', arg)
-                newfun['args'].append({'type': argtype, 'name': argname})
+        for arg in re.findall(arg, fun_def.group('arglist')):
+            argtype, argname = re.split('\s+', arg)
+            newfun['args'].append({'type': argtype, 'name': argname})
         functions[fun_def.group('func')] = newfun
     return functions
 
@@ -124,6 +123,63 @@ class Document(object):
         """ Number of blocks in the Document """
         return len(self.data)
 
+    def documented_functions(self):
+        functions = set()
+        for x in self.data:
+            if isinstance(x, DocBlock) and x.function:
+                functions.add(x.function)
+        return functions
+
+    def code_functions(self):
+        functions = set()
+        for x in self.data:
+            if isinstance(x, CodeBlock) and x.functions:
+                for fun in x.functions:
+                    functions.add(fun)
+        return functions
+
+    def undocumented_functions(self):
+        doc_fun = self.documented_functions()
+        code_fun = self.code_functions()
+        return code_fun - doc_fun
+
+    def code_blocks(self):
+        for block in self.data:
+            if isinstance(block, CodeBlock):
+                yield block
+
+    def doc_blocks(self):
+        for block in self.data:
+            if isinstance(block, DocBlock):
+                yield block
+
+    def update_functions(self):
+        # Generate dictionary mapping names of functions to their documentation
+        # block
+        doc_functions = {}
+        for block in self.doc_blocks():
+            if block.function is not None:
+                if block.function in doc_functions:
+                    print("WARNING: function %s documented twice" % block.function)
+                else:
+                    doc_functions[block.function] = block
+        # Loop through all functions and add stuff
+        for block in self.code_blocks():
+            for k, v in block.functions.items():
+                try:
+                    docblock = doc_functions[k]
+                except KeyError:
+                    print("WARNING: function %s not documented." % k)
+                    continue
+                docblock.signature = v
+                args_doc = [x['name'] for x in docblock.args]
+                args_sig = [x['name'] for x in v['args']]
+                if args_doc != args_sig:
+                    print("WARNING: Arguments of %s documented incorrectly:" % k)
+                    print("    Signature: %s" % args_sig)
+                    print("    Documentation: %s" % args_doc)
+
+
     def format(self):
         txt = '\n'.join([x.format() for x in self.data if not x.is_empty()])
         if not txt.endswith('\n'):
@@ -184,8 +240,11 @@ def parse(f):
     return doc
 
 def create_docfile(src, dst):
-    docs = parse(src).format()
-    dst.write(docs)
+    doc = parse(src)
+    #print(doc.documented_functions())
+    #print(doc.code_functions())
+    doc.update_functions()
+    dst.write(doc.format())
 
 def main():
     parser = argparse.ArgumentParser(description = "Parse a Stan file and a output markdown formatted file")

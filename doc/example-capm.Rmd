@@ -41,8 +41,9 @@ ggplot(gather(select(capm, -rkfree), asset, rate, -date, -obs),
 
 
 ```{r capm-model, results='hide', message = FALSE}
-capm_mod <- ssm_stan_model("capm.stan")
-
+cacapm_mod <- ssm_stan_model("capm.stan")
+```
+```{r}
 capm_data <-
   within(list(), {
     y <- as.matrix(capm[ , c("mobil", "ibm", "weyer", "citcrp")])
@@ -63,7 +64,7 @@ capm_samples <- tidy_stan_summary(summary(capm_samples))[["all"]] %>%
   left_join(mutate(capm, obs = row_number()) %>% select(date, obs),
             by = c("dim_1" = "obs"))
 
-capm_betas <- filter(capm_samples, parameter == "beta") %>%
+capm_betas <- filter(capm_samples, parameter == "beta", dim_1 > 1, dim_2 <= 4) %>%
          mutate(stock = recode(dim_2,
                                 `1` = "mobil",
                                 `2` = "ibm",
@@ -80,6 +81,39 @@ ggplot(capm_betas,
   geom_line(aes(y = mean)) +
   facet_grid(stock ~ .) +
   theme_minimal()
+
+```
+
+```{r}
+filtered <- ssm_extract_summary.stan_tidy_summary(capm_samples, "filtered", capm_data$m, capm_data$m,
+                                type = "filter")
+ggplot(filter(capm_samples, parameter == "filtered"),
+       aes(x = date, y = mean,
+           ymin = mean - 2 * sd,
+           ymax = mean + 2 * sd)) +
+  geom_point(aes(y = mean)) +
+  facet_wrap(~dim_2, scales = "free") +
+  theme_minimal()
+```
+
+
+```{r}
+filter(capm_samples, parameter == "Sigma_eta") %>%
+  select(dim_1, dim_2, mean) %>%
+  spread(dim_2, mean) %>%
+  print(n = 20)
+```
+
+```{r}
+filter(capm_samples, parameter == "tau_eta" | parameter == "tau_epsilon") %>%
+  select(parameter, dim_1, mean) %>% print(n = 8)
+
+```
+
+```{r}
+filter(capm_samples, parameter == "Sigma_epsilon") %>%
+  select(dim_1, dim_2, mean) %>%
+  spread(dim_2, mean)
 ```
 
 **TODO** Show estimated covariance matrices

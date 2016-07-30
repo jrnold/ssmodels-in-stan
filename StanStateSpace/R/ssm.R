@@ -121,25 +121,25 @@ ssm_extractors <- within(list(), {
                       P = list(dim = c(m, m), type = "symmetric_matrix"))
   }
 
-  filter_states <- function(m, p, q) {
-    gen_ssm_extractor(a = list(dim = m, type = "vector"),
-                      P = list(dim = c(m, m), type = "symmetric_matrix"))
-  }
+  # filter_states <- function(m, p, q) {
+  #   gen_ssm_extractor(a = list(dim = m, type = "vector"),
+  #                     P = list(dim = c(m, m), type = "symmetric_matrix"))
+  # }
 
   smooth_state <- function(m, p, q) {
     gen_ssm_extractor(alpha = list(dim = m, type = "vector"),
                       V = list(dim = c(m, m), type = "symmetric_matrix"))
   }
 
-  smooth_eps <- function(m, p, q) {
-    gen_ssm_extractor(mean = list(dim = p, type = "vector"),
-                      var = list(dim = c(p, p), type = "symmetric_matrix"))
-  }
-
-  smooth_eta <- function(m, p, q) {
-    gen_ssm_extractor(mean = list(dim = q, type = "vector"),
-                      var = list(dim = c(q, q), type = "symmetric_matrix"))
-  }
+  # smooth_eps <- function(m, p, q) {
+  #   gen_ssm_extractor(mean = list(dim = p, type = "vector"),
+  #                     var = list(dim = c(p, p), type = "symmetric_matrix"))
+  # }
+  #
+  # smooth_eta <- function(m, p, q) {
+  #   gen_ssm_extractor(mean = list(dim = q, type = "vector"),
+  #                     var = list(dim = c(q, q), type = "symmetric_matrix"))
+  # }
 
   sim_rng <- function(m, p, q) {
     gen_ssm_extractor(y = list(dim = p, type = "vector"),
@@ -215,9 +215,7 @@ ssm_extract_param <- function(param, x) {
 #'
 #' @export
 ssm_extract <- function(x, m, p, q = m,
-                        type = c("filter", "filter_states",
-                                 "smooth_state", "smooth_eps",
-                                 "smooth_eta", "sim_rng"),
+                        type = c("filter", "sim_rng"),
                         params = NULL) {
   # states must be integers >= 0
   assert_that(is.count(m))
@@ -287,7 +285,7 @@ ssm_extract <- function(x, m, p, q = m,
 #'
 #' @export
 ssm_extract_summary <- function(x, ...) {
-  standardGeneric("ssm_extract_summary")
+  UseMethod("ssm_extract_summary", x)
 }
 
 #' @rdname ssm_extract_summary
@@ -300,10 +298,8 @@ ssm_extract_summary.list <- function(x, ...) {
 #' @export
 ssm_extract_summary.stan_tidy_summary <-
   function(x, par, m, p, q = m,
-           type = c("filter", "filter_states",
-                    "smooth_state", "smooth_eps",
-                    "smooth_eta", "sim_rng"),
-           chains = FALSE) {
+           type = c("filter", "sim_rng"),
+           chains = FALSE, ...) {
   # states must be integers >= 0
   one_of <- NULL
   assert_that(is.count(m))
@@ -321,8 +317,8 @@ ssm_extract_summary.stan_tidy_summary <-
                index_row = .[["parindex"]][ , 1],
                index_col = .[["parindex"]][ , 2])
   }, .id = "par_id")
-  dat <- filter_(summary[[if (!chains) "all" else "chains"]],
-                interp(~parameter == par, par = par))
+  chain_sel <- if (chains) "chains" else "all"
+  dat <- filter_(summary[[chain_sel]], interp(~parameter == par, par = par))
   nx = attr(extractor, "vector_length")
   if (max(dat[["index"]]) != nx) {
     stop(sprintf(paste("For m = %d, p = %d, q = %d and type = %s,",

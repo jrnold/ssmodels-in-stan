@@ -58,67 +58,6 @@ test_that("ssm_extract works for filter", {
                                          22, 25, 27, 28), 4, 4, byrow = TRUE))
 })
 
-test_that("ssm_extract works for filter_states", {
-  m <- 4
-  p <- 2
-  q <- 3
-  # v, Finv, K, a, P
-  veclen <- m + m * (m + 1) / 2
-  time <- 5
-  iter <- 6
-  x <- array(rep(seq_len(veclen), each = time * iter), c(iter, time, veclen))
-  out <- ssm_extract(x, m, p, type = "filter_states")
-  expect_equal(out$a[1, 1, ], as.numeric(1:4))
-  expect_equal(out$P[1, 1, , ], matrix(c(5, 6,   7,  8,
-                                         6, 9,  10, 11,
-                                         7, 10, 12, 13,
-                                         8, 11, 13, 14), 4, 4, byrow = TRUE))
-})
-
-test_that("ssm_extract works for smooth_states", {
-  m <- 4
-  p <- 2
-  q <- 3
-  veclen <- m + m * (m + 1) / 2
-  time <- 5
-  iter <- 6
-  x <- array(rep(seq_len(veclen), each = time * iter), c(iter, time, veclen))
-  out <- ssm_extract(x, m, p, type = "smooth_state")
-  expect_equal(out$alpha[1, 1, ], as.numeric(1:4))
-  expect_equal(out$V[1, 1, , ], matrix(c(5, 6,   7,  8,
-                                         6, 9,  10, 11,
-                                         7, 10, 12, 13,
-                                         8, 11, 13, 14), 4, 4, byrow = TRUE))
-})
-
-test_that("ssm_extract works for smooth_eps", {
-  m <- 4
-  p <- 2
-  veclen <- p + p * (p + 1) / 2
-  time <- 5
-  iter <- 6
-  x <- array(rep(seq_len(veclen), each = time * iter), c(iter, time, veclen))
-  out <- ssm_extract(x, m, p, type = "smooth_eps")
-  expect_equal(out$mean[1, 1, ], c(1, 2))
-  expect_equal(out$var[1, 1, , ], matrix(c(3, 4,
-                                           4, 5), 2, 2))
-})
-
-test_that("ssm_extract works for smooth_eta", {
-  m <- 4
-  p <- 2
-  q <- 3
-  veclen <- q + q * (q + 1) / 2
-  time <- 5
-  iter <- 6
-  x <- array(rep(seq_len(veclen), each = time * iter), c(iter, time, veclen))
-  out <- ssm_extract(x, m, p, q, type = "smooth_eta")
-  expect_equal(out$mean[1, 1, ], c(1, 2, 3))
-  expect_equal(out$var[1, 1, , ], matrix(c(4, 5, 6,
-                                           5, 7, 8,
-                                           6, 8, 9), 3, 3))
-})
-
 test_that("ssm_extract works for sim_rng", {
   m <- 4
   p <- 2

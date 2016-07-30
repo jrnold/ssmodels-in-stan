@@ -345,19 +345,21 @@ The dimensions observation vector are allowed to vary over time, with $p_t$ bein
 the size of the observation vector at time $t$.
 In this formulation, $y_{t,i}$, $\varepsilon_{t,i}$ and $\sigma^2_{t,i}$ are scalars, and $\vec{Z}_{t,i}$ is a length $p_t$ row vector.
 
-Write the univariate representation of this model as,
+The observation equation in the univariate representation is
 $$
 y_{t,i} &= d_{t,i} + \vec{Z}_{t,i} \vec{\alpha}_t + \varepsilon_{t,i}, & i = 1, \dots, p_t, & t = 1, \dots, n ,
 $$
-The state equation is
+and the state equation is,
 $$
 \begin{aligned}
 \alpha_{t, i + 1} &= \alpha_t, & i &= 1, \dots, p_{t} - 1, \\
-\alpha_{t + 1, 1} &= \vec{c}_t + \mat{T}_t \alpha_t, & t &= 1, \dotas, n
+\alpha_{t + 1, 1} &= \vec{c}_t + \mat{T}_t \alpha_t, & t &= 1, \dots, n
 \end{aligned}
 $$
 
-Define the predicted and filtered expected values and variances of the states as
+### Filtering
+
+Define  the following,
 $$
 \begin{aligned}[t]
 a_{t,1} &= \E(\alpha_{t,1} | \vec{y}_{1:t-1}) \\
@@ -367,31 +369,167 @@ P_{t,i} &= \Var(\alpha_{t,1} | \vec{y}_{1:t-1}, y_{t,1}, \dots, y_{t,i - 1} \\
 \end{aligned}
 $$
 
-The univariate series is
+Given the univariate series,
 $$
 y_{1,1}, \dots, y_{1,p_1}, y_{2,1}, \dots, y_{n - 1, p_{n -1}}, y_{n,1}, \dots, y_{n, p_n} .
 $$
-With this univariate series the filtering update steps as each $y_{t,i}$ is processed are, for $i = 1, \dots, p_t$,
+The filtering steps as each $y_{t,i}$ is processed is
 $$
 \begin{aligned}[t]
 v_{t,i} &= y_{t,i} - \vec{Z}_{t,i} \vec{a}_{t,i} - d_{t,i}, \\
 F_{t,i} &= \vec{Z}_{t,i} \mat{P}_{t,i} \vec{Z}_{t,i}\T + \sigma^2_{t,i}, \\
 \vec{K}_{t, i} &= \mat{P}_{t,i} \vec{Z}_{t,i}\T F^{-1}_{t,i}, \\
 \vec{a}_{t, i + 1} &= \vec{a}_{t,i} + \vec{K}_{t,i} v_{t,i}, \\
-\mat{P}_{t, i + 1} &= \mat{P}_{t,i} - \vec{K}_{t,i} F_{t,i} \vec{K}_{t,i}\T .
+\mat{P}_{t, i + 1} &= \mat{P}_{t,i} - \vec{K}_{t,i} F_{t,i} \vec{K}_{t,i}\T ,
 \end{aligned}
 $$
-The prediction update step to transition from time $t$ to $t + 1$ is,
+for $i = 1, \dots, p_t$.
+The prediction step to transition from time $t$ to $t + 1$ is
 $$
 \begin{aligned}[t]
 \vec{a}_{t + 1, 1} &= \mat{T}_t \vec{a}_{t, p_t + 1} \\
 \mat{P}_{t + 1, 1} &= \mat{T}_t \mat{P}_{t,p_t + 1} \mat{T}_t\T + \mat{R}_t \mat{Q}_t \mat{R}_t \T .
 \end{aligned}
 $$
-The values of $\vec{a}_{t + 1, 1}$ and $\mat{P}_{t + 1, 1}$ are the same as the
-values of $\vec{a}_{t + 1}$ and $\mat{P}_{t + 1}$ in the standard Kalman filter.
-However, the values of $v_{t,i}$, $\vec{K}_{t,i}$, and $F_{t,i}^{-1}$ are nnot the same.
+The values of $\vec{a}_{t + 1, 1}$ and $\mat{P}_{t + 1, 1}$ are the same as the values of $\vec{a}_{t + 1}$ and $\mat{P}_{t + 1}$ in the standard Kalman filter.
+Note that the values of $v_{t,i}$, $\vec{K}_{t,i}$, and $F_{t,i}^{-1}$ are not the same.
 
-**smoothing**, state smoothing, and observation disturbances.
+The SsfPack funtion `KalmanFilEx` stores (Doorback, p. 111) for $(m + 2) \times n p$,
+$$
+\begin{bmatrix}
+v_{1,1} \dots v_{1,p} & \dots & v_{n, 1} \dots v_{n, p} \\
+K_{1,1} \dots K_{1,p} & \dots & K_{n, p} \dots K_{n, p} \\
+F^{-1}_{1,1} \dots F^{-1}_{1,p} & \dots & F^{-1}_{n,1} \dots F^{-1}_{n,p}
+\end{bmatrix}
+$$
+
+
+### Smoothing
+
+The smoothing recursions for the univariate series
+$$
+y_{1,1}, \dots, y_{1,p}, y_{2,1}, \dots, y_{n,p},
+$$
+as
+$$
+\begin{aligned}[t]
+\vec{r}_{t,i - 1} &= 
+\mat{Z}_{t,i}\T F^{-1}_{t,i} v_{t,i} + \mat{L}_{t,i}\T \vec{r}_{t,i} &
+\mat{N}_{t,i - 1} &= \mat{Z}_{t,i}\T F_{t,i}^{-1} \mat{Z}_{t,i} + \mat{L}_{t,i}\T \mat{N}_{t,i} \mat{L}_{t,i} , 
+\vec{r}_{t - 1,p} &=
+\mat{T}_{t - 1}\T \vec{r}_{t,0} &
+\mat{N}_{t - 1, p} &= \mat{T}_{t-1}\T \mat{N}_{t,0} \mat{T}_{t - 1} , 
+\end{aligned}
+$$
+where $\mat{L}_{t,i} = \mat{I}_{m} - \mat{K}_{t,i} \mat{Z}_{t,i}$, for $i = p, \dots, 1$ and $t = n, \dots, 1$.
+The smoothing recursions are initialized with $\vec{r}_{n, p} = \vec{0}$ and $\mat{N}_{n,p} = \mat{0}$. 
+The recursions for $\vec{r}_{t-1, p}$ and $\mat{N}_{t - 1, p}$ are not used for $t = 1$.
+The values of $\vec{r}_{t,0}$ and $\mat{N}_{t,0}$ are equivalent to the values of $\vec{r}_{t-1}$ and $\mat{N}_{t-1}$ in the standard smoothing recursions.
+
+The smoothed state vector $\hat{\vec{\alpha}}_t = \E(\vec{\alpha}_t | \vec{y}_{1:n})$ and $\mat{V}_t = \Var(\vec{\alpha}_t | \vec{y}_{1:n})$ are calculated using the standard smoothing recursions with
+$$
+\vec{a}_t &= \vec{a}_{t,1}, &
+\mat{P}_t &= \mat{P}_{t,1}, &
+\vec{r}_{t-1} &= \vec{r}_{t,0}, &
+\mat{N}_{t-1} &= \mat{N}_{t,0}  .
+$$
+
+For the smoothed observation disturbances are calculated with,
+$$
+\begin{aligned}[t]
+\hat{\varepsilon}_{t,i} &= \sigma^2_{t,i} F^{-1}_{t,i} (v_{t,i} - \mat{K}_{t,i}\T \vec{r}_{t,i}) , \\
+\Var(\hat{\varepsilon}_{t,i}) &= \sigma^4_{t,i} F^{-2}_{t,i} (F_{t,i} + \mat{K}_{t,i}\T \mat{N}_{t,i} \mat{K}_{t,i}) .
+\end{aligned}
+$$
+
+The time reversion equation is,
+$$
+\begin{aligned}[t]
+\vec{r,p} &= \mat{T}_{t}\T \vec_{t + 1, 0} & \mat{N}_{t,p} = \mat{T}_t\T \mat{N}_{t + 1,0} \mat{T}_t,
+\end{aligned}
+$$
+for $t = n, \dots, 1$. 
+The recursion is initialized with $\vec{r}_{n + 1,0} = \vec{0}$ and $\mat{N}_{n + 1, 0} = \mat{0}$.
+
+The smoothing goes backwards through $y_{t, p}, \dots, y_{t, 1}$,
+$$
+\begin{aligned}[t]
+& & \mat{K}_{t,i} &= \mat{N}_{t,i} \mat{K}_{t,i}
+\vec{u}_{t,i} &= \mat{F}_{t,i}^{-1} \vec{v}_{t,i} - \mat{K}_{t,i}\T \vec{r}_{t,i} & 
+\mat{D}_{t,i} &= \mat{F}^{-1}_{t,i} + \mat{K}_{t,i}\T \mat{K}_{t,i} , \\
+\vec{r}_{t,i - 1} &= \mat{Z}_{t,i}\T \vec{u}_{t,i} + \vec{r}_{t,i} , &
+\mat{N}_{t,i - 1} &= \mat{Z}_{t,i}\T \mat{D}_{t,i} \mat{Z}_{t,i} - \mat{K}_{t,i} \mat{Z}_{t,i} + \mat{N}_{t,i} .
+\end{aligned}
+$$
+The values of $\vec{r}_t = \vec{r}_{t + 1, 0}$ and $\mat{N}_{t} = \mat{N}_{t + 1,0}$.
+
+The function `KalmanSmoEx` in SsfPack stores $(2 m + 2) \times (n + 1)$ matrix (Doornick, p. 111),
+$$
+\begin{bmatrix}
+r_{1,0} & r_{2,0} & \dots & r_{n + 1,0} \\
+0 & u_{1,1} & \dots & u_{n,1} \\
+\vdots & \vdots & & \vdots \\
+0 & u_{1,p} & \dots & u_{n,p} \\
+\diag{\mat{N}_{1,0}} & \diag{\mat{N}_{2,0}} & \dots \diag{\mat{N}_{n + 1, 0}} \\
+0 & \mat{D}_{1,1} & \dots & \mat{D}_{n, 1} \\
+\vdots & \vdots & & \vdots \\
+0 & \mat{D}_{1,p} & \dots & \mat{D}_{n, p} \\
+\end{bmatrix},
+$$
+where $\diag$ are the diagonal elements of the matrix.(*TODO* Why is only the diag stored?)
+
+
+### Simulation Smoother
 
 The mean correction simulation smoother relies on the filter and smoother, and thus does not need to be altered apart from using the univariate forms of each.
+
+### Correlation 
+
+The univariate method cannot be used if $\mat{H}_t$ is not diagonal (the $\varepsilon_{t,i}$ are correlated), the univariate filtering method cannot be used.
+However, the state space model can be transformed so that the observation disturbances are uncorrelated.
+There are two methods to do this: augmenting the state space, and using the Cholesky decomposition [@KoopmanDurbin2012, Sec 6.4.3].
+
+The first method is to augment the state space with the observation disturbances.
+Let the new state vector be
+$$
+\var{\vec{\alpha}}_t =
+\begin{bmatrix}
+\vec{alpha}_t
+\vec{\varepsilon}_t
+\end{bmatrix} .
+$$
+Using the augmented state vector, the state space model can be rewritten as,
+$$
+\begin{aligned}[t]
+\vec{y}_t &= \bar{\mat{Z}} \bar{\alpha}_t \\
+\bar{\alpha}_{t + 1} &= \vec{c}_t + \bar{\mat{T}}_t \bar{\vec{\alpha}}_t + \bar{\mat{R}} \bar{\vec{\eta}}_t & \bar{\vec{eta}}_t & \sim N(\vec{0}, \bar{\mat{Q}}_t) , 
+\end{aligned}
+$$
+where,
+$$
+\bar{\mat{Z}}_t &= \begin{bmatrix} \mat{Z}_t & \mat{I}_t \end{bmatrix} , &
+\bar{\vec{\eta}}_t &= \begin{bmatrix} \vec{\eta}_t \\ \vec{\varepsilon}_t \begin{bmatrix} , \\
+\bar{\mat{T}}_t &= 
+\begin{bmatrix}
+\mat{T}_t & \mat{0} \\
+\mat{0} & \mat{0} 
+\end{bmatrix} , &
+\bar{\mat{R}}_t &=
+\begin{bmatrix}
+\mat{R}_t & \mat{0} \\
+\mat{0} & \mat{I}_{p} 
+\end{bmatrix}, &
+\bar{\mat{Q}}_t &=
+\begin{bmatrix}
+\mat{Q}_t & \mat{0} \\
+\mat{0} & \mat{H}_t
+\end{bmatrix} ,
+$$
+for $t = 1, \dots, n$.
+
+The alternative approach is to transform the observations with a Cholesky decomposition of the observation covariance in order to diagonalize the observation covariance matrix.
+Let $\mat{C}_t$ be the Cholesky deocomposition of $\mat{H}_t$,
+$$
+\vec{y}^*_t &= \mat{Z}^*_t \vec{\alpha}_t + \vec{\varepsilon}_t^*, & \vec{\varepsilon}_t^* & \sim N(\vec{0}, \mat{H}^*_t) \\
+$$
+where $\vec{y}^*_t = \mat{C}^{-1}_t \vec{y}_t$, $\mat{Z}^*_t = \mat{C}^{-1}_t \mat{Z}_t$, and $\vec{\varepsilon}_t^* = \mat{C}^{-1}_t \vec{\varepsilon}$.

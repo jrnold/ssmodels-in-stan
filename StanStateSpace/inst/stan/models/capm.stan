@@ -19,6 +19,9 @@ transformed data {
   vector[m] c[1];
   vector[m] d[1];
   int filter_sz;
+  int alpha_sz;
+  int eta_sz;
+  int eps_sz;
   T[1] = diag_matrix(rep_vector(1., m));
   for (t in 1:n) {
     Z[t] = diag_matrix(rep_vector(x[t], m));
@@ -28,6 +31,9 @@ transformed data {
   d[1] = rep_vector(0., m);
   # Calculates the size of the vectors returned by ssm_filter
   filter_sz = ssm_filter_size(m, m);
+  eta_sz = ssm_smooth_eta_size(m);
+  eps_sz = ssm_smooth_eps_size(m);
+  alpha_sz = ssm_smooth_state_size(m);
 }
 parameters {
   vector<lower = 0.>[m] tau_epsilon;
@@ -51,11 +57,16 @@ model {
 }
 generated quantities {
   vector[filter_sz] filtered[n];
-  vector[m] beta[n];
+  vector[eta_sz] beta[n];
+  vector[eps_sz] eps[n];
+  vector[eta_sz] eta[n];
   // filtering
   filtered = ssm_filter(y, d, Z, rep_array(Sigma_epsilon, 1),
                         c, T, R, rep_array(Sigma_eta, 1), a1, P1);
   // sampling states
-  beta = ssm_simsmo_states_rng(filtered, d, Z, rep_array(Sigma_epsilon, 1),
-                                c, T, R, rep_array(Sigma_eta, 1), a1, P1);
+  beta = ssm_smooth_state(filtered,  Z, T);
+  // sampling states
+  eps = ssm_smooth_eps(filtered, Z, rep_array(Sigma_epsilon, 1), T);
+  eta = ssm_smooth_eta(filtered, Z, T, R, rep_array(Sigma_eta, 1));
+
 }

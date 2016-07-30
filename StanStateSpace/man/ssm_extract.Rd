@@ -4,8 +4,7 @@
 \alias{ssm_extract}
 \title{Extract parameters from Stan State Space Model results}
 \usage{
-ssm_extract(x, m, p, q = m, type = c("filter", "filter_states",
-  "smooth_state", "smooth_eps", "smooth_eta", "sim_rng"), params = NULL)
+ssm_extract(x, m, p, q = m, type = c("filter", "sim_rng"), params = NULL)
 }
 \arguments{
 \item{x}{An array containing results from one of the "ssm" Stan functions:

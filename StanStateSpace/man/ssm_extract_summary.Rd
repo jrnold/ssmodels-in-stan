@@ -8,11 +8,10 @@
 \usage{
 ssm_extract_summary(x, ...)
 
-ssm_extract_summary.list(x, ...)
+\method{ssm_extract_summary}{list}(x, ...)
 
-ssm_extract_summary.stan_tidy_summary(x, par, m, p, q = m,
-  type = c("filter", "filter_states", "smooth_state", "smooth_eps",
-  "smooth_eta", "sim_rng"), chains = FALSE)
+\method{ssm_extract_summary}{stan_tidy_summary}(x, par, m, p, q = m,
+  type = c("filter", "sim_rng"), chains = FALSE, ...)
 }
 \arguments{
 \item{x}{Result of the \code{\link[rstan:summary,stanfit-method]{summary}} method for a \code{\link[rstan]{stanfit}} object.}
@@ -30,6 +29,25 @@ ssm_extract_summary.stan_tidy_summary(x, par, m, p, q = m,
 \item{type}{The name of the state space function which generated the vector.}
 
 \item{chains}{If \code{FALSE}, then use the summary over all chains. If \code{TRUE}, then use the individual chain summaries.}
+}
+\value{
+A \code{data_frame} with parameters as rows, and summary statistics and metadata about the parameters in the columns:
+   \describe{
+     \item{\code{par_id}}{Parameter identifier, e.g. \code{"Finv[1,2]"}}
+     \item{\code{parameter}}{Parameter name, e.g. \code{"Finv"}}
+     \item{\code{index}}{Index number in the original vector.}
+     \item{\code{index_row}}{Row index of this element within the parameter}
+     \item{\code{index_col}}{Column index of this element within the parameter}
+     \item{\code{mean}}{Mean}
+     \item{\code{se_mean}}{Standard error of the mean.  Only if \code{chains = FALSE}}
+     \item{\code{sd}}{Standard deviation}
+     \item{\code{p2.5}}{2.5\% percentile}
+     \item{\code{p25}}{25\% percentile}
+     \item{\code{p10}}{10\% percentile}
+     \item{\code{p90}}{90\% percentile}
+     \item{\code{n_eff}}{Number of effective samples.  Only if \code{chains = FALSE}}
+     \item{\code{Rhat}}{R-hat. Only if \code{chains = FALSE}}
+   }
 }
 \description{
 Extract State Space Parameters from a Stanfit summary

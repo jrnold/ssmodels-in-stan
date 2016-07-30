@@ -2327,22 +2327,16 @@ for rows: $\vec{y}_t$, $\vec{\alpha}_t$, $\vec{\varepsilon}_t$, and $\vec{\eta}_
 ```stan
 
 int[,] ssm_sim_idx(int m, int p, int q) {
-  int sz[4, 3];
+  int sz[2, 3];
   // y
   sz[1, 1] = p;
   // a
   sz[2, 1] = m;
-  // eps
-  sz[3, 1] = p;
-  // eta
-  sz[4, 1] = q;
   // Fill in start and stop points
   sz[1, 2] = 1;
   sz[1, 3] = sz[1, 2] + sz[1, 1] - 1;
-  for (i in 2:4) {
-    sz[i, 2] = sz[i - 1, 3] + 1;
-    sz[i, 3] = sz[i, 2] + sz[i, 1] - 1;
-  }
+  sz[2, 2] = sz[2 - 1, 3] + 1;
+  sz[2, 3] = sz[2, 2] + sz[2, 1] - 1;
   return sz;
 }
 
@@ -2369,7 +2363,7 @@ The number of elements in vectors returned by `ssm_sim_rng` results.
 
 int ssm_sim_size(int m, int p, int q) {
   int sz;
-  sz = ssm_sim_idx(m, p, q)[4, 3];
+  sz = ssm_sim_idx(m, p, q)[2, 3];
   return sz;
 }
 
@@ -2397,7 +2391,7 @@ Extract $\vec{y}_t$ from vectors returned by `ssm_sim_rng`.
 
 vector ssm_sim_get_y(vector x, int m, int p, int q) {
   vector[p] y;
-  int idx[4, 3];
+  int idx[2, 3];
   idx = ssm_sim_idx(m, p, q);
   y = x[idx[1, 2]:idx[1, 3]];
   return y;
@@ -2427,71 +2421,12 @@ Extract $\vec{\alpha}_t$ from vectors returne by `ssm_sim_rng`.
 
 vector ssm_sim_get_a(vector x, int m, int p, int q) {
   vector[m] a;
-  int idx[4, 3];
+  int idx[2, 3];
   idx = ssm_sim_idx(m, p, q);
   a = x[idx[2, 2]:idx[2, 3]];
   return a;
 }
 
-
-```
-
-
-
-### ssm_sim_get_eps
-
-**Arguments**
-
-- `x`: vector of results from `ssm_sim_rng`
-- `m`: The number of states
-- `p`: The length of the observation vector
-- `q`: The number of state disturbances
-
-
-**returns** vector A $p \times 1$ vector with $\vec{\varepsilon}_t$.
-
-Extract $\vec{\varepsilon}_t$ from vectors returne by `ssm_sim_rng`.
-
-
-```stan
-
-vector ssm_sim_get_eps(vector x, int m, int p, int q) {
-  vector[p] eps;
-  int idx[4, 3];
-  idx = ssm_sim_idx(m, p, q);
-  eps = x[idx[3, 2]:idx[3, 3]];
-  return eps;
-}
-
-
-```
-
-
-
-### ssm_sim_get_eta
-
-**Arguments**
-
-- `x`: vector of results from `ssm_sim_rng`
-- `m`: The number of states
-- `p`: The length of the observation vector
-- `q`: The number of state disturbances
-
-
-**returns** vector A $q \times 1$ vector with $\vec{\eta}_t$.
-
-Extract $\vec{\eta}_t$ from vectors returne by `ssm_sim_rng`.
-
-
-```stan
-
-vector ssm_sim_get_eta(vector x, int m, int p, int q) {
-  vector[q] eta;
-  int idx[4, 3];
-  idx = ssm_sim_idx(m, p, q);
-  eta = x[idx[4, 2]:idx[4, 3]];
-  return eta;
-}
 
 
 ```
@@ -2534,23 +2469,16 @@ $$
 \end{aligned}
 $$
 
-The returned vectors are of length $2 p + m + q$, in the format,
+The returned vectors are of length $p + m$, in the format,
 $$
-(\vec{y}_t', \vec{\alpha}_t', \vec{\varepsilon}_t', \vec{\eta}_t') .
+(\vec{y}_t', \vec{\alpha}_t') .
 $$
-Note that $\eta_n = \vec{0}_q$.
-Use the functions `ssm_sim_get_y`, `ssm_sim_get_a`, `ssm_sim_get_eps`, and
-`ssm_sim_get_eta` to extract values from the vector.
+Use the functions `ssm_sim_get_y`, `ssm_sim_get_a` to extract values from the vector.
 
 element         length         start         end
 --------------- -------------- ------------- -----------
 $y_t$           $p$            $1$           $p$
 $\alpha$_t      $m$            $p + 1$       $p + m$
-$\varepsilon_t$ $p$            $p + m + 1$   $2 p + m$
-$\eta_t$        $q$            $2 p + m + 1$ $2 p + m + q$
-
-It is preferrable to use `ssm_sim_get_y`, `ssm_sim_get_a`, `ssm_sim_get_eps`,
-and `ssm_sim_get_eta` to extract values from these vectors.
 
 
 ```stan
@@ -2586,7 +2514,7 @@ vector[] ssm_sim_rng(int n,
     vector[p] zero_p;
     vector[q] zero_q;
     vector[m] zero_m;
-    int idx[4, 3];
+    int idx[2, 3];
 
     d_t = d[1];
     Z_t = Z[1];
@@ -2624,7 +2552,6 @@ vector[] ssm_sim_rng(int n,
       y = d_t + Z_t * a + eps;
       // save
       ret[t, idx[1, 2]:idx[1, 3]] = y;
-      ret[t, idx[3, 2]:idx[3, 3]] = eps;
       // calculate eta_{t} and a_{t + 1}
       if (t < n) {
         if (size(c) > 1) {
@@ -2642,12 +2569,7 @@ vector[] ssm_sim_rng(int n,
         }
         eta = multi_normal_cholesky2_rng(zero_q, QL);
         a = c_t + T_t * a + R_t * eta;
-      } else {
-        // don't forecast alpha_{t + 1}, so don't draw eta_t
-        eta = zero_q;
       }
-      // save eta_t; alpha is saved at the start of the loop.
-      ret[t, idx[4, 2]:idx[4, 3]] = eta;
     }
   }
   return ret;

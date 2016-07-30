@@ -50,9 +50,9 @@ capm_data <-
     x <- capm[["market"]]
     n <- nrow(capm)
     m <- ncol(y)
-    y_scale <- apply(y, 2, sd)
-    a1 <- rep(0, m)
-    P1 <- diag(1e6, m, m)
+    y_scale <- rep(1, m)
+    a1 <- rep(1, m)
+    P1 <- diag(4, m, m)
   })
 
 capm_samples <- sampling(capm_mod, chains = 1, iter = 1000,
@@ -63,7 +63,7 @@ capm_summary <- tidy_stan_summary(summary(capm_samples))[["all"]] %>%
 ```
 
 ```{r capm-state-plot}
-capm_betas <- filter(capm_samples, parameter == "beta_mean", dim_1 > 1) %>%
+capm_betas <- filter(capm_summary, parameter == "beta", dim_1 > 1) %>%
          mutate(stock = recode(dim_2,
                                 `1` = "mobil",
                                 `2` = "ibm",
@@ -72,10 +72,24 @@ capm_betas <- filter(capm_samples, parameter == "beta_mean", dim_1 > 1) %>%
   left_join(gather(capm, stock, rate, -market, -date, -obs),
             by = c("date", "stock"))
 
+capm_beta_mean <- filter(capm_summary, parameter == "beta_mean", dim_1 > 1) %>%
+         mutate(stock = recode(dim_2,
+                                `1` = "mobil",
+                                `2` = "ibm",
+                                `3` = "weyer",
+                                `4` = "citcrp")) %>%
+  left_join(gather(capm, stock, rate, -market, -date, -obs),
+            by = c("date", "stock"))
+
+ggplot(capm_beta_mean,
+       aes(x = date, color = stock, y = mean)) +
+  geom_line() +
+  theme_minimal()
+
 ggplot(capm_betas,
        aes(x = date,
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
+           ymin = p25,
+           ymax = p75)) +
   geom_ribbon(alpha = 0.3) +
   geom_line(aes(y = mean)) +
   facet_grid(stock ~ .) +
@@ -99,8 +113,8 @@ capm_betas_pred <- filter(filtered, parameter == "a", dim_1 > 1) %>%
 
 ggplot(capm_betas_pred,
        aes(x = date,
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
+           ymin = p2.5,
+           ymax = p97.5)) +
   geom_ribbon(alpha = 0.3) +
   geom_line(aes(y = mean)) +
   facet_grid(stock ~ .) +
@@ -110,14 +124,14 @@ ggplot(capm_betas_pred,
 
 ```{r capm-rho_epsilon_plot}
 library("viridis")
-ggplot(filter(capm_summary, parameter == "Rho_epsilon"),
+ggplot(filter(capm_summary, parameter == "Sigma_epsilon"),
         aes(fill = mean, x = dim_1, y = dim_2)) +
   geom_raster() +
   scale_fill_viridis()
 ```
 
 ```{r capm-Rho_eta_plot}
-ggplot(filter(capm_summary, parameter == "Rho_eta"),
+ggplot(filter(capm_summary, parameter == "Sigma_eta"),
         aes(fill = mean, x = dim_1, y = dim_2)) +
   geom_raster() +
   scale_fill_viridis()

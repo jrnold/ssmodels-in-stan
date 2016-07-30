@@ -941,51 +941,33 @@ vector[] ssm_smooth_states_mean(vector[] filter,
   return alpha;
 }
 int[,] ssm_sim_idx(int m, int p, int q) {
-  int sz[4, 3];
+  int sz[2, 3];
   sz[1, 1] = p;
   sz[2, 1] = m;
-  sz[3, 1] = p;
-  sz[4, 1] = q;
   sz[1, 2] = 1;
   sz[1, 3] = sz[1, 2] + sz[1, 1] - 1;
-  for (i in 2:4) {
-    sz[i, 2] = sz[i - 1, 3] + 1;
-    sz[i, 3] = sz[i, 2] + sz[i, 1] - 1;
-  }
+  sz[2, 2] = sz[2 - 1, 3] + 1;
+  sz[2, 3] = sz[2, 2] + sz[2, 1] - 1;
   return sz;
 }
 int ssm_sim_size(int m, int p, int q) {
   int sz;
-  sz = ssm_sim_idx(m, p, q)[4, 3];
+  sz = ssm_sim_idx(m, p, q)[2, 3];
   return sz;
 }
 vector ssm_sim_get_y(vector x, int m, int p, int q) {
   vector[p] y;
-  int idx[4, 3];
+  int idx[2, 3];
   idx = ssm_sim_idx(m, p, q);
   y = x[idx[1, 2]:idx[1, 3]];
   return y;
 }
 vector ssm_sim_get_a(vector x, int m, int p, int q) {
   vector[m] a;
-  int idx[4, 3];
+  int idx[2, 3];
   idx = ssm_sim_idx(m, p, q);
   a = x[idx[2, 2]:idx[2, 3]];
   return a;
-}
-vector ssm_sim_get_eps(vector x, int m, int p, int q) {
-  vector[p] eps;
-  int idx[4, 3];
-  idx = ssm_sim_idx(m, p, q);
-  eps = x[idx[3, 2]:idx[3, 3]];
-  return eps;
-}
-vector ssm_sim_get_eta(vector x, int m, int p, int q) {
-  vector[q] eta;
-  int idx[4, 3];
-  idx = ssm_sim_idx(m, p, q);
-  eta = x[idx[4, 2]:idx[4, 3]];
-  return eta;
 }
 vector[] ssm_sim_rng(int n,
                     vector[] d, matrix[] Z, matrix[] H,
@@ -1015,7 +997,7 @@ vector[] ssm_sim_rng(int n,
     vector[p] zero_p;
     vector[q] zero_q;
     vector[m] zero_m;
-    int idx[4, 3];
+    int idx[2, 3];
     d_t = d[1];
     Z_t = Z[1];
     H_t = H[1];
@@ -1047,7 +1029,6 @@ vector[] ssm_sim_rng(int n,
       eps = multi_normal_cholesky2_rng(zero_p, HL);
       y = d_t + Z_t * a + eps;
       ret[t, idx[1, 2]:idx[1, 3]] = y;
-      ret[t, idx[3, 2]:idx[3, 3]] = eps;
       if (t < n) {
         if (size(c) > 1) {
           c_t = c[t];
@@ -1064,10 +1045,7 @@ vector[] ssm_sim_rng(int n,
         }
         eta = multi_normal_cholesky2_rng(zero_q, QL);
         a = c_t + T_t * a + R_t * eta;
-      } else {
-        eta = zero_q;
       }
-      ret[t, idx[4, 2]:idx[4, 3]] = eta;
     }
   }
   return ret;

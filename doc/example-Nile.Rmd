@@ -93,21 +93,7 @@ ggplot(filter(nile_1_summary, parameter == "alpha"),
 
 ```
 
-```{r nile_1_eta}
-ggplot(filter(nile_1_summary, parameter == "eta"),
-       aes(x = year, y = mean,
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_pointrange()
-```
 
-```{r nile_1_eps}
-ggplot(filter(nile_1_summary, parameter == "eps"),
-       aes(x = year, y = mean,
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_pointrange()
-```
 
 **TODO** Diagnostics. What are the relevant Bayesian analogs?
 

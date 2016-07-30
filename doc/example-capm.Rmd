@@ -41,7 +41,7 @@ ggplot(gather(select(capm, -rkfree), asset, rate, -date, -obs),
 
 
 ```{r capm-model, results='hide', message = FALSE}
-cacapm_mod <- ssm_stan_model("capm.stan")
+capm_mod <- ssm_stan_model("capm.stan")
 ```
 ```{r}
 capm_data <-
@@ -57,14 +57,13 @@ capm_data <-
 
 capm_samples <- sampling(capm_mod, chains = 1, iter = 1000,
                          data = capm_data)
+capm_summary <- tidy_stan_summary(summary(capm_samples))[["all"]] %>%
+  left_join(mutate(capm, obs = row_number()) %>% select(date, obs),
+            by = c("dim_1" = "obs"))
 ```
 
 ```{r capm-state-plot}
-capm_samples <- tidy_stan_summary(summary(capm_samples))[["all"]] %>%
-  left_join(mutate(capm, obs = row_number()) %>% select(date, obs),
-            by = c("dim_1" = "obs"))
-
-capm_betas <- filter(capm_samples, parameter == "beta", dim_1 > 1, dim_2 <= 4) %>%
+capm_betas <- filter(capm_samples, parameter == "beta_mean", dim_1 > 1) %>%
          mutate(stock = recode(dim_2,
                                 `1` = "mobil",
                                 `2` = "ibm",
@@ -85,35 +84,42 @@ ggplot(capm_betas,
 ```
 
 ```{r}
-filtered <- ssm_extract_summary.stan_tidy_summary(capm_samples, "filtered", capm_data$m, capm_data$m,
-                                type = "filter")
-ggplot(filter(capm_samples, parameter == "filtered"),
-       aes(x = date, y = mean,
+filtered <- 
+  ssm_extract_summary(summary(capm_samples), 
+                      "filtered", capm_data$m, capm_data$m, type = "filter")
+
+capm_betas_pred <- filter(filtered, parameter == "a", dim_1 > 1) %>%
+         mutate(stock = recode(dim_2,
+                                `1` = "mobil",
+                                `2` = "ibm",
+                                `3` = "weyer",
+                                `4` = "citcrp")) %>%
+  left_join(gather(capm, stock, rate, -market, -date, -obs),
+            by = c("date", "stock"))
+
+ggplot(capm_betas_pred,
+       aes(x = date,
            ymin = mean - 2 * sd,
            ymax = mean + 2 * sd)) +
-  geom_point(aes(y = mean)) +
-  facet_wrap(~dim_2, scales = "free") +
+  geom_ribbon(alpha = 0.3) +
+  geom_line(aes(y = mean)) +
+  facet_grid(stock ~ .) +
   theme_minimal()
-```
-
-
-```{r}
-filter(capm_samples, parameter == "Sigma_eta") %>%
-  select(dim_1, dim_2, mean) %>%
-  spread(dim_2, mean) %>%
-  print(n = 20)
-```
-
-```{r}
-filter(capm_samples, parameter == "tau_eta" | parameter == "tau_epsilon") %>%
-  select(parameter, dim_1, mean) %>% print(n = 8)
 
 ```
 
-```{r}
-filter(capm_samples, parameter == "Sigma_epsilon") %>%
-  select(dim_1, dim_2, mean) %>%
-  spread(dim_2, mean)
+```{r capm-rho_epsilon_plot}
+library("viridis")
+ggplot(filter(capm_summary, parameter == "Rho_epsilon"),
+        aes(fill = mean, x = dim_1, y = dim_2)) +
+  geom_raster() +
+  scale_fill_viridis()
 ```
 
-**TODO** Show estimated covariance matrices
+```{r capm-Rho_eta_plot}
+ggplot(filter(capm_summary, parameter == "Rho_eta"),
+        aes(fill = mean, x = dim_1, y = dim_2)) +
+  geom_raster() +
+  scale_fill_viridis()
+```
+

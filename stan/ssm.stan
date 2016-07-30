@@ -2048,75 +2048,10 @@ real ssm_constant_lpdf(vector[] y,
 `r render_section("Common Smoother Functions")`
 
 */
-/**
----
-function: ssm_update_r
-args:
-- name: r
-  description: An $m \times 1$ vector with $\vec{r}_{t-1}$
-- name: Z
-  description: A $p \times m$ vector with $\mat{Z}_{t}$
-- name: v
-  description: A $p \times 1$ vector of the forecast errors, $\vec{v}_t$.
-- name: Finv
-  description: A $p \times p$ matrix of the forecast precision, $\mat{F}^{-1}_t$.
-- name: L
-  description: An $m \times m$ matrix with $\mat{L}_t$.
-returns: An $m \times 1$ vector with $\vec{r}_t$.
----
-
-Update $\vec{r}_t$ in smoothing recursions
-
-In smoothing recursions, the vector $\vec{r}_t$ is updated with,
-$$
-\vec{r}_{t - 1} = \mat{Z}' \mat{F}^{-1}_t \vec{v}_t + \mat{L}' \vec{r}_{t} .
-$$
-
-See [@DurbinKoopman2012, Sec 4.4.4, p. 91]
-*/
-
-vector ssm_update_r(vector r, matrix Z, vector v, matrix Finv,
-                           matrix L) {
-  vector[num_elements(r)] r_new;
-  r_new = Z ' * Finv * v + L ' * r;
-  return r_new;
-}
 
 /**
 ---
-function: ssm_update_N
-args:
-- name: N
-  description: An $m \times 1$ vector with $\vec{N}_{t-1}$
-- name: Z
-  description: A $p \times m$ vector with $\mat{Z}_{t}$
-- name: Finv
-  description: A $p \times p$ matrix of the forecast precision, $\mat{F}^{-1}_t$.
-- name: L
-  description: An $m \times m$ matrix with $\mat{L}_t$.
-returns: An $m \times m$ matrix with $\vec{N}_t$.
----
-
-Update $\mat{N}_t$ in smoothing recursions
-
-In smoothing recursions, the matrix $\vec{N}_t$ is updated with,
-$$
-\mat{N}_{t - 1} = \mat{Z}_t' \mat{F}^{-1}_t \mat{Z}_t + \mat{L}_t' \mat{N}_t \mat{L}_t .
-$$
-
-See [@DurbinKoopman2012, Sec 4.4.4, p. 91]
-*/
-
-matrix ssm_update_N(matrix N, matrix Z, matrix Finv, matrix L) {
-  matrix[rows(N), cols(N)] N_new;
-  # may not need this to_symmetric_matrix
-  N_new = quad_form_sym(Finv, Z) + quad_form_sym(N, L);
-  return N_new;
-}
-
-/**
----
-function: ssm_smooth_state_mean
+function: ssm_smooth_states_mean
 args:
 - name: filter
   description: The results of `ssm_filter`
@@ -2134,15 +2069,12 @@ returns: An array of size $n$ of $m \times 1$ vectors containing $\hat{\vec{\alp
 ---
 
 
-The fast state smoother calculates $\hat{\vec{\alpha}}_t = \E(\vec{\alpha}_t | \vec{y}_{1:n})$.
+The state smoother calculates $\hat{\vec{\alpha}}_t = \E(\vec{\alpha}_t | \vec{y}_{1:n})$.
 $$
 \hat{\vec{\alpha}}_{t + 1} = \mat{T}_t \hat{\vec{\alpha}}_{t} + \mat{R}_t \mat{Q}_t \mat{R}'_t \vec{r}_t ,
 $$
 where $r_t$ is calcualted from the state disturbance smoother.
 The smoother is initialized at $t = 1$ with $\hat{\vec{\alpha}}_t = \vec{a}_1 + \mat{P}_1 \vec{r}_0$.
-
-Unlike the normal state smoother, it does not calculate the variances of the smoothed state.
-
 
 For  `Z`, `c`, `T`, `R`, `Q` the array can have a size of 1, if it is
 not time-varying, or a size of $n$ (for `Z`) or $n - 1$ (for `c`, `T`, `R`, `Q`)
@@ -2152,9 +2084,9 @@ See [@DurbinKoopman2012, Sec 4.5.3 (eq 4.69)]
 
 */
 
-vector[] ssm_smooth_state_mean(vector[] filter,
-                              matrix[] Z, vector[] c,
-                              matrix[] T, matrix[] R, matrix[] Q) {
+vector[] ssm_smooth_states_mean(vector[] filter,
+                              matrix[] Z,
+                              vector[] c, matrix[] T, matrix[] R, matrix[] Q) {
   vector[dims(Z)[3]] alpha[size(filter)];
   int n;
   int m;
@@ -2165,9 +2097,8 @@ vector[] ssm_smooth_state_mean(vector[] filter,
   p = dims(Z)[2];
   q = dims(Q)[2];
   {
-    // smoother matrices
     vector[m] r[n + 1];
-    matrix[m, m] L;
+    vector[p] u;
     vector[m] a1;
     matrix[m, m] P1;
     // filter matrices
@@ -2208,10 +2139,10 @@ vector[] ssm_smooth_state_mean(vector[] filter,
     // r goes from t = n, ..., 1, 0.
     // r_n
     r[n + 1] = rep_vector(0.0, m);
-    for (i in 0:(n - 1)) {
+    for (s in 0:(n - 1)) {
       int t;
       // move backwards in time
-      t = n - i;
+      t = n - s;
       // update time varying system matrices
       if (size(Z) > 1) {
         Z_t = Z[t];
@@ -2223,10 +2154,10 @@ vector[] ssm_smooth_state_mean(vector[] filter,
       K = ssm_filter_get_K(filter[t], m, p);
       v = ssm_filter_get_v(filter[t], m, p);
       Finv = ssm_filter_get_Finv(filter[t], m, p);
-      // updating smoother
-      L = ssm_update_L(Z_t, T_t, K);
+      // u_{t - 1}
+      u = Finv * v - K ' * r[t + 1];
       // r_{t - 1}
-      r[t] = ssm_update_r(r[t + 1], Z_t, v, Finv, L);
+      r[t] = Z_t ' * u + T_t ' * r[t + 1];
     }
     // calculate smoothed states
     a1 = ssm_filter_get_a(filter[1], m, p);
@@ -2668,7 +2599,7 @@ vector[] ssm_simsmo_states_rng(vector[] filter,
       vector[m] alpha_hat_plus[n];
       vector[m] alpha_hat[n];
       // Smooth states
-      alpha_hat = ssm_smooth_state_mean(filter, Z, c, T, R, Q);
+      alpha_hat = ssm_smooth_states_mean(filter, Z, c, T, R, Q);
       // simulate unconditional disturbances and observations
       sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
       for (i in 1:n) {
@@ -2677,7 +2608,7 @@ vector[] ssm_simsmo_states_rng(vector[] filter,
       // filter with simulated y's
       filter_plus = ssm_filter(y, d, Z, H, c, T, R, Q, a1, P1);
       // mean correct epsilon samples
-      alpha_hat_plus = ssm_smooth_state_mean(filter_plus, Z, c, T, R, Q);
+      alpha_hat_plus = ssm_smooth_states_mean(filter_plus, Z, c, T, R, Q);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_a(sims[i], m, p, q)
                     - alpha_hat_plus[i]
@@ -2744,7 +2675,7 @@ vector[] ssm_simsmo_states_miss_rng(vector[] filter,
       vector[m] alpha_hat_plus[n];
       vector[m] alpha_hat[n];
       // Smooth states
-      alpha_hat = ssm_smooth_state_mean(filter, Z, c, T, R, Q);
+      alpha_hat = ssm_smooth_states_mean(filter, Z, c, T, R, Q);
       // simulate unconditional disturbances and observations
       sims = ssm_sim_rng(n, d, Z, H, c, T, R, Q, a1, P1);
       for (i in 1:n) {
@@ -2753,7 +2684,7 @@ vector[] ssm_simsmo_states_miss_rng(vector[] filter,
       // filter with simulated y's
       filter_plus = ssm_filter_miss(y, d, Z, H, c, T, R, Q, a1, P1, p_t, y_idx);
       // mean correct epsilon samples
-      alpha_hat_plus = ssm_smooth_state_mean(filter_plus, Z, c, T, R, Q);
+      alpha_hat_plus = ssm_smooth_states_mean(filter_plus, Z, c, T, R, Q);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_a(sims[i], m, p, q)
                     - alpha_hat_plus[i]

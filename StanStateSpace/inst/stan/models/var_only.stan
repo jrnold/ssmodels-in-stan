@@ -47,4 +47,10 @@ model {
   sigma_eta ~ cauchy(0.0, 1.0);
 }
 generated quantities {
+  vector[m] alpha[n];
+  vector[m] alpha_hat[n];
+  vector[filter_sz] filtered[n];
+  filtered = ssm_filter_miss(y, d, Z, H, c, T, R, Q, a1, P1, p_t, y_idx);
+  alpha_hat = ssm_smooth_states_mean(filtered, Z, c, T, R, Q);
+  alpha = ssm_simsmo_states_rng(filtered, d, Z, H, c, T, R, Q, a1, P1);
 }

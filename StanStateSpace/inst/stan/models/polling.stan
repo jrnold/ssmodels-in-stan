@@ -6,8 +6,8 @@ data {
   int<lower = 1> p;
   vector<lower = 0., upper = 1.>[p] y[n];
   vector<lower = 0., upper = 0.25>[p] sigma_eps[n];
-  int miss[n, p];
-
+  int p_t[n];
+  int y_idx[n, p];
   vector<lower = 0.>[1] a1;
   cov_matrix[1] P1;
   real<lower = 0.> zeta;
@@ -45,27 +45,15 @@ transformed parameters {
 model {
   delta ~ normal(0., sigma_delta);
   sigma_eta ~ cauchy(0., zeta);
-  y ~ ssm_ufilter_miss_lpdf(d, Z, H,
+  y ~ ssm_filter_miss_lpdf(d, Z, H,
                     c, T, R, Q, a1, P1,
                     miss);
 }
 generated quantities {
   vector[2] alpha[n];
-  vector[2] a[n];
-  vector[2] eta[n];
-  vector[2 * p] eps[n];
   vector[filter_sz] filtered[n];
-
-    // filtering
-    filtered = ssm_ufilter_miss(y, d, Z, H, c, T, R, Q,
-                               a1, P1, miss);
-    a = ssm_ufilter_states(filtered, Z);
-    alpha = ssm_usmooth_state(filtered, Z, T);
-    eps = ssm_usmooth_eps(filtered, Z, H, T);
-    eta = ssm_usmooth_eta(filtered, Z, T, R, Q);
-    // // sampling states
-    // alpha = ssm_simsmo_states_miss_rng(filtered, d, Z, H,
-    //                                    c, T, R, Q,
-    //                                    a1, P1, p_t, y_idx);
-
+  filtered = ssm_filter_miss(y, d, Z, H, c, T, R, Q, a1, P1, p_t, y_idx);
+  alpha_mean = ssm_smooth_states_mean(filtered, Z, c, T, R, Q, p_t, y_idx);
+  alpha = ssm_simsmo_states_rng(filtered, d, Z, H, c, T, R, Q,
+                                a1, P1, p_t, y_idx);
 }

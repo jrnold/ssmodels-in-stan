@@ -5,7 +5,6 @@ data {
   int<lower = 1> n;
   vector[1] y[n];
   vector[n] s;
-
   vector<lower = 0.0>[1] a1;
   cov_matrix[1] P1;
   real<lower = 0.0> y_scale;

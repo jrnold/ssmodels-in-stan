@@ -8,7 +8,7 @@ the dataset `AirPassengers`.
 ```{r AirPassengers}
 data("AirPassengers", package = "datasets")
 AirPassengers_ <- tbl_df(as.data.frame(AirPassengers)) %>%
-  mutate(date = ts_to_date(time(AirPassengers))) %>%
+  mutate(date = as.Date(time(AirPassengers))) %>%
   select(date, everything()) %>%
   mutate(x = as.numeric(x)) %>%
   rename(passengers = x) %>%
@@ -30,11 +30,7 @@ StructTS(log10(AirPassengers), type = "BSM")
 ```
 
 ```{r AirPassengers-StanModel}
-var_only_code <- stanc_builder(find_rstudio_root_file("stan/var_only.stan"))
-# rm(var_only_mod)
-# var_only_mod <- stan_model(model_code = var_only_code[["model_code"]],
-#                            model_name = var_only_code[["model_name"]])
-
+var_only_mod <- ssm_stan_model("var_only.stan")
 ```
 
 ```{r}

@@ -6,7 +6,6 @@ data {
   int m;
   vector[m] y[n];
   vector[n] x;
-
   vector<lower = 0.>[m] a1;
   cov_matrix[m] P1;
   vector<lower = 0.>[m] y_scale;
@@ -30,41 +29,31 @@ transformed data {
   filter_sz = ssm_filter_size(m, m);
 }
 parameters {
-   cov_matrix[m] Sigma_eta;
-   cov_matrix[m] Sigma_epsilon;
-/*  vector<lower = 0.>[m] tau_epsilon;
+  vector<lower = 0.>[m] tau_epsilon;
   vector<lower = 0.>[m] tau_eta;
   corr_matrix[m] Rho_epsilon;
-  corr_matrix[m] Rho_eta;*/
+  corr_matrix[m] Rho_eta;
 }
 transformed parameters {
-  // cov_matrix[m] Sigma_eta;
-  // cov_matrix[m] Sigma_epsilon;
-  // Sigma_epsilon = quad_form_diag(Rho_epsilon, tau_epsilon);
-  // Sigma_eta = quad_form_diag(Rho_eta, tau_eta .* tau_epsilon);
-}
-model {
   matrix[m, m] H[1];
   matrix[m, m] Q[1];
-  H = rep_array(Sigma_epsilon, 1);
-  Q = rep_array(Sigma_eta, 1);
-  y ~ ssm_lpdf(d, Z, H,
+  H[1] = quad_form_diag(Rho_epsilon, tau_epsilon);
+  Q[1] = quad_form_diag(Rho_eta, tau_eta .* tau_epsilon);
+}
+model {
+  target += ssm_lp(d, Z, H,
                c, T, R, Q,
                a1, P1);
-  // Rho_epsilon ~ lkj_corr(5.);
-  // Rho_eta ~ lkj_corr(5.);
-  // tau_epsilon ~ cauchy(0., y_scale);
-  // tau_eta ~ cauchy(0., 1.);
+  Rho_epsilon ~ lkj_corr(5.);
+  Rho_eta ~ lkj_corr(5.);
+  tau_epsilon ~ cauchy(0., y_scale);
+  tau_eta ~ cauchy(0., 1.);
 }
 generated quantities {
   vector[filter_sz] filtered[n];
   vector[m] beta[n];
   vector[m] beta_mean[n];
   {
-    matrix[m, m] H[1];
-    matrix[m, m] Q[1];
-    H = rep_array(Sigma_epsilon, 1);
-    Q = rep_array(Sigma_eta, 1);
     // filtering
     filtered = ssm_filter(y, d, Z, H,
                           c, T, R, Q,

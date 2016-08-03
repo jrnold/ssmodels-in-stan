@@ -296,7 +296,7 @@ ssm_extract_summary.list <- function(x, ...) {
 
 #' @rdname ssm_extract_summary
 #' @export
-ssm_extract_summary.stan_tidy_summary <-
+ssm_extract_summary.tidy_stan_summary <-
   function(x, par, m, p, q = m,
            type = c("filter", "sim_rng"),
            chains = FALSE, ...) {

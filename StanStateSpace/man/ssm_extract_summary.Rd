@@ -3,14 +3,14 @@
 \name{ssm_extract_summary}
 \alias{ssm_extract_summary}
 \alias{ssm_extract_summary.list}
-\alias{ssm_extract_summary.stan_tidy_summary}
+\alias{ssm_extract_summary.tidy_stan_summary}
 \title{Extract State Space Parameters from a Stanfit summary}
 \usage{
 ssm_extract_summary(x, ...)
 
 \method{ssm_extract_summary}{list}(x, ...)
 
-\method{ssm_extract_summary}{stan_tidy_summary}(x, par, m, p, q = m,
+\method{ssm_extract_summary}{tidy_stan_summary}(x, par, m, p, q = m,
   type = c("filter", "sim_rng"), chains = FALSE, ...)
 }
 \arguments{

@@ -100,11 +100,11 @@ polling_sd <-
 aus_elec_data <-
   within(list(), {
     y <- as.matrix(select(polling_values, -date))
-    # missing <- ssm_process_na(y)
-    # p_t <- missing$n
-    # y_idx <- missing$idx
-    miss <- matrix(as.integer(is.na(y)), nrow = nrow(y), ncol = ncol(y))
-    #rm(missing)
+    missing <- ssm_process_na(y)
+    p_t <- missing$n
+    y_idx <- missing$idx
+    #miss <- matrix(as.integer(is.na(y)), nrow = nrow(y), ncol = ncol(y))
+    rm(missing)
     y[is.na(y)] <- 0
     n <- nrow(y)
     p <- ncol(y)
@@ -119,7 +119,7 @@ aus_elec_data <-
 ```
 
 ```{r}
-polling_mod <- ssm_stan_model("polling.stan")
+polling_mod <- ssm_stan_model("stan/polling.stan")
 ```
 
 ```{r}
@@ -135,23 +135,22 @@ polling_summary <- tidy_stan_summary(summary(polling_samples))
 ggplot(aus_polling, aes(x = date, y = y,
                         ymin = y - 2 * sd,
                         ymax = y + 2 * sd,
-                        colour = org)) +
-  geom_pointrange() +
+                        colour = org,
+                        fill = org)) +
+  geom_line() +
+  geom_ribbon(alpha = 0.2) +
   theme_minimal()
 ```
 
 ```{r}
-polling_samples <- polling_summary[["all"]] %>%
-  left_join(datelist, by = c("dim_1" = "time"))
-
-states <- filter(polling_samples, parameter == "filtered", dim_2 == 8, dim_1 > 3)
+states <- filter(polling_samples, parameter == "alpha")
 
 ggplot() +
   geom_ribbon(data = states,
               aes(x = date, ymin = mean - 2 * sd, ymax = mean + 2 * sd), alpha = 0.3) +
+  geom_point(data = aus_polling, aes(x = date, y = y, colour = org), alpha = 0.6) +  
   geom_line(data = states,
             aes(x = date, y = mean)) +
-  #geom_point(data = aus_polling, aes(x = date, y = y, colour = org)) +
   theme_minimal()
 ```
 
@@ -159,4 +158,3 @@ ggplot() +
 filter(polling_summary[["all"]], parameter == "delta") %>%
   select(parname, mean, se_mean, p2.5, p97.5, n_eff, Rhat)
 ```
-

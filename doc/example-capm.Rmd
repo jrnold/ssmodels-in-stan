@@ -41,7 +41,7 @@ ggplot(gather(select(capm, -rkfree), asset, rate, -date, -obs),
 
 
 ```{r capm-model, results='hide', message = FALSE}
-capm_mod <- ssm_stan_model("../StanStateSpace/inst/stan/models/var_only_mv.stan")
+capm_mod <- ssm_stan_model("var_only_mv.stan")
 ```
 ```{r}
 capm_data <-
@@ -78,7 +78,7 @@ capm_summary <- tidy_stan_summary(summary(capm_samples))[["all"]] %>%
 ```
 
 ```{r capm-state-plot}
-capm_betas <- filter(capm_summary, parameter == "beta", dim_1 > 1) %>%
+capm_alpha <- filter(capm_summary, parameter == "alpha", dim_1 > 1) %>%
          mutate(stock = recode(dim_2,
                                 `1` = "mobil",
                                 `2` = "ibm",
@@ -87,7 +87,7 @@ capm_betas <- filter(capm_summary, parameter == "beta", dim_1 > 1) %>%
   left_join(gather(capm, stock, rate, -market, -date, -obs),
             by = c("date", "stock"))
 
-capm_beta_mean <- filter(capm_summary, parameter == "beta_mean", dim_1 > 1) %>%
+capm_alpha_mean <- filter(capm_summary, parameter == "alpha_mean", dim_1 > 1) %>%
          mutate(stock = recode(dim_2,
                                 `1` = "mobil",
                                 `2` = "ibm",
@@ -96,12 +96,12 @@ capm_beta_mean <- filter(capm_summary, parameter == "beta_mean", dim_1 > 1) %>%
   left_join(gather(capm, stock, rate, -market, -date, -obs),
             by = c("date", "stock"))
 
-ggplot(capm_beta_mean,
+ggplot(capm_alpha_mean,
        aes(x = date, color = stock, y = mean)) +
   geom_line() +
   theme_minimal()
 
-ggplot(capm_betas,
+ggplot(capm_alpha,
        aes(x = date,
            ymin = p97.5,
            ymax = p2.5)) +
@@ -117,7 +117,7 @@ filtered <-
   ssm_extract_summary(summary(capm_samples), 
                       "filtered", capm_data$m, capm_data$m, type = "filter")
 
-capm_betas_pred <- filter(filtered, parameter == "a", dim_1 > 1) %>%
+capm_alphas_pred <- filter(filtered, parameter == "a", dim_1 > 1) %>%
          mutate(stock = recode(dim_2,
                                 `1` = "mobil",
                                 `2` = "ibm",
@@ -126,7 +126,7 @@ capm_betas_pred <- filter(filtered, parameter == "a", dim_1 > 1) %>%
   left_join(gather(capm, stock, rate, -market, -date, -obs),
             by = c("date", "stock"))
 
-ggplot(capm_betas_pred,
+ggplot(capm_alphas_pred,
        aes(x = date,
            ymin = p2.5,
            ymax = p97.5)) +
@@ -135,7 +135,7 @@ ggplot(capm_betas_pred,
   facet_grid(stock ~ .) +
   theme_minimal()
 
-ggplot(capm_betas_pred, aes(x = date, y = mean)) +
+ggplot(capm_alphas_pred, aes(x = date, y = mean)) +
   geom_line() +
   theme_minimal()
 

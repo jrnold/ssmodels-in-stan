@@ -42,7 +42,7 @@ transformed parameters {
   }
 }
 model {
-  y ~ ssm_constant_lpdf(d, Z, H, c, T, R, Q, a1, P1);
+  target += ssm_constant_lp(d, Z, H, c, T, R, Q, a1, P1);
   sigma_epsilon ~ cauchy(0.0, y_sd);
   sigma_eta ~ cauchy(0.0, 1.0);
 }

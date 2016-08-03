@@ -6,7 +6,6 @@ data {
   int m;
   vector[m] y[n];
   vector[n] x;
-
   vector<lower = 0.>[m] a1;
   cov_matrix[m] P1;
   vector<lower = 0.>[m] y_scale;
@@ -48,7 +47,7 @@ model {
   matrix[m, m] Q[1];
   H = rep_array(Sigma_epsilon, 1);
   Q = rep_array(Sigma_eta, 1);
-  y ~ ssm_lpdf(d, Z, H,
+  target += ssm_lp(d, Z, H,
                c, T, R, Q,
                a1, P1);
   // Rho_epsilon ~ lkj_corr(5.);

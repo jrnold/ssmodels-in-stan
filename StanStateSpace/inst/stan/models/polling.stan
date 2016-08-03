@@ -45,9 +45,9 @@ transformed parameters {
 model {
   delta ~ normal(0., sigma_delta);
   sigma_eta ~ cauchy(0., zeta);
-  y ~ ssm_filter_miss_lpdf(d, Z, H,
-                    c, T, R, Q, a1, P1,
-                    miss);
+  target += ssm_filter_miss_lp(y, d, Z, H,
+                                   c, T, R, Q, a1, P1, miss);
+
 }
 generated quantities {
   vector[2] alpha[n];

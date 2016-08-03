@@ -617,7 +617,7 @@ vector[] ssm_filter_miss(vector[] y,
   }
   return res;
 }
-real ssm_lpdf(vector[] y,
+real ssm_loglik(vector[] y,
                vector[] d, matrix[] Z, matrix[] H,
                vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                vector a1, matrix P1) {
@@ -697,7 +697,7 @@ real ssm_lpdf(vector[] y,
   }
   return ll;
 }
-real ssm_miss_lpdf(vector[] y,
+real ssm_miss_loglik(vector[] y,
                    vector[] d, matrix[] Z, matrix[] H,
                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                    vector a1, matrix P1, int[] p_t, int[,] y_idx) {
@@ -805,7 +805,7 @@ real matrix_diff(matrix A, matrix B) {
   eps = norm_AB / norm_A;
   return eps;
 }
-real ssm_constant_lpdf(vector[] y,
+real ssm_constant_loglik(vector[] y,
                       vector d, matrix Z, matrix H,
                       vector c, matrix T, matrix R, matrix Q,
                       vector a1, matrix P1) {

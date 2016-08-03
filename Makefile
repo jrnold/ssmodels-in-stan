@@ -1,4 +1,4 @@
-CMDSTAN_VERSION = 2.10.0
+CMDSTAN_VERSION = 2.11.0
 CMDSTAN_URL = https://github.com/stan-dev/cmdstan/releases/download/v$(CMDSTAN_VERSION)/cmdstan-$(CMDSTAN_VERSION).tar.gz
 CMDSTAN_DIR = lib/cmdstan-$(CMDSTAN_VERSION)
 

@@ -1,4 +1,4 @@
-CMDSTAN_DIR = ../../lib/cmdstan-2.10.0
+CMDSTAN_DIR = ../../lib/cmdstan-2.11.0
 SSM_STAN = ../../StanStateSpace/inst/stan/include/ssm.stan
 STAN_TESTS = $(patsubst src/%.stan,build/%,$(wildcard src/*.stan))
 

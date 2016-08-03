@@ -5,7 +5,7 @@ These data are used as an example in @DurbinKoopman2012,
 and included in R as a dataset `UKgas`.
 
 ```{r UKgas}
-UKgas_ <- data_frame(date = ts_to_date(time(UKgas)),
+UKgas_ <- data_frame(date = as.Date(time(UKgas)),
                      therms = as.numeric(UKgas))
 ```
 
@@ -17,6 +17,11 @@ ggplot(UKgas_, aes(x = date, y = therms)) +
   scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
   xlab("")
 ```
+
+```{r}
+
+```
+
 
 ```{r UKGas-Stan-BSM}
 ukgas_data <- within(list(), {

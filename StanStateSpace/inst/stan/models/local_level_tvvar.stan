@@ -45,7 +45,7 @@ transformed parameters {
   }
 }
 model {
-  y ~ ssm_lpdf(d, Z, H, c, T, R, Q, a1, P1);
+  target += ssm_loglik(y, d, Z, H, c, T, R, Q, a1, P1);
   sigma_epsilon ~ cauchy(0.0, y_scale);
   sigma_eta ~ cauchy(0.0, 1.0);
   lambda ~ cauchy(0.0, s);

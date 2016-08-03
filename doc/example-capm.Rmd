@@ -41,18 +41,33 @@ ggplot(gather(select(capm, -rkfree), asset, rate, -date, -obs),
 
 
 ```{r capm-model, results='hide', message = FALSE}
-capm_mod <- ssm_stan_model("capm.stan")
+capm_mod <- ssm_stan_model("../StanStateSpace/inst/stan/models/var_only_mv.stan")
 ```
 ```{r}
 capm_data <-
   within(list(), {
     y <- as.matrix(capm[ , c("mobil", "ibm", "weyer", "citcrp")])
-    x <- capm[["market"]]
     n <- nrow(capm)
-    m <- ncol(y)
-    y_scale <- rep(1, m)
+    p <- 4
+    m <- p
+    q <- m
+    c_sz <- 1
+    c <- array(0, c(c_sz, p))
+    Z_sz <- n
+    Z <- map(capm[["market"]], ~ diag(.x, p, p))
+    d_sz <- 1
+    d <- array(0, c(d_sz, m))
+    T_sz <- 1
+    T <- list(diag(1, m, m))
+    R_sz <- 1
+    R <- list(diag(1, m, q))
     a1 <- rep(1, m)
-    P1 <- diag(4, m, m)
+    P1 <- diag(1e3, m, m)
+    # priors
+    Rho_eta_prior <- 2
+    Rho_epsilon_prior <- 2
+    tau_epsilon_prior <- apply(y, 2, sd) * 0.5;
+    tau_eta_prior <- rep(1, p)
   })
 
 capm_samples <- sampling(capm_mod, chains = 1, iter = 1000,
@@ -88,8 +103,8 @@ ggplot(capm_beta_mean,
 
 ggplot(capm_betas,
        aes(x = date,
-           ymin = p25,
-           ymax = p75)) +
+           ymin = p97.5,
+           ymax = p2.5)) +
   geom_ribbon(alpha = 0.3) +
   geom_line(aes(y = mean)) +
   facet_grid(stock ~ .) +
@@ -120,18 +135,22 @@ ggplot(capm_betas_pred,
   facet_grid(stock ~ .) +
   theme_minimal()
 
+ggplot(capm_betas_pred, aes(x = date, y = mean)) +
+  geom_line() +
+  theme_minimal()
+
 ```
 
 ```{r capm-rho_epsilon_plot}
 library("viridis")
-ggplot(filter(capm_summary, parameter == "Sigma_epsilon"),
+ggplot(filter(capm_summary, parameter == "Rho_epsilon"),
         aes(fill = mean, x = dim_1, y = dim_2)) +
   geom_raster() +
   scale_fill_viridis()
 ```
 
 ```{r capm-Rho_eta_plot}
-ggplot(filter(capm_summary, parameter == "Sigma_eta"),
+ggplot(filter(capm_summary, parameter == "Rho_eta"),
         aes(fill = mean, x = dim_1, y = dim_2)) +
   geom_raster() +
   scale_fill_viridis()

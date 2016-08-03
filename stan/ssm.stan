@@ -1645,7 +1645,7 @@ vector[] ssm_filter_miss(vector[] y,
 */
 /**
 ---
-function: ssm_lpdf
+function: ssm_loglik
 args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
@@ -1689,7 +1689,7 @@ where $\mat{F}_t$ and $\mat{V}_t$ come from a forward pass of the Kalman filter.
 
 */
 
-real ssm_lpdf(vector[] y,
+real ssm_loglik(vector[] y,
                vector[] d, matrix[] Z, matrix[] H,
                vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                vector a1, matrix P1) {
@@ -1777,7 +1777,7 @@ real ssm_lpdf(vector[] y,
 
 /**
 ---
-function: ssm_miss_lpdf
+function: ssm_miss_loglik
 args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
@@ -1807,7 +1807,7 @@ returns: The log-likelihood $p(\vec{y}_{1:n} | \vec{d}_{1:n}, \mat{Z}_{1:n}, \ma
 ---
 
 */
-real ssm_miss_lpdf(vector[] y,
+real ssm_miss_loglik(vector[] y,
                    vector[] d, matrix[] Z, matrix[] H,
                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                    vector a1, matrix P1, int[] p_t, int[,] y_idx) {
@@ -1948,7 +1948,7 @@ real matrix_diff(matrix A, matrix B) {
 
 /**
 ---
-function: ssm_constant_lpdf
+function: ssm_constant_loglik
 args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
@@ -1984,7 +1984,7 @@ to a steady state.
 
 */
 
-real ssm_constant_lpdf(vector[] y,
+real ssm_constant_loglik(vector[] y,
                       vector d, matrix Z, matrix H,
                       vector c, matrix T, matrix R, matrix Q,
                       vector a1, matrix P1) {

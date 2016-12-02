@@ -21,10 +21,10 @@ doc: $(STAN_FUNCTION_DOC)
 
 clean: $(SSM_STAN_CLEAN)
 
-$(STAN_FUNCTION_DOC): scripts/standoc.py $(SSM_STAN)
+$(STAN_FUNCTION_DOC): ./bin/standoc.py $(SSM_STAN)
 	python $^ $@
 
-$(SSM_STAN_CLEAN): scripts/stanclean.py $(SSM_STAN)
+$(SSM_STAN_CLEAN): ./bin/stanclean.py $(SSM_STAN)
 	python $^ $@
 
 cmdstan-build:

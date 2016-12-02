@@ -316,6 +316,7 @@ matrix rep_upper_triangular_matrix(real x, int m, int n, int diag) {
   return A;
 }
 
+
 /**
 ---
 function: rep_diagonal_matrix

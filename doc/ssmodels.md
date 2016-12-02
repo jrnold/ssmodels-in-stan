@@ -1,0 +1,68 @@
+
+---
+title: State Space Model Notes
+---
+
+# The Linear State Space Model
+
+[@DurbinKoopman2012, Sec 3.1]
+
+The linear Gaussian state space model (SSM)[^dlm] the the $n$-dimensional observation sequence $\vec{y}_1, \dots, \vec{y}_n$,
+$$
+\begin{aligned}[t]
+\vec{y}_t &= \vec{d}_t + \mat{Z}_t \vec{\alpha}_t + \vec{\varepsilon}_t,  &
+\vec{\varepsilon}_t & \sim N(0, \mat{H}_t), \\
+\vec{\alpha}_{t + 1} &= \vec{c}_t + \mat{T}_t \vec{\alpha}_t + \mat{R}_t \vec{\eta}_t,  &
+\vec{\eta}_t & \sim N(0, \mat{Q}_t), \\
+&& \vec{\alpha}_1 &\sim N(\vec{a}_1, \mat{P}_1) .
+\end{aligned}
+$$
+for $t = 1, \dots, n$.
+The first equation is called the *observation* or *measurement equation*.
+The second equation is called the *state*, *transition*, or *system equation*.
+The vector $\vec{y}_t$ is a $p \times 1$ vector called the *observation vector*.
+The vector $\alpha{\alpha}_t$ is a $m \times 1$ vector called the *state vector*.
+The matrices are vectors, $\mat{Z}_t$,$\mat{T}_t$, $\mat{R}_t$, $\mat{H}_t$, $\mat{Q}_t$, $c_t$, and $d_t$ are called the *system matrices*.
+The system matrices are considered fixed and known in the filtering and smoothing equations below, but can be parameters themselves.
+The $p \times m$ matrix $\mat{Z}_t$ links the observation vector $\vec{y}_t$ with the state vector $\vec{\alpha}_t$.
+The $m \times m$ transition matrix $\mat{T}_t$ determines the evolution of the state vector, $\vec{\alpha}_t$.
+The $q \times 1$ vector $\vec{\eta}_t$ is called the *state disturbance vector*,
+and the $p \times 1$ vector $\vec{\varepsilon}_t$ is called the *observation disturbance vector*.
+An assumption is that the state and observation disturbance vectors are uncorrelated, $\Cov(\vec{\varepsilon}_t, \vec{\eta}_t) = 0$.
+
+In a general state space model, the normality assumptions of the densities of $\vec{\varepsilon}$
+and $\vec{\eta}$ are dropped.
+
+In many cases $\mat{R}_t$ is the identity matrix.
+It is possible to define $\eta^*_t = \mat{R}_t \vec{\eta}_t$, and $\mat{Q}^* = \mat{R}_t \mat{Q}_t' \mat{R}'_t$.
+However, if $\mat{R}_t$ is $m \times q$ and $q < m$, and $\mat{Q}_t$ is nonsingular, then it is useful to work with the nonsingular $\vec{\eta}_t$ rather than a singular $\vec{\eta}_t^*$.
+
+The initial state vector $\vec{\alpha}_1$ is assume to be generated as,
+$$
+\alpha_1 \sim N(\vec{a}_1, \mat{P}_1)
+$$
+independently of the observation and state disturbances $\vec{\varepsilon}$ and $\vec{\eta}$.
+The values of $\vec{a}_1$ and $\mat{P}_1$ can be considered as given and known in most stationary processes.
+When the process is nonstationary, the elements of $\vec{a}_1$ need to be treated as unknown and estimated.
+This is called *initialization*.
+
+[^dlm]: This is also called a dynamic linear model (DLM).
+
+matrix/vector         dimension      name
+--------------------- -------------- ----------------------------------
+$\vec{y}_t$           $p \times 1$   observation vector
+$\vec{\alpha}_t$      $m \times 1$   (unobserved) state vector
+$\vec{\varepsilon}_t$ $m \times 1$   observation disturbance (error)
+$\vec{\eta}_t$        $q \times 1$   state disturbance (error)
+$\vec{a}_1$           $m \times 1$   initial state mean
+$\vec{c}_t$           $m \times 1$   state intercept
+$\vec{d}_t$           $p \times 1$   observation intercept
+$\mat{Z}_t$           $p \times m$   design matrix
+$\mat{T}_t$           $m \times m$   transition matrix
+$\mat{H}_t$           $p \times p$   observation covariance matrix
+$\mat{R}_t$           $m \times q$   state covariance selection matrix
+$\mat{Q}_t$           $q \times q$   state covariance matrix
+$\mat{P}_1$           $m \times m$   initial state covariance matrix
+--------------------- -------------- ----------------------------------
+
+Table: Dimensions of matrices and vectors in the SSM

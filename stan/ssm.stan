@@ -71,29 +71,49 @@ args:
 - name: A
   description: The matrix to take the power of
 - name: n
-  description: The order of the power
+  description: The order of the power. This is sepcified as a real number to avoid compiler warnings, but only the integer part is used.
 ---
 Calculate the power of a matrix, $\mat{A}^n$.
 
 */
-matrix matrix_pow(matrix A, int n);
+matrix matrix_pow(matrix A, real n);
 
-matrix matrix_pow(matrix A, int n) {
-  if (n == 0) {
+
+matrix matrix_pow(matrix A, real n) {
+  real nn;
+  nn = floor(n);
+  if (nn == 0) {
     return diag_matrix(rep_vector(1., rows(A)));
-  } else if (n == 1) {
+  } else if (nn == 1) {
     return A;
-  } else if (n > 1) {
+  } else if (nn > 1) {
     # recurively this is n log n.
-    if (n % 2 == 0) {
-      return matrix_pow(A, n / 2) * matrix_pow(A, n / 2);
+    if (fmod(nn, 2.) > 0) {
+      # If odd
+      return A * matrix_pow(A, nn - 1);
     } else {
-      return A * matrix_pow(A, n - 1);
+      # If even
+      return matrix_pow(A, nn / 2) * matrix_pow(A, nn / 2);
     }
   } else {
+    # n < 0
+    reject("Only non-negative values of n are allowed");
     return A;
   }
 }
+
+// // This is the definition in the Stan book and uses an int n.
+// // It requires n multiplications
+//
+// matrix matrix_pow(matrix A, int n);
+//
+// matrix matrix_pow(matrix A, int n) {
+//   if (n == 0.) {
+//     return diag_matrix(rep_vector(1., rows(A)));
+//   } else {
+//     return a * matrix_pow(A, n - 1);
+//   }
+
 
 /**
 ---
@@ -1645,7 +1665,7 @@ vector[] ssm_filter_miss(vector[] y,
 */
 /**
 ---
-function: ssm_lp
+function: ssm_lpdf
 args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
@@ -1689,10 +1709,10 @@ where $\mat{F}_t$ and $\mat{V}_t$ come from a forward pass of the Kalman filter.
 
 */
 
-real ssm_lp(vector[] y,
-               vector[] d, matrix[] Z, matrix[] H,
-               vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-               vector a1, matrix P1) {
+real ssm_lpdf(vector[] y,
+              vector[] d, matrix[] Z, matrix[] H,
+              vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+              vector a1, matrix P1) {
   real ll;
   int n;
   int m;
@@ -1777,7 +1797,7 @@ real ssm_lp(vector[] y,
 
 /**
 ---
-function: ssm_miss_lp
+function: ssm_miss_lpdf
 args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
@@ -1807,7 +1827,7 @@ returns: The log-likelihood $p(\vec{y}_{1:n} | \vec{d}_{1:n}, \mat{Z}_{1:n}, \ma
 ---
 
 */
-real ssm_miss_lp(vector[] y,
+real ssm_miss_lpdf(vector[] y,
                    vector[] d, matrix[] Z, matrix[] H,
                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                    vector a1, matrix P1, int[] p_t, int[,] y_idx) {
@@ -1948,7 +1968,7 @@ real matrix_diff(matrix A, matrix B) {
 
 /**
 ---
-function: ssm_constant_lp
+function: ssm_constant_lpdf
 args:
 - name: y
   description: Observations, $\vec{y}_t$. An array of size $n$ of $p \times 1$ vectors.
@@ -1984,10 +2004,10 @@ to a steady state.
 
 */
 
-real ssm_constant_lp(vector[] y,
-                      vector d, matrix Z, matrix H,
-                      vector c, matrix T, matrix R, matrix Q,
-                      vector a1, matrix P1) {
+real ssm_constant_lpdf(vector[] y,
+                        vector d, matrix Z, matrix H,
+                        vector c, matrix T, matrix R, matrix Q,
+                        vector a1, matrix P1) {
   real ll;
   int n;
   int m;
@@ -2508,9 +2528,9 @@ See [@DurbinKoopman2012, Sec 4.9].
 */
 
 vector[] ssm_simsmo_states_rng(vector[] filter,
-                      vector[] d, matrix[] Z, matrix[] H,
-                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-                      vector a1, matrix P1) {
+                               vector[] d, matrix[] Z, matrix[] H,
+                               vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                               vector a1, matrix P1) {
     vector[dims(Z)[3]] draws[size(filter)];
     int n;
     int p;
@@ -2584,9 +2604,11 @@ State simulation smoother, as in `ssm_simsmo_states_rng`, allowing for missing v
 */
 
 vector[] ssm_simsmo_states_miss_rng(vector[] filter,
-                      vector[] d, matrix[] Z, matrix[] H,
-                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-                      vector a1, matrix P1, int[] p_t, int[,] y_idx) {
+                                    vector[] d, matrix[] Z, matrix[] H,
+                                    vector[] c, matrix[] T,
+                                    matrix[] R, matrix[] Q,
+                                    vector a1, matrix P1,
+                                    int[] p_t, int[,] y_idx) {
     vector[dims(Z)[3]] draws[size(filter)];
     int n;
     int p;
@@ -2610,7 +2632,8 @@ vector[] ssm_simsmo_states_miss_rng(vector[] filter,
         y[i] = ssm_sim_get_y(sims[i], m, p, q);
       }
       // filter with simulated y's
-      filter_plus = ssm_filter_miss(y, d, Z, H, c, T, R, Q, a1, P1, p_t, y_idx);
+      filter_plus = ssm_filter_miss(y, d, Z, H, c, T, R, Q,
+                                    a1, P1, p_t, y_idx);
       // mean correct epsilon samples
       alpha_hat_plus = ssm_smooth_states_mean(filter_plus, Z, c, T, R, Q);
       for (i in 1:n) {

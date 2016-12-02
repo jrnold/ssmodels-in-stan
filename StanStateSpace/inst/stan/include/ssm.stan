@@ -13,19 +13,22 @@ matrix to_matrix_colwise(vector v, int m, int n) {
   }
   return res;
 }
-matrix matrix_pow(matrix A, int n);
-matrix matrix_pow(matrix A, int n) {
-  if (n == 0) {
+matrix matrix_pow(matrix A, real n);
+matrix matrix_pow(matrix A, real n) {
+  real nn;
+  nn = floor(n);
+  if (nn == 0) {
     return diag_matrix(rep_vector(1., rows(A)));
-  } else if (n == 1) {
+  } else if (nn == 1) {
     return A;
-  } else if (n > 1) {
-    if (n % 2 == 0) {
-      return matrix_pow(A, n / 2) * matrix_pow(A, n / 2);
+  } else if (nn > 1) {
+    if (fmod(nn, 2.) > 0) {
+      return A * matrix_pow(A, nn - 1);
     } else {
-      return A * matrix_pow(A, n - 1);
+      return matrix_pow(A, nn / 2) * matrix_pow(A, nn / 2);
     }
   } else {
+    reject("Only non-negative values of n are allowed");
     return A;
   }
 }
@@ -617,10 +620,10 @@ vector[] ssm_filter_miss(vector[] y,
   }
   return res;
 }
-real ssm_lp(vector[] y,
-               vector[] d, matrix[] Z, matrix[] H,
-               vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-               vector a1, matrix P1) {
+real ssm_lpdf(vector[] y,
+              vector[] d, matrix[] Z, matrix[] H,
+              vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+              vector a1, matrix P1) {
   real ll;
   int n;
   int m;
@@ -697,7 +700,7 @@ real ssm_lp(vector[] y,
   }
   return ll;
 }
-real ssm_miss_lp(vector[] y,
+real ssm_miss_lpdf(vector[] y,
                    vector[] d, matrix[] Z, matrix[] H,
                    vector[] c, matrix[] T, matrix[] R, matrix[] Q,
                    vector a1, matrix P1, int[] p_t, int[,] y_idx) {
@@ -805,10 +808,10 @@ real matrix_diff(matrix A, matrix B) {
   eps = norm_AB / norm_A;
   return eps;
 }
-real ssm_constant_lp(vector[] y,
-                      vector d, matrix Z, matrix H,
-                      vector c, matrix T, matrix R, matrix Q,
-                      vector a1, matrix P1) {
+real ssm_constant_lpdf(vector[] y,
+                        vector d, matrix Z, matrix H,
+                        vector c, matrix T, matrix R, matrix Q,
+                        vector a1, matrix P1) {
   real ll;
   int n;
   int m;
@@ -1051,9 +1054,9 @@ vector[] ssm_sim_rng(int n,
   return ret;
 }
 vector[] ssm_simsmo_states_rng(vector[] filter,
-                      vector[] d, matrix[] Z, matrix[] H,
-                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-                      vector a1, matrix P1) {
+                               vector[] d, matrix[] Z, matrix[] H,
+                               vector[] c, matrix[] T, matrix[] R, matrix[] Q,
+                               vector a1, matrix P1) {
     vector[dims(Z)[3]] draws[size(filter)];
     int n;
     int p;
@@ -1085,9 +1088,11 @@ vector[] ssm_simsmo_states_rng(vector[] filter,
     return draws;
 }
 vector[] ssm_simsmo_states_miss_rng(vector[] filter,
-                      vector[] d, matrix[] Z, matrix[] H,
-                      vector[] c, matrix[] T, matrix[] R, matrix[] Q,
-                      vector a1, matrix P1, int[] p_t, int[,] y_idx) {
+                                    vector[] d, matrix[] Z, matrix[] H,
+                                    vector[] c, matrix[] T,
+                                    matrix[] R, matrix[] Q,
+                                    vector a1, matrix P1,
+                                    int[] p_t, int[,] y_idx) {
     vector[dims(Z)[3]] draws[size(filter)];
     int n;
     int p;
@@ -1108,7 +1113,8 @@ vector[] ssm_simsmo_states_miss_rng(vector[] filter,
       for (i in 1:n) {
         y[i] = ssm_sim_get_y(sims[i], m, p, q);
       }
-      filter_plus = ssm_filter_miss(y, d, Z, H, c, T, R, Q, a1, P1, p_t, y_idx);
+      filter_plus = ssm_filter_miss(y, d, Z, H, c, T, R, Q,
+                                    a1, P1, p_t, y_idx);
       alpha_hat_plus = ssm_smooth_states_mean(filter_plus, Z, c, T, R, Q);
       for (i in 1:n) {
         draws[i] = (ssm_sim_get_a(sims[i], m, p, q)

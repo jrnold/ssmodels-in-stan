@@ -1,29 +1,29 @@
 # General patterns
-auto/
+*.aux
+*.bak
+*.bbl
+*.bcf
+*.blg
+*.fls
+*.knit.md
 *.log
 *.out
 *.run.xml
-*.bcf
-*.blg
-*.aux
-*.bbl
-*.fls
+*.utf8.md
+*_cache
+*_files
 *_latexmk
-*.bak
-.Rproj.user
 .$*$
-.Rhistory
 .RData
+.Rhistory
+.Rproj.user
+__pycache__
+auto/
 
 # Doc generated
+/doc/*.rds
 /doc/_bookdown_files
-/doc/libs/
-lib/cmdstan-*
-stan/tests/build/
-*.utf8.md
-doc/*.rds
-*.knit.md
-*_files
-*_cache
 /doc/bookdown*
-__pycache__
+/doc/libs/
+/lib/cmdstan-*
+/tests/build/

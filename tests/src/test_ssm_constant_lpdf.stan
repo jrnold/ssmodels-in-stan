@@ -25,5 +25,5 @@ model {
 }
 generated quantities {
   real output;
-  output = ssm_constant_loglik(y, d, Z, H, c, T, R, Q, a1, P1);
+  output = ssm_constant_lpdf(y | d, Z, H, c, T, R, Q, a1, P1);
 }

@@ -1,6 +1,5 @@
 book_filename: "ssmodels-in-stan"
-before_chapter_script: "_common.R"
-new_session: yes
+new_session: no
 chapter_name: "Chapter "
 rmd_files:
   - "index.Rmd"

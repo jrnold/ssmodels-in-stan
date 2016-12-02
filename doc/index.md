@@ -1,21 +1,16 @@
+
 ---
 title: "State Space Models in Stan"
 author: "Jeffrey B. Arnold"
-date: "`r Sys.Date()`"
+date: "2016-12-01"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: ["ssmodels-in-stan.bib", "packages.bib"]
-biblio-style: "apalike"
+bibliography: ["ssmodels-in-stan.bib", packages.bib]
 link-citations: yes
 github-repo: jrnold/ssmodels-in-stan
-twitter-handle: jrnld
 description: "Documentation for State Space Models in Stan."
 ---
-
-```{r common}
-source("_common.R")
-```
 
 # Introduction
 

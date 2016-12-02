@@ -41,9 +41,9 @@ transformed parameters {
   Q[1] = quad_form_diag(Rho_eta, tau_eta .* tau_epsilon);
 }
 model {
-  target += ssm_lp(d, Z, H,
-               c, T, R, Q,
-               a1, P1);
+  target += ssm_lpdf(y | d, Z, H,
+                    c, T, R, Q,
+                    a1, P1);
   Rho_epsilon ~ lkj_corr(5.);
   Rho_eta ~ lkj_corr(5.);
   tau_epsilon ~ cauchy(0., y_scale);

@@ -1,6 +1,4 @@
 
-# Example Models
-
 ## Nile
 
 This is a short ($n = 100$) univariate time series of the annual flow volumes of
@@ -24,7 +22,7 @@ ggplot(Nile_, aes(x = year, y = flow)) +
   ylab("Annual Flow") + xlab("")
 ```
 
-<img src="example-Nile_files/figure-html/Nile_plot-1.png" width="672" />
+![](example-Nile_files/figure-latex/Nile_plot-1.pdf)<!-- --> 
 
 ### Local Level Model
 
@@ -161,9 +159,9 @@ nile_1_samples <-
 #> Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
 #> Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
 #> Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
-#>  Elapsed Time: 5.56571 seconds (Warm-up)
-#>                5.32206 seconds (Sampling)
-#>                10.8878 seconds (Total)
+#>  Elapsed Time: 6.59256 seconds (Warm-up)
+#>                6.21903 seconds (Sampling)
+#>                12.8116 seconds (Total)
 ```
 
 Now, summarize the MCMC samples using the `summary` function on the `stanfit` object.
@@ -179,11 +177,11 @@ The estimated variances of the observation and state variances,
 ```r
 filter(nile_1_summary, parameter %in% c("H", "Q")) %>%
   select(parname, mean, se_mean, p2.5, p97.5, n_eff, Rhat)
-#> # A tibble: 2 x 7
+#> # A tibble: 2 × 7
 #>   parname  mean se_mean  p2.5 p97.5 n_eff  Rhat
 #>     <chr> <dbl>   <dbl> <dbl> <dbl> <dbl> <dbl>
-#> 1  H[1,1] 14096     350  8517 19898  77.7 0.996
-#> 2  Q[1,1]  2502     233   425  6828  61.5 0.996
+#> 1  H[1,1] 15031     301  9607 20772  79.3  1.02
+#> 2  Q[1,1]  2025     130   433  4996 103.6  1.01
 ```
 are similar to the MLE estimates producted by `StructTS`,
 
@@ -220,29 +218,9 @@ ggplot(filter(nile_1_summary, parameter == "alpha"),
   theme_minimal()
 ```
 
-<img src="example-Nile_files/figure-html/nile_1_states-1.png" width="672" />
+![](example-Nile_files/figure-latex/nile_1_states-1.pdf)<!-- --> 
 
 
-```r
-ggplot(filter(nile_1_summary, parameter == "eta"),
-       aes(x = year, y = mean,
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_pointrange()
-```
-
-<img src="example-Nile_files/figure-html/nile_1_eta-1.png" width="672" />
-
-
-```r
-ggplot(filter(nile_1_summary, parameter == "eps"),
-       aes(x = year, y = mean,
-           ymin = mean - 2 * sd,
-           ymax = mean + 2 * sd)) +
-  geom_pointrange()
-```
-
-<img src="example-Nile_files/figure-html/nile_1_eps-1.png" width="672" />
 
 **TODO** Diagnostics. What are the relevant Bayesian analogs?
 
@@ -261,6 +239,30 @@ nile_2_data[["x"]] <- matrix(as.integer(Nile_$year > 1899))
 nile_2_data[["k"]] <- ncol(nile_2_data[["x"]])
 nile_2_samples <- sampling(nile_2_mod, chains = 1, iter = 500,
                            data = nile_2_data)
+#> 
+#> SAMPLING FOR MODEL 'local_level_reg' NOW (CHAIN 1).
+#> 
+#> Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)
+#> Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)
+#> Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)
+#> Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)
+#> Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)
+#> Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)
+#> Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)
+#> Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)
+#> Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)
+#> Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
+#> Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
+#> Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
+#>  Elapsed Time: 28.6218 seconds (Warm-up)
+#>                4.59517 seconds (Sampling)
+#>                33.2169 seconds (Total)
+#> The following numerical problems occured the indicated number of times after warmup on chain 1
+#>                                                                                                      count
+#> Exception thrown at line 2525: Exception thrown at line 1071: Exception thrown at line 279: multiply    14
+#> When a numerical problem occurs, the Hamiltonian proposal gets rejected.
+#> See http://mc-stan.org/misc/warnings.html#exception-hamiltonian-proposal-rejected
+#> If the number in the 'count' column is small, do not ask about this message on stan-users.
 ```
 
 
@@ -284,7 +286,7 @@ ggplot(filter(nile_2_summary, parameter == "mu"),
   theme_minimal()
 ```
 
-<img src="example-Nile_files/figure-html/nile_2_states-1.png" width="672" />
+![](example-Nile_files/figure-latex/nile_2_states-1.pdf)<!-- --> 
 
 
 ### Local Level with known intervention (variance)
@@ -300,6 +302,30 @@ nile_3_data <- nile_1_data
 nile_3_data[["s"]] <- ifelse(Nile_$year == 1899, 10, 1)
 nile_3_samples <- sampling(nile_3_mod, chains = 1, iter = 500,
                            data = nile_3_data)
+#> 
+#> SAMPLING FOR MODEL 'local_level_interven' NOW (CHAIN 1).
+#> 
+#> Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)
+#> Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)
+#> Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)
+#> Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)
+#> Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)
+#> Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)
+#> Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)
+#> Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)
+#> Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)
+#> Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
+#> Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
+#> Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
+#>  Elapsed Time: 5.30866 seconds (Warm-up)
+#>                4.17269 seconds (Sampling)
+#>                9.48135 seconds (Total)
+#> The following numerical problems occured the indicated number of times after warmup on chain 1
+#>                                                                                                      count
+#> Exception thrown at line 2523: Exception thrown at line 1071: Exception thrown at line 279: multiply    14
+#> When a numerical problem occurs, the Hamiltonian proposal gets rejected.
+#> See http://mc-stan.org/misc/warnings.html#exception-hamiltonian-proposal-rejected
+#> If the number in the 'count' column is small, do not ask about this message on stan-users.
 ```
 
 
@@ -323,7 +349,7 @@ ggplot(filter(nile_3_summary, parameter == "alpha"),
   theme_minimal()
 ```
 
-<img src="example-Nile_files/figure-html/nile_3_states-1.png" width="672" />
+![](example-Nile_files/figure-latex/nile_3_states-1.pdf)<!-- --> 
 
 ### Local Level model with Sparse State Disturbances
 
@@ -338,6 +364,30 @@ nile_4_data <- nile_1_data
 nile_4_data[["s"]] <- 1 / nrow(Nile_)
 nile_4_samples <- sampling(nile_4_mod, chains = 1, iter = 500,
                            data = nile_4_data)
+#> 
+#> SAMPLING FOR MODEL 'local_level_tvvar' NOW (CHAIN 1).
+#> 
+#> Chain 1, Iteration:   1 / 500 [  0%]  (Warmup)
+#> Chain 1, Iteration:  50 / 500 [ 10%]  (Warmup)
+#> Chain 1, Iteration: 100 / 500 [ 20%]  (Warmup)
+#> Chain 1, Iteration: 150 / 500 [ 30%]  (Warmup)
+#> Chain 1, Iteration: 200 / 500 [ 40%]  (Warmup)
+#> Chain 1, Iteration: 250 / 500 [ 50%]  (Warmup)
+#> Chain 1, Iteration: 251 / 500 [ 50%]  (Sampling)
+#> Chain 1, Iteration: 300 / 500 [ 60%]  (Sampling)
+#> Chain 1, Iteration: 350 / 500 [ 70%]  (Sampling)
+#> Chain 1, Iteration: 400 / 500 [ 80%]  (Sampling)
+#> Chain 1, Iteration: 450 / 500 [ 90%]  (Sampling)
+#> Chain 1, Iteration: 500 / 500 [100%]  (Sampling)
+#>  Elapsed Time: 30.9826 seconds (Warm-up)
+#>                11.9361 seconds (Sampling)
+#>                42.9187 seconds (Total)
+#> The following numerical problems occured the indicated number of times after warmup on chain 1
+#>                                                                                                      count
+#> Exception thrown at line 2524: Exception thrown at line 1071: Exception thrown at line 279: multiply    11
+#> When a numerical problem occurs, the Hamiltonian proposal gets rejected.
+#> See http://mc-stan.org/misc/warnings.html#exception-hamiltonian-proposal-rejected
+#> If the number in the 'count' column is small, do not ask about this message on stan-users.
 ```
 
 
@@ -361,4 +411,4 @@ ggplot(filter(nile_4_summary, parameter == "alpha"),
   theme_minimal()
 ```
 
-<img src="example-Nile_files/figure-html/nile_4_states-1.png" width="672" />
+![](example-Nile_files/figure-latex/nile_4_states-1.pdf)<!-- --> 

@@ -8,8 +8,8 @@ data("AustralianElectionPolling", package = "pscl")
 glimpse(AustralianElectionPolling)
 ```
 
-We will estimate the the proportion of the population that will vote the Australian Labor Party (ALP) in a House of Representatives election for each day between the elections. 
-We model this as 
+We will estimate the the proportion of the population that will vote the Australian Labor Party (ALP) in a House of Representatives election for each day between the elections.
+We model this as
 
 $$
 \begin{aligned}[t]
@@ -28,9 +28,9 @@ The unique polling firms and number of polls are,
 AustralianElectionPolling %>% group_by(org) %>% tally()
 ```
 The face-to-face and phone polls by Morgan are treated separately.
-Each polling firm will be given it's own "house effect" term to allow them to 
+Each polling firm will be given it's own "house effect" term to allow them to
 be systematically biased.
-However, we will require that the average of the house effects is zero; 
+However, we will require that the average of the house effects is zero;
 meaning that while each polling firm may be biased, on average they are not.
 $$
 \delta_j \sim N(0, d)
@@ -41,7 +41,7 @@ In the 2004 election the Australian Labor Party (ALP) won 37.6% percent of
 first preferences, and in 2007 they won 43.4%.
 These will be treated as coming from a source with no house effect and an infinitely large sample size.
 
-```{rAustralianElectionPolling-data}
+```{r AustralianElectionPolling-data}
 library("dplyr")
 data("AustralianElectionPolling", package = "pscl")
 glimpse(AustralianElectionPolling)

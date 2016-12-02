@@ -347,11 +347,13 @@ In this formulation, $y_{t,i}$, $\varepsilon_{t,i}$ and $\sigma^2_{t,i}$ are sca
 
 The observation equation in the univariate representation is
 $$
-y_{t,i} &= d_{t,i} + \vec{Z}_{t,i} \vec{\alpha}_t + \varepsilon_{t,i}, & i = 1, \dots, p_t, & t = 1, \dots, n ,
+\begin{aligned}[t]
+y_{t, i} = d_{t, i} + \vec{Z}_{t, i} \vec{\alpha}_t + \varepsilon_{t, i},  i = 1, \dots, p_t,  t = 1, \dots, n ,
+\end{aligned}
 $$
 and the state equation is,
 $$
-\begin{aligned}
+\begin{aligned}[t]
 \alpha_{t, i + 1} &= \alpha_t, & i &= 1, \dots, p_{t} - 1, \\
 \alpha_{t + 1, 1} &= \vec{c}_t + \mat{T}_t \alpha_t, & t &= 1, \dots, n
 \end{aligned}
@@ -413,16 +415,16 @@ $$
 as
 $$
 \begin{aligned}[t]
-\vec{r}_{t,i - 1} &= 
+\vec{r}_{t,i - 1} &=
 \mat{Z}_{t,i}\T F^{-1}_{t,i} v_{t,i} + \mat{L}_{t,i}\T \vec{r}_{t,i} &
-\mat{N}_{t,i - 1} &= \mat{Z}_{t,i}\T F_{t,i}^{-1} \mat{Z}_{t,i} + \mat{L}_{t,i}\T \mat{N}_{t,i} \mat{L}_{t,i} , 
+\mat{N}_{t,i - 1} &= \mat{Z}_{t,i}\T F_{t,i}^{-1} \mat{Z}_{t,i} + \mat{L}_{t,i}\T \mat{N}_{t,i} \mat{L}_{t,i} ,
 \vec{r}_{t - 1,p} &=
 \mat{T}_{t - 1}\T \vec{r}_{t,0} &
-\mat{N}_{t - 1, p} &= \mat{T}_{t-1}\T \mat{N}_{t,0} \mat{T}_{t - 1} , 
+\mat{N}_{t - 1, p} &= \mat{T}_{t-1}\T \mat{N}_{t,0} \mat{T}_{t - 1} ,
 \end{aligned}
 $$
 where $\mat{L}_{t,i} = \mat{I}_{m} - \mat{K}_{t,i} \mat{Z}_{t,i}$, for $i = p, \dots, 1$ and $t = n, \dots, 1$.
-The smoothing recursions are initialized with $\vec{r}_{n, p} = \vec{0}$ and $\mat{N}_{n,p} = \mat{0}$. 
+The smoothing recursions are initialized with $\vec{r}_{n, p} = \vec{0}$ and $\mat{N}_{n,p} = \mat{0}$.
 The recursions for $\vec{r}_{t-1, p}$ and $\mat{N}_{t - 1, p}$ are not used for $t = 1$.
 The values of $\vec{r}_{t,0}$ and $\mat{N}_{t,0}$ are equivalent to the values of $\vec{r}_{t-1}$ and $\mat{N}_{t-1}$ in the standard smoothing recursions.
 
@@ -448,14 +450,14 @@ $$
 \vec{r,p} &= \mat{T}_{t}\T \vec_{t + 1, 0} & \mat{N}_{t,p} = \mat{T}_t\T \mat{N}_{t + 1,0} \mat{T}_t,
 \end{aligned}
 $$
-for $t = n, \dots, 1$. 
+for $t = n, \dots, 1$.
 The recursion is initialized with $\vec{r}_{n + 1,0} = \vec{0}$ and $\mat{N}_{n + 1, 0} = \mat{0}$.
 
 The smoothing goes backwards through $y_{t, p}, \dots, y_{t, 1}$,
 $$
 \begin{aligned}[t]
 & & \mat{K}_{t,i} &= \mat{N}_{t,i} \mat{K}_{t,i}
-\vec{u}_{t,i} &= \mat{F}_{t,i}^{-1} \vec{v}_{t,i} - \mat{K}_{t,i}\T \vec{r}_{t,i} & 
+\vec{u}_{t,i} &= \mat{F}_{t,i}^{-1} \vec{v}_{t,i} - \mat{K}_{t,i}\T \vec{r}_{t,i} &
 \mat{D}_{t,i} &= \mat{F}^{-1}_{t,i} + \mat{K}_{t,i}\T \mat{K}_{t,i} , \\
 \vec{r}_{t,i - 1} &= \mat{Z}_{t,i}\T \vec{u}_{t,i} + \vec{r}_{t,i} , &
 \mat{N}_{t,i - 1} &= \mat{Z}_{t,i}\T \mat{D}_{t,i} \mat{Z}_{t,i} - \mat{K}_{t,i} \mat{Z}_{t,i} + \mat{N}_{t,i} .
@@ -483,7 +485,7 @@ where $\diag$ are the diagonal elements of the matrix.(*TODO* Why is only the di
 
 The mean correction simulation smoother relies on the filter and smoother, and thus does not need to be altered apart from using the univariate forms of each.
 
-### Correlation 
+### Correlation
 
 The univariate method cannot be used if $\mat{H}_t$ is not diagonal (the $\varepsilon_{t,i}$ are correlated), the univariate filtering method cannot be used.
 However, the state space model can be transformed so that the observation disturbances are uncorrelated.
@@ -502,22 +504,22 @@ Using the augmented state vector, the state space model can be rewritten as,
 $$
 \begin{aligned}[t]
 \vec{y}_t &= \bar{\mat{Z}} \bar{\alpha}_t \\
-\bar{\alpha}_{t + 1} &= \vec{c}_t + \bar{\mat{T}}_t \bar{\vec{\alpha}}_t + \bar{\mat{R}} \bar{\vec{\eta}}_t & \bar{\vec{eta}}_t & \sim N(\vec{0}, \bar{\mat{Q}}_t) , 
+\bar{\alpha}_{t + 1} &= \vec{c}_t + \bar{\mat{T}}_t \bar{\vec{\alpha}}_t + \bar{\mat{R}} \bar{\vec{\eta}}_t & \bar{\vec{eta}}_t & \sim N(\vec{0}, \bar{\mat{Q}}_t) ,
 \end{aligned}
 $$
 where,
 $$
 \bar{\mat{Z}}_t &= \begin{bmatrix} \mat{Z}_t & \mat{I}_t \end{bmatrix} , &
 \bar{\vec{\eta}}_t &= \begin{bmatrix} \vec{\eta}_t \\ \vec{\varepsilon}_t \begin{bmatrix} , \\
-\bar{\mat{T}}_t &= 
+\bar{\mat{T}}_t &=
 \begin{bmatrix}
 \mat{T}_t & \mat{0} \\
-\mat{0} & \mat{0} 
+\mat{0} & \mat{0}
 \end{bmatrix} , &
 \bar{\mat{R}}_t &=
 \begin{bmatrix}
 \mat{R}_t & \mat{0} \\
-\mat{0} & \mat{I}_{p} 
+\mat{0} & \mat{I}_{p}
 \end{bmatrix}, &
 \bar{\mat{Q}}_t &=
 \begin{bmatrix}
